@@ -183,8 +183,7 @@ public partial class MainWindow : Window
             try { file = await _files.ReadAsync(fullPath); }
             catch (DecoderFallbackException)
             {
-                if (MessageBox.Show(this, "UTF-8로 읽을 수 없는 파일입니다. 한글 Windows 인코딩(CP949)으로 열까요?",
-                    "인코딩 선택", MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes) return;
+                if (!AppDialogs.ConfirmEncoding(this, fullPath)) return;
                 file = await _files.ReadAsync(fullPath, TextFileEncoding.Korean949);
             }
 
@@ -229,7 +228,7 @@ public partial class MainWindow : Window
             EditorDocument? other = Documents.FirstOrDefault(d => d != document && string.Equals(d.FilePath, path, StringComparison.OrdinalIgnoreCase));
             if (other is not null)
             {
-                MessageBox.Show(this, "다른 탭에 열린 파일입니다. 해당 탭에서 저장하거나 다른 이름을 선택해 주세요.", "저장할 수 없음");
+                AppDialogs.Alert(this, "다른 탭에서 사용 중인 파일입니다", "해당 탭에서 저장하거나 다른 파일 이름을 선택해 주세요.");
                 return false;
             }
             // Even Save As must retain conflict detection when selecting the original path.
@@ -251,7 +250,7 @@ public partial class MainWindow : Window
         }
         catch (EncoderFallbackException)
         {
-            MessageBox.Show(this, "현재 인코딩으로 저장할 수 없는 문자가 있습니다. 파일 메뉴에서 ‘UTF-8로 변환’한 뒤 다시 저장해 주세요. 원본은 변경되지 않았습니다.", "인코딩 확인");
+            AppDialogs.Alert(this, "인코딩을 변경해 주세요", "현재 인코딩으로 저장할 수 없는 문자가 있습니다.\n파일 메뉴에서 ‘UTF-8로 변환’한 뒤 다시 저장해 주세요. 원본은 그대로 유지됩니다.");
             return false;
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ArgumentException)
@@ -261,8 +260,7 @@ public partial class MainWindow : Window
     private async Task<bool> ConfirmCloseAsync(EditorDocument document)
     {
         if (!document.Editor.IsModified) return true;
-        MessageBoxResult choice = _confirmClose?.Invoke(document) ?? MessageBox.Show(this, $"‘{document.Name}’의 변경 내용을 저장할까요?",
-            "저장하지 않은 변경 내용", MessageBoxButton.YesNoCancel, MessageBoxImage.Question);
+        MessageBoxResult choice = _confirmClose?.Invoke(document) ?? AppDialogs.ConfirmSave(this, document.Name, document.FilePath);
         return choice == MessageBoxResult.No || choice == MessageBoxResult.Yes && await SaveDocumentAsync(document);
     }
 
@@ -307,6 +305,7 @@ public partial class MainWindow : Window
                     if (!await ConfirmCloseAsync(document)) return;
             Status.Text = "작업을 보관하고 종료하는 중…";
             await _session.FlushAsync(_preferences.Current.RememberSession);
+            await WorkspaceExplorer.Restoration;
             await WorkspaceExplorer.Workspace.FlushStateAsync();
             _allowClose = true;
         }
@@ -333,14 +332,17 @@ public partial class MainWindow : Window
     private void ShowError(string title, Exception exception)
     {
         Status.Text = title;
-        MessageBox.Show(this, exception.Message, title, MessageBoxButton.OK, MessageBoxImage.Warning);
+        if (exception is FileConflictException)
+            AppDialogs.Alert(this, "원본 파일을 확인해 주세요", exception.Message);
+        else AppDialogs.Alert(this, title, "파일 경로와 접근 권한을 확인한 뒤 다시 시도해 주세요.", exception.Message);
     }
 
     private async Task OpenFolderAsync()
     {
-        OpenFolderDialog dialog = new() { Title = "wText · 폴더 열기" };
+        OpenFolderDialog dialog = new() { Title = "wText · 작업 폴더 추가 (최대 10개)", Multiselect = true };
         if (WorkspaceExplorer.Workspace.RootPath is { } root) dialog.InitialDirectory = root;
-        if (dialog.ShowDialog(this) == true) await OpenWorkspaceAsync(dialog.FolderName);
+        if (dialog.ShowDialog(this) == true)
+            foreach (string path in dialog.FolderNames) await OpenWorkspaceAsync(path);
     }
 
     public async Task OpenWorkspaceAsync(string path)
@@ -583,7 +585,7 @@ public partial class MainWindow : Window
     {
         if (e.Data.GetData(DataFormats.FileDrop) is not string[] paths) return;
         e.Handled = true;
-        if (paths.FirstOrDefault(Directory.Exists) is { } directory) await OpenWorkspaceAsync(directory);
+        foreach (string directory in paths.Where(Directory.Exists)) await OpenWorkspaceAsync(directory);
         await RunAsync(async () => { foreach (string path in paths.Where(File.Exists)) await OpenFileAsync(path); });
     }
 }

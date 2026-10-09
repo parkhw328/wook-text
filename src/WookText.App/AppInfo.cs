@@ -17,6 +17,6 @@ public static class AppInfo
     {
         try { Process.Start(new ProcessStartInfo(RepositoryUrl) { UseShellExecute = true }); }
         catch (Exception ex) when (ex is System.ComponentModel.Win32Exception or InvalidOperationException)
-        { MessageBox.Show(owner, $"브라우저를 열지 못했습니다.\n{RepositoryUrl}\n\n{ex.Message}", "GitHub"); }
+        { AppDialogs.Alert(owner, "브라우저를 열지 못했습니다", "정보 창에서 GitHub 주소를 복사해 브라우저에 붙여 넣어 주세요.", ex.Message); }
     }
 }

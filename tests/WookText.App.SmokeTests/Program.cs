@@ -47,7 +47,7 @@ internal static class Program
         Directory.CreateDirectory(sampleDirectory);
         string original = Path.Combine(sampleDirectory, "appsettings.original.json");
         string modified = Path.Combine(sampleDirectory, "appsettings.modified.json");
-        string originalText = "{\r\n    \"name\": \"wText\",\r\n    \"version\": \"0.4.0\",\r\n    \"theme\": \"dark\",\r\n    \"language\": \"한국어\",\r\n    \"editor\": {\r\n        \"fontSize\": 13,\r\n        \"wordWrap\": false\r\n    }\r\n}\r\n";
+        string originalText = "{\r\n    \"name\": \"wText\",\r\n    \"version\": \"1.0.0\",\r\n    \"theme\": \"dark\",\r\n    \"language\": \"한국어\",\r\n    \"editor\": {\r\n        \"fontSize\": 13,\r\n        \"wordWrap\": false\r\n    }\r\n}\r\n";
         string modifiedText = originalText.Replace("13", "15").Replace("false", "true").Replace("\"theme\": \"dark\",", "\"theme\": \"dark\",\r\n    \"compareFiles\": true,");
         await File.WriteAllTextAsync(original, originalText);
         await File.WriteAllTextAsync(modified, modifiedText);
@@ -112,6 +112,8 @@ internal static class Program
         comparison.Close();
         await CloseWindowAsync(window);
         await ExplorerChecks.RunAsync(output);
+        await MultiFolderChecks.RunAsync(output);
+        await DialogChecks.RunAsync(output);
         await SessionChecks.RunAsync(output);
     }
 

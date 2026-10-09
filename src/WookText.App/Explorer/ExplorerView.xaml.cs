@@ -1,8 +1,10 @@
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Threading;
@@ -84,6 +86,7 @@ public partial class ExplorerView : UserControl, IDisposable
 
     private async void OnTreeKeyDown(object sender, KeyEventArgs e)
     {
+        if (Ancestor<Button>(e.OriginalSource as DependencyObject) is not null) return;
         if (e.Key == Key.Enter) { e.Handled = true; await OpenAsync(FileTree.SelectedItem as ExplorerNode); }
         else if (e.Key == Key.F2) { e.Handled = true; RenameSelected(); }
         else if (e.Key == Key.F5) { e.Handled = true; await Workspace.RefreshAsync(); }
@@ -134,11 +137,17 @@ public partial class ExplorerView : UserControl, IDisposable
     private void PopulateContextMenu(ContextMenu menu, ExplorerNode? node)
     {
         menu.Items.Clear();
-        if (!Workspace.HasRoot) { Add(menu, "폴더 열기…", _openFolder); return; }
+        if (!Workspace.HasRoot) { Add(menu, "폴더 추가…", _openFolder); return; }
         if (node is { IsActionable: true })
         {
             Add(menu, node.IsDirectory ? "펼치기 / 접기" : "파일 열기", () => OpenAsync(node), "Enter");
-            Add(menu, "이름 바꾸기…", () => { RenameSelected(); return Task.CompletedTask; }, "F2");
+            if (!node.IsWorkspaceRoot) Add(menu, "이름 바꾸기…", () => { RenameSelected(); return Task.CompletedTask; }, "F2");
+            else
+            {
+                Add(menu, "작업 폴더 닫기", () => { Workspace.CloseFolder(node.FullPath); return Task.CompletedTask; });
+                Add(menu, "목록에서 위로", () => { Workspace.MoveFolder(node.FullPath, -1); return Task.CompletedTask; }, enabled: Workspace.Nodes.IndexOf(node) > 0);
+                Add(menu, "목록에서 아래로", () => { Workspace.MoveFolder(node.FullPath, 1); return Task.CompletedTask; }, enabled: Workspace.Nodes.IndexOf(node) < Workspace.Nodes.Count - 1);
+            }
             menu.Items.Add(new Separator());
         }
         Add(menu, "새 파일…", () => { CreateItem(false); return Task.CompletedTask; });
@@ -149,12 +158,13 @@ public partial class ExplorerView : UserControl, IDisposable
         Add(menu, "Windows 탐색기에서 보기", () => { OpenInWindows(node); return Task.CompletedTask; });
         menu.Items.Add(new Separator());
         Add(menu, "새로고침", Workspace.RefreshAsync, "F5");
+        Add(menu, "작업 폴더 추가…", _openFolder, "Ctrl+Shift+O");
     }
 
     private void OnMore(object sender, RoutedEventArgs e)
     {
         ContextMenu menu = new() { PlacementTarget = MoreButton };
-        Add(menu, "폴더 열기…", _openFolder, "Ctrl+Shift+O");
+        Add(menu, "폴더 추가…", _openFolder, "Ctrl+Shift+O");
         if (Workspace.RecentFolders.Count > 0)
         {
             MenuItem recent = new() { Header = "최근 작업 폴더" };
@@ -163,17 +173,19 @@ public partial class ExplorerView : UserControl, IDisposable
                 StackPanel label = new() { Width = 280 };
                 label.Children.Add(new TextBlock { Text = Path.GetFileName(path) is { Length: > 0 } name ? name : path, TextTrimming = TextTrimming.CharacterEllipsis });
                 label.Children.Add(new TextBlock { Text = path, FontSize = 11, Foreground = EditorFactory.Brush("#9C9990"), TextTrimming = TextTrimming.CharacterEllipsis, Margin = new Thickness(0, 3, 0, 0) });
-                MenuItem item = new() { Header = label, ToolTip = path };
+                MenuItem item = new() { Header = label, ToolTip = path, IsCheckable = true, IsChecked = Workspace.Nodes.Any(n => string.Equals(n.FullPath, path, StringComparison.OrdinalIgnoreCase)) };
                 System.Windows.Automation.AutomationProperties.SetName(item, path);
                 item.Click += async (_, _) => await Workspace.OpenFolderAsync(path);
                 recent.Items.Add(item);
             }
             menu.Items.Add(recent);
+            Add(menu, "최근 폴더 기록 지우기", () => { Workspace.ClearRecentFolders(); return Task.CompletedTask; });
         }
         if (Workspace.HasRoot)
         {
             Add(menu, "Windows 탐색기에서 보기", () => { OpenInWindows(null); return Task.CompletedTask; });
-            Add(menu, "작업 폴더 닫기", () => { Workspace.CloseFolder(); return Task.CompletedTask; });
+            Add(menu, "선택한 작업 폴더 닫기", () => { Workspace.CloseFolder(); return Task.CompletedTask; });
+            Add(menu, "모든 작업 폴더 닫기", () => { Workspace.CloseAllFolders(); return Task.CompletedTask; });
         }
         menu.Items.Add(new Separator());
         MenuItem hidden = new() { Header = "숨김 항목 표시", IsCheckable = true, IsChecked = Workspace.ShowHidden };
@@ -192,9 +204,9 @@ public partial class ExplorerView : UserControl, IDisposable
         menu.IsOpen = true;
     }
 
-    private void Add(ContextMenu menu, string header, Func<Task> action, string shortcut = "")
+    private void Add(ContextMenu menu, string header, Func<Task> action, string shortcut = "", bool enabled = true)
     {
-        MenuItem item = new() { Header = header, InputGestureText = shortcut };
+        MenuItem item = new() { Header = header, InputGestureText = shortcut, IsEnabled = enabled };
         item.Click += async (_, _) =>
         {
             try { await action(); }
@@ -221,6 +233,7 @@ public partial class ExplorerView : UserControl, IDisposable
     private void RenameSelected()
     {
         if (Workspace.SelectedNode is not { IsActionable: true } node) return;
+        if (node.IsWorkspaceRoot) { Workspace.Report("작업 폴더는 ×로 닫거나 우클릭 메뉴에서 순서를 바꿀 수 있습니다."); return; }
         NameDialog dialog = new("이름 바꾸기", Path.GetDirectoryName(node.FullPath)!, node.Name, name => Workspace.RenameAsync(node, name), selectStem: !node.IsDirectory) { Owner = Window.GetWindow(this) };
         dialog.ShowDialog();
     }
@@ -231,7 +244,7 @@ public partial class ExplorerView : UserControl, IDisposable
         if (path is null) return;
         try
         {
-            Clipboard.SetText(relative && Workspace.RootPath is { } root ? Path.GetRelativePath(root, path) : path);
+            Clipboard.SetText(relative && (node?.WorkspacePath ?? Workspace.RootPath) is { } root ? Path.GetRelativePath(root, path) : path);
             Workspace.Report(relative ? "상대 경로를 복사했습니다." : "전체 경로를 복사했습니다.");
         }
         catch (ExternalException) { Workspace.Report("클립보드에 복사하지 못했습니다. 다시 시도하세요."); }
@@ -252,6 +265,11 @@ public partial class ExplorerView : UserControl, IDisposable
     }
 
     private async void OnOpenFolder(object sender, RoutedEventArgs e) => await _openFolder();
+    private void OnCloseFolder(object sender, RoutedEventArgs e)
+    {
+        e.Handled = true;
+        if ((sender as FrameworkElement)?.DataContext is ExplorerNode { IsWorkspaceRoot: true } node) Workspace.CloseFolder(node.FullPath);
+    }
     private void OnNewFile(object sender, RoutedEventArgs e) => CreateItem(false);
     private void OnNewFolder(object sender, RoutedEventArgs e) => CreateItem(true);
     private async void OnRefresh(object sender, RoutedEventArgs e) => await Workspace.RefreshAsync();
@@ -261,13 +279,16 @@ public partial class ExplorerView : UserControl, IDisposable
 
     private void BringNodeIntoView(ExplorerNode target, bool focus = false)
     {
-        if (Workspace.RootPath is null || !WorkspaceFiles.IsWithin(Workspace.RootPath, target.FullPath)) return;
+        if (!Workspace.Nodes.Any(n => n.FullPath == target.WorkspacePath)) return;
         ItemsControl parent = FileTree;
-        string path = Workspace.RootPath;
-        foreach (string segment in target.RelativePath.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar))
+        string path = target.WorkspacePath;
+        List<string> ancestors = [path];
+        if (!target.IsWorkspaceRoot)
+            foreach (string segment in target.RelativePath.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar))
+            { path = Path.Combine(path, segment); ancestors.Add(path); }
+        foreach (string ancestorPath in ancestors)
         {
-            path = Path.Combine(path, segment);
-            ExplorerNode? node = parent.Items.OfType<ExplorerNode>().FirstOrDefault(n => string.Equals(n.FullPath, path, StringComparison.OrdinalIgnoreCase));
+            ExplorerNode? node = parent.Items.OfType<ExplorerNode>().FirstOrDefault(n => string.Equals(n.FullPath, ancestorPath, StringComparison.OrdinalIgnoreCase));
             if (node is null) return;
             parent.UpdateLayout();
             TreeViewItem? container = parent.ItemContainerGenerator.ContainerFromItem(node) as TreeViewItem;
@@ -308,4 +329,13 @@ public partial class ExplorerView : UserControl, IDisposable
 public sealed class ExplorerPanel : VirtualizingStackPanel
 {
     public void RevealIndex(int index) { if (index >= 0) BringIndexIntoView(index); }
+}
+
+public sealed class WorkspaceHeaderWidthConverter : IValueConverter
+{
+    // Reserve the tree toggle, padding, and scrollbar. Virtualized rows can
+    // otherwise retain their old desired width after the sidebar narrows.
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture) =>
+        value is double width ? Math.Max(0, width - 40) : 0d;
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) => throw new NotSupportedException();
 }

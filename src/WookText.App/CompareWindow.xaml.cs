@@ -65,7 +65,7 @@ public partial class CompareWindow : Window
             try { file = await _files.ReadAsync(dialog.FileName); }
             catch (DecoderFallbackException)
             {
-                if (MessageBox.Show(this, "UTF-8로 읽을 수 없습니다. CP949로 열까요?", "인코딩 선택", MessageBoxButton.YesNo) != MessageBoxResult.Yes) return;
+                if (!AppDialogs.ConfirmEncoding(this, dialog.FileName)) return;
                 file = await _files.ReadAsync(dialog.FileName, TextFileEncoding.Korean949);
             }
             if (left) _left = file; else _right = file;
@@ -75,7 +75,7 @@ public partial class CompareWindow : Window
         {
             ClearComparison();
             Summary.Text = "비교할 수 없습니다.";
-            MessageBox.Show(this, ex.Message, "파일 비교", MessageBoxButton.OK, MessageBoxImage.Warning);
+            AppDialogs.Alert(this, "파일을 비교할 수 없습니다", "파일 경로와 접근 권한을 확인한 뒤 다시 시도해 주세요.", ex.Message);
         }
         finally { SetBusy(false); }
     }

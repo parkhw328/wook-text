@@ -13,6 +13,10 @@ public sealed class ExplorerNode : INotifyPropertyChanged
     public WorkspaceEntry Entry { get; }
     public string Name => Entry.Name;
     public string FullPath => Entry.FullPath;
+    public string WorkspacePath { get; }
+    public bool IsWorkspaceRoot => !IsPlaceholder && string.Equals(FullPath, WorkspacePath, StringComparison.OrdinalIgnoreCase);
+    public string SearchPath => System.IO.Path.GetFileName(WorkspacePath) + " / " + RelativePath;
+    public string ParentPath => System.IO.Path.GetDirectoryName(FullPath) ?? FullPath;
     public string RelativePath { get; }
     public bool IsDirectory => Entry.IsDirectory;
     public bool IsPlaceholder { get; }
@@ -36,6 +40,7 @@ public sealed class ExplorerNode : INotifyPropertyChanged
     public ExplorerNode(WorkspaceEntry entry, string root, bool placeholder = false)
     {
         Entry = entry;
+        WorkspacePath = root;
         RelativePath = placeholder ? "" : System.IO.Path.GetRelativePath(root, entry.FullPath);
         IsPlaceholder = placeholder;
         if (entry.IsDirectory && !placeholder) Children.Add(Message("불러오는 중…"));

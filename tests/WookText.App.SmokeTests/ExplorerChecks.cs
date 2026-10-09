@@ -19,7 +19,7 @@ internal static class ExplorerChecks
         Dictionary<string, string> samples = new()
         {
             ["README.md"] = "# Orange workspace\n한글과 코드를 함께 편집합니다.\n",
-            ["package.json"] = "{\n  \"name\": \"orange-workspace\",\n  \"version\": \"0.4.0\"\n}\n",
+            ["package.json"] = "{\n  \"name\": \"orange-workspace\",\n  \"version\": \"1.0.0\"\n}\n",
             ["src\\app.js"] = "// 편안한 편집 환경\nimport { Editor } from './components/Editor';\n\nconst preferences = {\n    language: '한국어',\n    theme: 'black-orange',\n    fontSize: 15\n};\n\nexport function start() {\n    return new Editor(preferences);\n}\n",
             ["src\\theme.css"] = "body { color: #cecdc3; background: #100f0f; }\n",
             ["src\\components\\Editor.tsx"] = "export function Editor() { return 'wText'; }\n",
@@ -41,7 +41,7 @@ internal static class ExplorerChecks
         await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
         await window.OpenWorkspaceAsync(root);
         ExplorerWorkspace workspace = window.Explorer.Workspace;
-        Check(workspace.HasRoot && workspace.Nodes.All(n => n.Name != "node_modules"), "Opening a workspace must hide dependency folders by default.");
+        Check(workspace.HasRoot && workspace.Nodes.Single().Children.All(n => n.Name != "node_modules"), "Opening a workspace must hide dependency folders by default.");
         string appFile = Path.Combine(root, "src", "app.js");
         await window.OpenFileAsync(appFile);
         ExplorerNode? active = await workspace.RevealAsync(appFile);
@@ -59,7 +59,7 @@ internal static class ExplorerChecks
         ExplorerNode readme = workspace.Find(Path.Combine(root, "README.md"))!;
         await workspace.RevealAsync(readme.FullPath);
         await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
-        TreeViewItem readmeRow = (TreeViewItem)fileTree.ItemContainerGenerator.ContainerFromItem(readme);
+        TreeViewItem readmeRow = FindRow(fileTree, readme)!;
         readmeRow.RaiseEvent(new MouseButtonEventArgs(Mouse.PrimaryDevice, 0, MouseButton.Right) { RoutedEvent = Mouse.PreviewMouseDownEvent });
         Check(workspace.SelectedNode == readme && fileTree.ContextMenu.Items.OfType<MenuItem>().Any(i => Equals(i.Header, "이름 바꾸기…")), "Right-click must select the clicked item and expose its file actions.");
         fileTree.ContextMenu.IsOpen = true;
@@ -167,16 +167,30 @@ internal static class ExplorerChecks
         Task second = window.Explorer.Workspace.OpenFolderAsync(large);
         await Task.WhenAll(first, second);
         ExplorerWorkspace workspace = window.Explorer.Workspace;
-        Check(workspace.RootPath == large && workspace.Nodes.Count == 1200, "Switching roots must cancel stale loads and show more than the old 1000-file limit.");
+        Check(workspace.Nodes.Count == 2 && workspace.Nodes.Single(n => n.FullPath == large).Children.Count == 1200, "Adding a folder must retain the previous root and support 1200 files.");
         ExplorerNode? last = await workspace.RevealAsync(Path.Combine(large, "file1199.txt"));
         await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
         TreeView tree = (TreeView)window.Explorer.FindName("FileTree");
-        TreeViewItem? row = tree.ItemContainerGenerator.ContainerFromItem(last) as TreeViewItem;
+        TreeViewItem? row = FindRow(tree, last!);
         Check(row is not null && row.TranslatePoint(new Point(), tree).Y < tree.ActualHeight && row.TranslatePoint(new Point(), tree).Y >= 0, "Reveal must scroll an initially unrealized file into the visible tree viewport.");
-        int realized = Enumerable.Range(0, tree.Items.Count).Count(i => tree.ItemContainerGenerator.ContainerFromIndex(i) is not null);
+        TreeViewItem rootRow = FindRow(tree, workspace.Nodes.Single(n => n.FullPath == large))!;
+        int realized = Enumerable.Range(0, rootRow.Items.Count).Count(i => rootRow.ItemContainerGenerator.ContainerFromIndex(i) is not null);
         Check(realized < 200, "Large folders must virtualize rows instead of constructing every file's controls.");
         Console.WriteLine($"PASS: 1200-file folder, {realized} realized rows, and offscreen-item reveal.");
+        workspace.CloseFolder(large);
         await window.OpenWorkspaceAsync(restoreRoot);
+    }
+
+    internal static TreeViewItem? FindRow(ItemsControl parent, ExplorerNode target)
+    {
+        foreach (ExplorerNode node in parent.Items.OfType<ExplorerNode>())
+        {
+            if (!WorkspaceFiles.IsWithin(node.FullPath, target.FullPath)) continue;
+            TreeViewItem? row = parent.ItemContainerGenerator.ContainerFromItem(node) as TreeViewItem;
+            if (node == target) return row;
+            if (row is not null && FindRow(row, target) is { } child) return child;
+        }
+        return null;
     }
 
     private static async Task VerifyNameDialogAsync(ExplorerWorkspace workspace, string root, string output)

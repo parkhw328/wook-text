@@ -29,17 +29,22 @@ public sealed class WorkspaceFiles
         return new DirectoryListing(entries, truncated);
     }, cancellationToken);
 
-    public Task<WorkspaceSearch> SearchAsync(string root, string query, ExplorerOptions options, CancellationToken cancellationToken = default) => Task.Run(() =>
+    public Task<WorkspaceSearch> SearchAsync(string root, string query, ExplorerOptions options, CancellationToken cancellationToken = default) =>
+        SearchAsync([root], query, options, cancellationToken);
+
+    public Task<WorkspaceSearch> SearchAsync(IReadOnlyList<string> roots, string query, ExplorerOptions options, CancellationToken cancellationToken = default) => Task.Run(() =>
     {
         string[] terms = query.Trim().Replace('\\', '/').Split(' ', StringSplitOptions.RemoveEmptyEntries);
         if (terms.Length == 0) return new WorkspaceSearch([], false, 0);
         List<WorkspaceEntry> matches = [];
-        Stack<string> pending = new();
-        pending.Push(root);
+        Stack<(string Root, string Directory)> pending = new();
+        foreach (string root in roots.Reverse()) pending.Push((root, root));
+        HashSet<string> matched = new(StringComparer.OrdinalIgnoreCase);
         int scanned = 0, skipped = 0;
         bool truncated = false;
-        while (pending.TryPop(out string? directory))
+        while (pending.TryPop(out var location))
         {
+            (string root, string directory) = location;
             cancellationToken.ThrowIfCancellationRequested();
             try
             {
@@ -51,12 +56,13 @@ public sealed class WorkspaceFiles
                     WorkspaceEntry entry = ToEntry(item);
                     if (entry.IsDirectory)
                     {
-                        if (!entry.IsLink) pending.Push(entry.FullPath);
+                        if (!entry.IsLink) pending.Push((root, entry.FullPath));
                     }
                     else
                     {
                         string relative = Path.GetRelativePath(root, entry.FullPath).Replace('\\', '/');
-                        if (terms.All(term => relative.Contains(term, StringComparison.OrdinalIgnoreCase))) matches.Add(entry);
+                        if (roots.Count > 1) relative = Path.GetFileName(root) + "/" + relative;
+                        if (terms.All(term => relative.Contains(term, StringComparison.OrdinalIgnoreCase)) && matched.Add(entry.FullPath)) matches.Add(entry);
                         if (matches.Count >= SearchResultLimit) { truncated = true; break; }
                     }
                 }

@@ -209,14 +209,28 @@ internal static class ExperienceChecks
 
     private static async Task VerifyMenusAndAboutAsync(MainWindow window, string output)
     {
+        await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
         MenuItem file = (MenuItem)window.FindName("FileMenu");
         file.IsSubmenuOpen = true;
         await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
         Popup popup = (Popup)file.Template.FindName("PART_Popup", file);
-        Check(popup.IsOpen && popup.Child is Border { BorderThickness.Left: 0 }, "Top menu popup must open without a border.");
+        if (!popup.IsOpen)
+        {
+            // WPF exits menu mode immediately when this host cannot acquire native
+            // mouse capture. Exercise the same template/commands without claiming
+            // to verify native pointer interaction on that host.
+            bool captureAvailable = Mouse.Capture(file, CaptureMode.SubTree);
+            if (captureAvailable) Mouse.Capture(null);
+            Check(!captureAvailable, "Menu unexpectedly failed despite native mouse capture being available.");
+            Console.WriteLine("LIMITATION: native mouse capture unavailable (also reproduced on v0.4.0); verifying menu popup rendering and commands.");
+            popup.SetCurrentValue(Popup.IsOpenProperty, true);
+            await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
+        }
+        Check(popup.IsOpen && popup.Child is Border { BorderThickness.Left: 0 }, "Top menu popup must render without a border.");
         Check(file.Items.OfType<MenuItem>().Where(i => i.Command is not null).All(i => i.IsEnabled), "Menu commands must target the editor window even after a dialog closes.");
-        Program.RenderElement((FrameworkElement)popup.Child, Path.Combine(output, "file-menu.png"));
+        Program.RenderElement((FrameworkElement)popup.Child!, Path.Combine(output, "file-menu.png"));
         file.IsSubmenuOpen = false;
+        popup.SetCurrentValue(Popup.IsOpenProperty, false);
         MenuItem language = (MenuItem)window.FindName("LanguageMenu");
         language.IsSubmenuOpen = true;
         await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);

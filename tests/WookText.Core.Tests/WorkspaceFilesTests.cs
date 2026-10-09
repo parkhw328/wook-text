@@ -133,8 +133,9 @@ public sealed class WorkspaceFilesTests : IDisposable
         store.Save(new WorkspaceState { RootPath = _root, ExpandedFolders = ["src", "src\\nested", "..\\outside", "C:\\outside", "src"], RecentFolders = [_root, _root.ToUpperInvariant()], ShowHidden = true, HideGenerated = false });
         WorkspaceState state = new WorkspaceStateStore(store.FilePath).Load(out string? warning);
         Assert.Null(warning);
-        Assert.Equal(_root, state.RootPath);
-        Assert.Equal(new[] { "src", "src\\nested" }, state.ExpandedFolders);
+        WorkspaceFolderState folder = Assert.Single(state.Folders);
+        Assert.Equal(_root, folder.Path);
+        Assert.Equal(new[] { "src", "src\\nested" }, folder.ExpandedFolders);
         Assert.Single(state.RecentFolders);
         Assert.True(state.ShowHidden); Assert.False(state.HideGenerated);
     }

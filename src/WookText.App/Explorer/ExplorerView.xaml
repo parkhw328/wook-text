@@ -4,6 +4,7 @@
              xmlns:local="clr-namespace:WookText.App.Explorer">
   <UserControl.Resources>
     <BooleanToVisibilityConverter x:Key="VisibleIf" />
+    <local:WorkspaceHeaderWidthConverter x:Key="WorkspaceHeaderWidth" />
     <Style x:Key="ToolButton" TargetType="Button" BasedOn="{StaticResource FlatButton}">
       <Setter Property="Width" Value="24" /><Setter Property="Height" Value="28" /><Setter Property="Padding" Value="4" />
       <Setter Property="Foreground" Value="{DynamicResource Muted}" />
@@ -23,10 +24,28 @@
       </Setter.Value></Setter>
     </Style>
     <HierarchicalDataTemplate DataType="{x:Type local:ExplorerNode}" ItemsSource="{Binding Children}">
-      <Grid Height="28" ToolTip="{Binding Tooltip}">
-        <Grid.ColumnDefinitions><ColumnDefinition Width="20" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+      <Grid ToolTip="{Binding Tooltip}">
+        <Grid.Style>
+          <Style TargetType="Grid">
+            <Setter Property="Height" Value="28" />
+            <Style.Triggers>
+              <DataTrigger Binding="{Binding IsWorkspaceRoot}" Value="True">
+                <Setter Property="Height" Value="46" />
+                <Setter Property="HorizontalAlignment" Value="Left" />
+                <Setter Property="Width" Value="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType=TreeView}, Converter={StaticResource WorkspaceHeaderWidth}}" />
+              </DataTrigger>
+            </Style.Triggers>
+          </Style>
+        </Grid.Style>
+        <Grid.ColumnDefinitions><ColumnDefinition Width="20" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
         <Image Source="{Binding Icon}" Width="18" Height="18" />
-        <TextBlock Text="{Binding Name}" Grid.Column="1" Margin="6,0,6,0" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+        <StackPanel Grid.Column="1" Margin="6,0,6,0" VerticalAlignment="Center">
+          <TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis">
+            <TextBlock.Style><Style TargetType="TextBlock"><Style.Triggers><DataTrigger Binding="{Binding IsWorkspaceRoot}" Value="True"><Setter Property="FontWeight" Value="SemiBold" /><Setter Property="Foreground" Value="{DynamicResource Bright}" /></DataTrigger></Style.Triggers></Style></TextBlock.Style>
+          </TextBlock>
+          <TextBlock Text="{Binding ParentPath}" FontSize="10" Foreground="{DynamicResource Muted}" TextTrimming="CharacterEllipsis" Margin="0,2,0,0" Visibility="{Binding IsWorkspaceRoot, Converter={StaticResource VisibleIf}}" />
+        </StackPanel>
+        <Button Grid.Column="2" Content="×" Style="{StaticResource ToolButton}" Width="22" Height="24" Click="OnCloseFolder" ToolTip="작업 폴더 닫기 · 열린 문서는 유지" AutomationProperties.Name="이 작업 폴더 닫기" Visibility="{Binding IsWorkspaceRoot, Converter={StaticResource VisibleIf}}" />
       </Grid>
     </HierarchicalDataTemplate>
     <Style TargetType="TreeViewItem">
@@ -69,13 +88,14 @@
     <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="*" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
     <DockPanel Grid.Row="1" Margin="2,0,2,6">
       <Button x:Name="MoreButton" DockPanel.Dock="Right" Style="{StaticResource ToolButton}" Content="···" FontSize="18" Click="OnMore" ToolTip="작업 폴더 메뉴" AutomationProperties.Name="작업 폴더 메뉴" />
-    <StackPanel x:Name="Actions" Orientation="Horizontal" IsEnabled="{Binding HasRoot}">
+      <Button x:Name="AddFolderButton" DockPanel.Dock="Left" Style="{StaticResource ToolButton}" Click="OnOpenFolder" ToolTip="작업 폴더 추가 · 최대 10개 · Ctrl+Shift+O" AutomationProperties.Name="작업 폴더 추가"><Path Data="M 1,5 L 1,2 L 7,2 L 9,5 L 16,5 L 16,15 L 1,15 Z M 8,7 L 8,13 M 5,10 L 11,10" Stroke="{DynamicResource Accent}" StrokeThickness="1.3" /></Button>
+    <WrapPanel x:Name="Actions" Orientation="Horizontal" IsEnabled="{Binding HasRoot}">
       <Button x:Name="NewFileButton" Style="{StaticResource ToolButton}" Click="OnNewFile" ToolTip="새 파일" AutomationProperties.Name="새 파일"><Path Data="M 3,1 L 10,1 L 14,5 L 14,10 M 10,1 L 10,5 L 14,5 M 3,1 L 3,16 L 8,16 M 12,11 L 12,17 M 9,14 L 15,14" Stroke="{DynamicResource Muted}" StrokeThickness="1.2" /></Button>
       <Button x:Name="NewFolderButton" Style="{StaticResource ToolButton}" Click="OnNewFolder" ToolTip="새 폴더" AutomationProperties.Name="새 폴더"><Path Data="M 1,5 L 1,2 L 7,2 L 9,5 L 16,5 L 16,10 M 1,5 L 1,15 L 8,15 M 12,11 L 12,17 M 9,14 L 15,14" Stroke="{DynamicResource Muted}" StrokeThickness="1.2" /></Button>
       <Button x:Name="RefreshButton" Style="{StaticResource ToolButton}" Click="OnRefresh" ToolTip="새로고침 · F5" AutomationProperties.Name="새로고침"><Path Data="M 14,6 A 6,6 0 1 0 14,12 M 10,6 L 15,6 L 15,1" Stroke="{DynamicResource Muted}" StrokeThickness="1.3" /></Button>
       <Button x:Name="CollapseButton" Style="{StaticResource ToolButton}" Click="OnCollapseAll" ToolTip="폴더 모두 접기" AutomationProperties.Name="폴더 모두 접기"><Path Data="M 1,5 L 12,5 L 12,16 L 1,16 Z M 5,1 L 16,1 L 16,12 M 4,10 L 9,10" Stroke="{DynamicResource Muted}" StrokeThickness="1.2" /></Button>
       <Button x:Name="RevealButton" Style="{StaticResource ToolButton}" Click="OnReveal" ToolTip="현재 문서 찾기 · Ctrl+Shift+E" AutomationProperties.Name="현재 문서 찾기"><Path Data="M 8,3 A 5,5 0 1 1 7.99,3 M 8,0 L 8,5 M 8,11 L 8,16 M 0,8 L 5,8 M 11,8 L 16,8" Stroke="{DynamicResource Muted}" StrokeThickness="1.2" /></Button>
-    </StackPanel>
+    </WrapPanel>
     </DockPanel>
     <Border Grid.Row="2" Background="{DynamicResource Canvas}" CornerRadius="4" Margin="5,0,5,9" BorderBrush="{DynamicResource Stroke}" BorderThickness="1" Visibility="{Binding HasRoot, Converter={StaticResource VisibleIf}}">
       <Grid>
@@ -107,15 +127,15 @@
         <ListBox.ItemTemplate><DataTemplate>
           <Grid ToolTip="{Binding FullPath}"><Grid.ColumnDefinitions><ColumnDefinition Width="20" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
             <Image Source="{Binding Icon}" Width="18" Height="18" VerticalAlignment="Top" Margin="0,2,0,0" />
-            <StackPanel Grid.Column="1" Margin="7,0,2,0"><TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis" /><TextBlock Text="{Binding RelativePath}" FontSize="11" Foreground="{DynamicResource Muted}" Margin="0,3,0,0" TextTrimming="CharacterEllipsis" /></StackPanel>
+            <StackPanel Grid.Column="1" Margin="7,0,2,0"><TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis" /><TextBlock Text="{Binding SearchPath}" FontSize="11" Foreground="{DynamicResource Muted}" Margin="0,3,0,0" TextTrimming="CharacterEllipsis" /></StackPanel>
           </Grid>
         </DataTemplate></ListBox.ItemTemplate>
       </ListBox>
       <StackPanel Margin="10,20,8,0" VerticalAlignment="Top">
         <StackPanel.Style><Style TargetType="StackPanel"><Setter Property="Visibility" Value="Collapsed" /><Style.Triggers><DataTrigger Binding="{Binding HasRoot}" Value="False"><Setter Property="Visibility" Value="Visible" /></DataTrigger></Style.Triggers></Style></StackPanel.Style>
         <TextBlock Text="프로젝트와 함께 시작하세요" Foreground="{DynamicResource Ink}" FontWeight="SemiBold" TextWrapping="Wrap" />
-        <TextBlock Text="폴더를 열면 파일 검색과&#x0a;작업 위치를 한곳에서 관리합니다." Foreground="{DynamicResource Muted}" LineHeight="21" FontSize="12" Margin="0,8,0,16" TextWrapping="Wrap" />
-        <Button x:Name="OpenFolderButton" Content="폴더 열기…" Style="{StaticResource AccentButton}" Click="OnOpenFolder" HorizontalAlignment="Left" />
+        <TextBlock Text="최대 10개 폴더를 함께 열고&#x0a;필요한 파일을 한 번에 찾으세요.&#x0a;닫은 폴더는 ··· 메뉴에서 다시 엽니다." Foreground="{DynamicResource Muted}" LineHeight="21" FontSize="12" Margin="0,8,0,16" TextWrapping="Wrap" />
+        <Button x:Name="OpenFolderButton" Content="폴더 추가…" Style="{StaticResource AccentButton}" Click="OnOpenFolder" HorizontalAlignment="Left" />
       </StackPanel>
     </Grid>
     <TextBlock Grid.Row="4" Text="{Binding Notice}" ToolTip="{Binding Notice}" Foreground="{DynamicResource Muted}" TextTrimming="CharacterEllipsis" FontSize="10" Margin="8,9,6,0" />

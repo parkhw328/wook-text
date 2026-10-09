@@ -66,7 +66,7 @@
       <MenuItem x:Name="FileMenu" Header="파일(_F)">
         <MenuItem Header="새 문서" Command="ApplicationCommands.New" InputGestureText="Ctrl+N" />
         <MenuItem Header="파일 열기…" Command="ApplicationCommands.Open" InputGestureText="Ctrl+O" />
-        <MenuItem Header="폴더 열기…" Command="{x:Static local:EditorCommands.OpenFolder}" InputGestureText="Ctrl+Shift+O" />
+        <MenuItem Header="작업 폴더 추가…" Command="{x:Static local:EditorCommands.OpenFolder}" InputGestureText="Ctrl+Shift+O" />
         <MenuItem Header="작업 폴더에서 파일 찾기…" Command="{x:Static local:EditorCommands.FindFile}" InputGestureText="Ctrl+P" />
         <Separator />
         <MenuItem Header="저장" Command="ApplicationCommands.Save" InputGestureText="Ctrl+S" />
@@ -118,7 +118,7 @@
               </DataTemplate></ListBox.ItemTemplate>
             </ListBox>
           </Expander>
-          <Expander x:Name="ExplorerSection" Grid.Row="2" IsExpanded="True" Expanded="OnSidebarSectionChanged" Collapsed="OnSidebarSectionChanged" ToolTip="{Binding DataContext.RootPath, ElementName=WorkspaceExplorer}">
+          <Expander x:Name="ExplorerSection" Grid.Row="2" IsExpanded="True" Expanded="OnSidebarSectionChanged" Collapsed="OnSidebarSectionChanged" ToolTip="{Binding DataContext.RootTooltip, ElementName=WorkspaceExplorer}">
             <Expander.Header><TextBlock Text="{Binding DataContext.RootName, ElementName=WorkspaceExplorer}" FontWeight="SemiBold" Foreground="{StaticResource Ink}" TextTrimming="CharacterEllipsis" /></Expander.Header>
             <explorer:ExplorerView x:Name="WorkspaceExplorer" />
           </Expander>
