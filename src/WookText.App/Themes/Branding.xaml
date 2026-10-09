@@ -1,0 +1,12 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <DrawingImage x:Key="AppMark">
+    <DrawingImage.Drawing>
+      <DrawingGroup>
+        <GeometryDrawing Brush="#100F0F"><GeometryDrawing.Geometry><RectangleGeometry Rect="0,0,64,64" RadiusX="14" RadiusY="14" /></GeometryDrawing.Geometry></GeometryDrawing>
+        <GeometryDrawing Brush="#DA702C" Geometry="M 17,9 L 39,9 L 51,21 L 51,51 Q 51,55 47,55 L 17,55 Q 13,55 13,51 L 13,13 Q 13,9 17,9 Z" />
+        <GeometryDrawing Brush="#100F0F" Geometry="M 39,9 L 39,21 L 51,21 Z M 21,27 L 43,27 L 43,32 L 35,32 L 35,47 L 29,47 L 29,32 L 21,32 Z" />
+      </DrawingGroup>
+    </DrawingImage.Drawing>
+  </DrawingImage>
+</ResourceDictionary>

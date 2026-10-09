@@ -1,0 +1,9 @@
+<SyntaxDefinition name="wText TypeScript" xmlns="http://icsharpcode.net/sharpdevelop/syntaxdefinition/2008">
+  <Color name="Keyword" foreground="#DA702C" />
+  <Color name="Type" foreground="#DDBD8B" />
+  <RuleSet>
+    <Keywords color="Keyword"><Word>interface</Word><Word>type</Word><Word>enum</Word><Word>namespace</Word><Word>declare</Word><Word>abstract</Word><Word>implements</Word><Word>readonly</Word><Word>private</Word><Word>public</Word><Word>protected</Word><Word>keyof</Word><Word>typeof</Word><Word>infer</Word><Word>is</Word><Word>satisfies</Word><Word>asserts</Word></Keywords>
+    <Keywords color="Type"><Word>string</Word><Word>number</Word><Word>boolean</Word><Word>unknown</Word><Word>never</Word><Word>any</Word><Word>void</Word></Keywords>
+    <Import ruleSet="wText JavaScript/" />
+  </RuleSet>
+</SyntaxDefinition>

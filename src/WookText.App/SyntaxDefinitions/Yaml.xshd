@@ -1,0 +1,18 @@
+<SyntaxDefinition name="wText YAML" xmlns="http://icsharpcode.net/sharpdevelop/syntaxdefinition/2008">
+  <Color name="Comment" foreground="#8A8780" />
+  <Color name="String" foreground="#D0A76C" />
+  <Color name="Keyword" foreground="#DA702C" />
+  <Color name="Number" foreground="#B9A1D7" />
+  <Color name="Attribute" foreground="#DDBD8B" />
+  <Color name="Operator" foreground="#B8AEA2" />
+  <RuleSet>
+    <Span color="Comment" begin="(^|\s)\#" />
+    <Span color="String" begin="&quot;" end="&quot;"><RuleSet><Span begin="\\" end="." /></RuleSet></Span>
+    <Span color="String" begin="'" end="'"><RuleSet><Span begin="''" end="" /></RuleSet></Span>
+    <Rule color="Attribute">[\w.\-/]+(?=\s*:\s|\s*:$)</Rule>
+    <Keywords color="Keyword"><Word>true</Word><Word>false</Word><Word>null</Word><Word>yes</Word><Word>no</Word><Word>on</Word><Word>off</Word></Keywords>
+    <Rule color="Number">\b-?(0x[\da-fA-F]+|\d+(\.\d+)?([eE][+-]?\d+)?)\b</Rule>
+    <Rule color="Keyword">[&amp;*!][\w-]+</Rule>
+    <Rule color="Operator">^[ \t]*---|^[ \t]*\.\.\.|[:\[\]{},|&gt;~-]</Rule>
+  </RuleSet>
+</SyntaxDefinition>

@@ -1,0 +1,13 @@
+<SyntaxDefinition name="wText Shell" xmlns="http://icsharpcode.net/sharpdevelop/syntaxdefinition/2008">
+  <Color name="Comment" foreground="#8A8780" />
+  <Color name="String" foreground="#D0A76C" />
+  <Color name="Keyword" foreground="#DA702C" />
+  <Color name="Variable" foreground="#B9A1D7" />
+  <RuleSet>
+    <Span color="Comment" begin="\#" />
+    <Span color="String" begin="'" end="'" multiline="true" />
+    <Span color="String" begin="&quot;" end="&quot;" multiline="true"><RuleSet><Span begin="\\" end="." /><Rule color="Variable">\$\{?[\w@#?]+\}?</Rule></RuleSet></Span>
+    <Rule color="Variable">\$\{?[\w@#?]+\}?</Rule>
+    <Keywords color="Keyword"><Word>if</Word><Word>then</Word><Word>else</Word><Word>elif</Word><Word>fi</Word><Word>for</Word><Word>while</Word><Word>do</Word><Word>done</Word><Word>case</Word><Word>esac</Word><Word>in</Word><Word>function</Word><Word>export</Word><Word>local</Word><Word>return</Word><Word>exit</Word><Word>echo</Word><Word>printf</Word><Word>set</Word><Word>source</Word></Keywords>
+  </RuleSet>
+</SyntaxDefinition>

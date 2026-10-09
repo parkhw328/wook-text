@@ -1,0 +1,8 @@
+* text=auto eol=lf
+*.png binary
+*.ico binary
+*.ttf binary
+*.otf binary
+# Preserve upstream notices and the original requirements byte-for-byte.
+licenses/*.txt -text -whitespace
+resources/settings.txt -text -whitespace

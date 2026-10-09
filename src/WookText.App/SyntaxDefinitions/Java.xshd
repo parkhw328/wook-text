@@ -1,0 +1,9 @@
+<SyntaxDefinition name="wText Java" xmlns="http://icsharpcode.net/sharpdevelop/syntaxdefinition/2008">
+  <Color name="Keyword" foreground="#DA702C" />
+  <Color name="Attribute" foreground="#DDBD8B" />
+  <RuleSet>
+    <Keywords color="Keyword"><Word>record</Word><Word>sealed</Word><Word>permits</Word><Word>var</Word><Word>yield</Word><Word>module</Word><Word>requires</Word><Word>exports</Word><Word>opens</Word><Word>provides</Word><Word>with</Word><Word>transitive</Word></Keywords>
+    <Rule color="Attribute">@[\w.]+</Rule>
+    <Import ruleSet="Java/" />
+  </RuleSet>
+</SyntaxDefinition>

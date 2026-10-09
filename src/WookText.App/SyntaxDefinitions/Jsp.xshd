@@ -1,0 +1,11 @@
+<SyntaxDefinition name="wText JSP" xmlns="http://icsharpcode.net/sharpdevelop/syntaxdefinition/2008">
+  <Color name="Comment" foreground="#8A8780" />
+  <Color name="Keyword" foreground="#DA702C" />
+  <Color name="Attribute" foreground="#DDBD8B" />
+  <RuleSet>
+    <Span color="Comment" begin="&lt;%--" end="--%&gt;" multiline="true" />
+    <Span ruleSet="wText Java/" multiline="true"><Begin color="Keyword">&lt;%[=@!]?</Begin><End color="Keyword">%&gt;</End></Span>
+    <Span ruleSet="wText Java/" begin="[$\#]\{" end="\}" />
+    <Import ruleSet="HTML/" />
+  </RuleSet>
+</SyntaxDefinition>

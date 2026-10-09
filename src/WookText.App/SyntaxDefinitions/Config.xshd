@@ -1,0 +1,16 @@
+<SyntaxDefinition name="wText Config" xmlns="http://icsharpcode.net/sharpdevelop/syntaxdefinition/2008">
+  <Color name="Comment" foreground="#8A8780" />
+  <Color name="String" foreground="#D0A76C" />
+  <Color name="Keyword" foreground="#DA702C" />
+  <Color name="Attribute" foreground="#DDBD8B" />
+  <Color name="Number" foreground="#B9A1D7" />
+  <RuleSet>
+    <Span color="Comment" begin="^\s*[\#;!]" />
+    <Span color="String" begin="&quot;" end="&quot;"><RuleSet><Span begin="\\" end="." /></RuleSet></Span>
+    <Span color="String" begin="'" end="'" />
+    <Rule color="Keyword">^\s*\[.*\]</Rule>
+    <Rule color="Attribute">^[\w.\-]+(?=\s*[=:])</Rule>
+    <Keywords color="Keyword"><Word>true</Word><Word>false</Word><Word>null</Word></Keywords>
+    <Rule color="Number">\b\d+(\.\d+)?\b</Rule>
+  </RuleSet>
+</SyntaxDefinition>

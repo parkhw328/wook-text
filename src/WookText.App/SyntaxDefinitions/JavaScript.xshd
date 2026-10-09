@@ -1,0 +1,11 @@
+<SyntaxDefinition name="wText JavaScript" xmlns="http://icsharpcode.net/sharpdevelop/syntaxdefinition/2008">
+  <Color name="Keyword" foreground="#DA702C" />
+  <Color name="String" foreground="#D0A76C" />
+  <Color name="Function" foreground="#E7A764" />
+  <RuleSet>
+    <Span color="String" begin="`" end="`" multiline="true"><RuleSet><Span begin="\\" end="." /></RuleSet></Span>
+    <Keywords color="Keyword"><Word>const</Word><Word>let</Word><Word>async</Word><Word>await</Word><Word>of</Word><Word>class</Word><Word>extends</Word><Word>static</Word><Word>super</Word><Word>yield</Word><Word>import</Word><Word>export</Word><Word>from</Word><Word>as</Word><Word>get</Word><Word>set</Word></Keywords>
+    <Import ruleSet="JavaScript/" />
+    <Rule color="Function">\b[A-Za-z_$][\w$]*(?=\s*\()</Rule>
+  </RuleSet>
+</SyntaxDefinition>
