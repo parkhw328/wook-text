@@ -45,7 +45,11 @@
         <ContentControl x:Name="PreviewHost" Grid.Row="1" />
       </Grid>
     </Border>
-    <TextBlock x:Name="ValidationMessage" Grid.Row="4" Foreground="#E8A26B" TextWrapping="Wrap" MinHeight="30" Margin="0,10,0,0" />
+    <StackPanel Grid.Row="4" Margin="0,14,0,0">
+      <CheckBox x:Name="RememberSessionBox" Content="다음 실행에서 열린 문서와 미저장 내용 이어하기" />
+      <TextBlock Text="앱을 닫을 때 로컬에 보관합니다. 끄면 종료 시 저장 여부를 묻습니다." Foreground="{StaticResource Muted}" FontSize="11" Margin="20,6,0,0" TextWrapping="Wrap" />
+      <TextBlock x:Name="ValidationMessage" Foreground="#E8A26B" TextWrapping="Wrap" MinHeight="30" Margin="0,10,0,0" />
+    </StackPanel>
     <DockPanel Grid.Row="5" Margin="0,8,0,0">
       <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
         <Button Content="취소" IsCancel="True" MinWidth="76" Margin="0,0,8,0" />

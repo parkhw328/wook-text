@@ -34,6 +34,7 @@ public partial class PreferencesWindow : Window
         LineNumbersBox.IsChecked = preferences.ShowLineNumbers;
         WordWrapBox.IsChecked = preferences.WordWrap;
         WhitespaceBox.IsChecked = preferences.ShowWhitespace;
+        RememberSessionBox.IsChecked = preferences.RememberSession;
         _ready = true;
         RefreshPreview();
     }
@@ -53,7 +54,8 @@ public partial class PreferencesWindow : Window
             FontSize = size,
             ShowLineNumbers = LineNumbersBox.IsChecked == true,
             WordWrap = WordWrapBox.IsChecked == true,
-            ShowWhitespace = WhitespaceBox.IsChecked == true
+            ShowWhitespace = WhitespaceBox.IsChecked == true,
+            RememberSession = RememberSessionBox.IsChecked == true
         };
         ValidationMessage.Text = "다음 실행에도 이 설정을 사용합니다.";
         return true;

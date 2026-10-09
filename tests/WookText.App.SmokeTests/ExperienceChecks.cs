@@ -106,11 +106,12 @@ internal static class ExperienceChecks
 
         MainWindow reopened = new(new EditorPreferencesService(new PreferencesStore(settingsPath)));
         Program.ShowOffscreen(reopened);
+        await reopened.InitializeSessionAsync();
         Check(((Border)reopened.FindName("Sidebar")).Visibility == Visibility.Collapsed && !((Expander)reopened.FindName("OpenDocumentsSection")).IsExpanded, "A new window must restore saved visibility and section state.");
         EditorCommands.ToggleSidebar.Execute(null, reopened);
         reopened.UpdateLayout();
         Check(Math.Abs(((ColumnDefinition)reopened.FindName("SidebarColumn")).ActualWidth - 310) < 1, "Reopening the sidebar must recover its saved width.");
-        reopened.Close();
+        await Program.CloseWindowAsync(reopened);
         EditorCommands.ToggleFocus.Execute(null, window);
         EditorCommands.ToggleSidebar.Execute(null, window);
         Check(((Menu)window.FindName("MainMenu")).Visibility == Visibility.Visible && preferences.Current.SidebarVisible, "Sidebar shortcut must provide another way out of focus mode.");
@@ -172,6 +173,7 @@ internal static class ExperienceChecks
         fresh.SetLanguage("yaml");
         Check(fresh.LanguageName == "YAML" && !fresh.Editor.IsModified, "Choosing a language must not dirty a document.");
         EditorCommands.CloseTab.Execute(null, window);
+        await Program.WaitForIdleAsync(window);
         Check(window.ActiveDocument is not null, "Closing the selected tab must activate a remaining document.");
         EditorCommands.ZoomIn.Execute(null, window);
         Check(preferences.Current.FontSize == 19 && window.Documents.All(d => d.Editor.FontSize == 19), "Zoom command must update all tabs.");
@@ -229,7 +231,24 @@ internal static class ExperienceChecks
         Check(((Hyperlink)about.FindName("RepositoryLink")).NavigateUri.AbsoluteUri == "https://github.com/parkhw328/wook-text", "Help must link to the actual GitHub repository.");
         Check(about.Icon is not null && window.Icon is not null, "All windows must use the wText icon.");
         await Program.RenderAsync(about, Path.Combine(output, "about.png"), 540, 550);
+        Check(about.FindName("LicensesButton") is Button && window.FindName("LicensesMenu") is MenuItem, "Help and About must expose the license notices.");
         about.Close();
+        LicenseWindow licenses = new();
+        Program.ShowOffscreen(licenses);
+        await licenses.Loading;
+        Check(licenses.NoticeEditor.IsReadOnly && licenses.NoticeEditor.Text.Contains("MIT License", StringComparison.Ordinal), "The in-app license reader must show the original MIT text.");
+        await Program.RenderAsync(licenses, Path.Combine(output, "licenses.png"), 960, 700);
+        ListBox components = (ListBox)licenses.FindName("ComponentList");
+        foreach (LicenseComponent component in LicenseWindow.Components)
+        {
+            components.SelectedItem = component;
+            await licenses.Loading;
+            Check(licenses.NoticeEditor.Text.Length > 100 && !licenses.NoticeEditor.Text.StartsWith("고지 파일", StringComparison.Ordinal), $"Missing notice: {component.Name}");
+        }
+        components.SelectedItem = LicenseWindow.Components.Single(c => c.Name == "Noto Sans KR");
+        await licenses.Loading;
+        Check(licenses.NoticeEditor.Text.Contains("SIL OPEN FONT LICENSE", StringComparison.Ordinal), "Font notices must include the original OFL text.");
+        licenses.Close();
     }
 
     private static void Check(bool condition, string message)

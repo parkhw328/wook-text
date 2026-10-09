@@ -17,7 +17,10 @@
       <TextBlock Text="소스 코드 · 의견 보내기" Foreground="{StaticResource Muted}" FontSize="12" Margin="0,0,0,8" />
       <TextBlock><Hyperlink x:Name="RepositoryLink" NavigateUri="{x:Static local:AppInfo.RepositoryUri}" RequestNavigate="OnRepositoryNavigate" Foreground="{StaticResource Accent}"><Run Text="{x:Static local:AppInfo.RepositoryUrl}" /></Hyperlink></TextBlock>
     </StackPanel>
-    <TextBlock Grid.Row="3" Text="MIT License · 무료 사용 및 배포&#x0a;&#x0a;AvalonEdit · DiffPlex · .NET / WPF&#x0a;JetBrains Mono · Noto Sans KR&#x0a;&#x0a;각 구성요소의 고지는 설치 폴더의 licenses에 포함되어 있습니다." Foreground="{StaticResource Muted}" LineHeight="21" Margin="0,24,0,14" TextWrapping="Wrap" />
+    <StackPanel Grid.Row="3" Margin="0,24,0,14">
+      <TextBlock Text="MIT License · 무료 사용 및 배포&#x0a;&#x0a;AvalonEdit · DiffPlex · .NET / WPF&#x0a;JetBrains Mono · Noto Sans KR · Flexoki · NSIS" Foreground="{StaticResource Muted}" LineHeight="21" TextWrapping="Wrap" />
+      <Button x:Name="LicensesButton" Content="라이선스 및 고지 원문 보기 →" Click="OnLicenses" Style="{StaticResource FlatButton}" HorizontalAlignment="Left" Foreground="{StaticResource Accent}" Margin="-9,8,0,0" />
+    </StackPanel>
     <DockPanel Grid.Row="4">
       <Button Content="닫기" IsCancel="True" IsDefault="True" DockPanel.Dock="Right" MinWidth="82" Style="{StaticResource AccentButton}" />
       <Button x:Name="CopyLinkButton" Content="GitHub 주소 복사" Click="OnCopyLink" HorizontalAlignment="Left" Style="{StaticResource FlatButton}" />

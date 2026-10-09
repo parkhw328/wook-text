@@ -47,7 +47,7 @@ internal static class Program
         Directory.CreateDirectory(sampleDirectory);
         string original = Path.Combine(sampleDirectory, "appsettings.original.json");
         string modified = Path.Combine(sampleDirectory, "appsettings.modified.json");
-        string originalText = "{\r\n    \"name\": \"wText\",\r\n    \"version\": \"0.2.0\",\r\n    \"theme\": \"dark\",\r\n    \"language\": \"한국어\",\r\n    \"editor\": {\r\n        \"fontSize\": 13,\r\n        \"wordWrap\": false\r\n    }\r\n}\r\n";
+        string originalText = "{\r\n    \"name\": \"wText\",\r\n    \"version\": \"0.4.0\",\r\n    \"theme\": \"dark\",\r\n    \"language\": \"한국어\",\r\n    \"editor\": {\r\n        \"fontSize\": 13,\r\n        \"wordWrap\": false\r\n    }\r\n}\r\n";
         string modifiedText = originalText.Replace("13", "15").Replace("false", "true").Replace("\"theme\": \"dark\",", "\"theme\": \"dark\",\r\n    \"compareFiles\": true,");
         await File.WriteAllTextAsync(original, originalText);
         await File.WriteAllTextAsync(modified, modifiedText);
@@ -110,8 +110,9 @@ internal static class Program
         await RenderAsync(window, Path.Combine(output, "editor-small.png"), 960, 600);
         await ExperienceChecks.RunAsync(window, comparison, preferences, settingsPath, output);
         comparison.Close();
-        window.Close();
+        await CloseWindowAsync(window);
         await ExplorerChecks.RunAsync(output);
+        await SessionChecks.RunAsync(output);
     }
 
     private static void VerifyFonts()
@@ -143,20 +144,23 @@ internal static class Program
         window.Width = width;
         window.Height = height;
         await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
-        RenderElement((FrameworkElement)window.Content, path);
+        RenderElement((FrameworkElement)window.Content, path, includeMargin: true);
     }
 
-    internal static void RenderElement(FrameworkElement element, string path)
+    internal static void RenderElement(FrameworkElement element, string path, bool includeMargin = false)
     {
         element.UpdateLayout();
-        RenderTargetBitmap bitmap = new((int)element.ActualWidth, (int)element.ActualHeight, 96, 96, PixelFormats.Pbgra32);
+        Thickness margin = includeMargin ? element.Margin : new Thickness();
+        Size size = new(element.ActualWidth + margin.Left + margin.Right, element.ActualHeight + margin.Top + margin.Bottom);
+        RenderTargetBitmap bitmap = new((int)size.Width, (int)size.Height, 96, 96, PixelFormats.Pbgra32);
         DrawingVisual drawing = new();
         using (DrawingContext context = drawing.RenderOpen())
         {
             // A root margin offsets Render(element); a visual brush captures its
             // local bounds so the right and bottom edges are not clipped.
             Vector offset = VisualTreeHelper.GetOffset(element);
-            context.DrawRectangle(new VisualBrush(element) { ViewboxUnits = BrushMappingMode.Absolute, Viewbox = new Rect(new Point(offset.X, offset.Y), element.RenderSize) }, null, new Rect(element.RenderSize));
+            context.DrawRectangle((Brush)Application.Current.FindResource("Canvas"), null, new Rect(size));
+            context.DrawRectangle(new VisualBrush(element) { ViewboxUnits = BrushMappingMode.Absolute, Viewbox = new Rect(new Point(offset.X, offset.Y), element.RenderSize) }, null, new Rect(new Point(margin.Left, margin.Top), element.RenderSize));
         }
         bitmap.Render(drawing);
         PngBitmapEncoder encoder = new();
@@ -173,6 +177,20 @@ internal static class Program
         window.Left = -32000;
         window.Top = -32000;
         window.Show();
+    }
+
+    internal static async Task WaitForIdleAsync(MainWindow window)
+    {
+        await window.InitializeSessionAsync();
+        await WaitUntilAsync(() => ((Grid)window.FindName("Root")).IsEnabled);
+    }
+
+    internal static async Task CloseWindowAsync(MainWindow window)
+    {
+        await WaitForIdleAsync(window);
+        window.Close();
+        await window.ClosingCompletion;
+        Check(!window.IsVisible, "Closing must finish without reentering WPF's Closing event.");
     }
 
     private static IEnumerable<T> Descendants<T>(DependencyObject root) where T : DependencyObject

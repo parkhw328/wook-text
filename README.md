@@ -1,19 +1,53 @@
 # wText
 
-Windows x64용 무료 텍스트 편집기입니다. **0.3.0**은 파일 검색·생성·이름 변경과 자동 갱신을 지원하는 프로젝트 탐색기를 제공합니다. 블랙·오렌지 테마, 다국어 구문 강조, 글꼴 설정, 집중 모드와 두 파일 비교도 사용할 수 있습니다. 제작자는 **Hyunwook Park**이며 [GitHub 프로젝트](https://github.com/parkhw328/wook-text)에서 소스와 의견을 확인할 수 있습니다.
+Windows x64용 무료 텍스트 편집기입니다. **0.4.0**은 창을 닫아도 열린 탭과 미저장 내용을 다음 실행에서 이어갈 수 있습니다. 프로젝트 탐색기, 블랙·오렌지 테마, 다국어 구문 강조, 글꼴 설정, 집중 모드와 두 파일 비교를 제공합니다. 제작자는 **Hyunwook Park**이며 [GitHub 프로젝트](https://github.com/parkhw328/wook-text)에서 소스와 의견을 확인할 수 있습니다.
 
 ## 최신 버전 다운로드
 
-**wText 0.3.0 · Windows x64** — [최신 릴리스 및 변경 내용](https://github.com/parkhw328/wook-text/releases/latest)
+**wText 0.4.0 · Windows x64** — [최신 릴리스 및 변경 내용](https://github.com/parkhw328/wook-text/releases/latest)
 
 | 배포 형태 | 다운로드 | 실행 방법 |
 | --- | --- | --- |
-| 설치형 | [Windows 설치 파일 (.exe)](https://github.com/parkhw328/wook-text/releases/download/v0.3.0/wText-0.3.0-win-x64-setup.exe) | 다운로드한 파일을 실행해 설치 |
-| 무설치형 | [무설치 ZIP](https://github.com/parkhw328/wook-text/releases/download/v0.3.0/wText-0.3.0-win-x64-portable.zip) | **전체 압축 해제**한 뒤 `wText.exe` 실행 |
+| 설치형 | [Windows 설치 파일 (.exe)](https://github.com/parkhw328/wook-text/releases/download/v0.4.0/wText-0.4.0-win-x64-setup.exe) | 다운로드한 파일을 실행해 설치 |
+| 무설치형 | [무설치 ZIP](https://github.com/parkhw328/wook-text/releases/download/v0.4.0/wText-0.4.0-win-x64-portable.zip) | **전체 압축 해제**한 뒤 `wText.exe` 실행 |
 
-[SHA-256 체크섬](https://github.com/parkhw328/wook-text/releases/download/v0.3.0/SHA256SUMS.txt) · [전체 버전 목록](https://github.com/parkhw328/wook-text/releases)
+[SHA-256 체크섬](https://github.com/parkhw328/wook-text/releases/download/v0.4.0/SHA256SUMS.txt) · [전체 버전 목록](https://github.com/parkhw328/wook-text/releases)
 
 배포본에는 .NET 런타임이 포함됩니다. 설치 마법사는 현재 사용자 폴더와 시작 메뉴에 설치하며 관리자 권한이 필요하지 않습니다. Windows 설정의 앱 목록에서 제거할 수 있습니다. 기존 텍스트 파일 연결은 변경하지 않습니다.
+
+## 화면으로 보는 사용법
+
+### 파일을 찾아 편집하기
+
+`Ctrl+Shift+O`로 프로젝트 폴더를 열고 `Ctrl+P`로 파일명·경로를 검색하세요. 왼쪽 탐색기에서 파일 형식과 폴더 구조를 구분하고, 우클릭이나 `F2`로 이름을 바꿀 수 있습니다. `Ctrl+Shift+E`는 편집 중인 파일의 위치를 찾아줍니다.
+
+![파일 형식별 아이콘, 프로젝트 탐색기와 JavaScript 구문 강조](docs/images/explorer.png)
+
+### 두 파일의 차이 확인하기
+
+상단 **파일 비교** 또는 `Ctrl+Shift+D`에서 두 파일을 선택하세요. 좌우의 추가·삭제·수정 줄과 변경된 단어를 함께 보여주며, 이전·다음 변경 버튼으로 이동할 수 있습니다. 비교 대상은 디스크에 저장된 파일이므로 편집 내용을 반영하려면 먼저 저장하세요.
+
+![두 파일을 좌우로 비교하고 변경된 줄과 단어를 표시하는 화면](docs/images/comparison.png)
+
+### 닫았던 작업 이어하기
+
+창의 **X** 또는 **파일 → 끝내기**는 기본적으로 탭과 미저장 내용을 로컬에 보관합니다. 다시 실행하면 문서 순서·선택한 탭·커서·선택 영역과 언어 모드를 복원합니다. 탭의 ● 표시는 아직 원본 파일에 저장하지 않은 내용이라는 뜻입니다.
+
+![미저장 메모와 여러 탭, 선택 영역을 재실행 후 복원한 화면](docs/images/session-restored.png)
+
+### 글꼴과 작업 보관 설정하기
+
+상단 **Aa** 또는 `Ctrl+,`에서 한글·영문 글꼴과 크기를 미리 보고 적용하세요. **다음 실행에서 열린 문서와 미저장 내용 이어하기**를 끄면 종료할 때 저장 여부를 묻습니다. `Ctrl+B`로 사이드바를 숨기고 `F11`로 편집에 집중할 수도 있습니다.
+
+![영문·한글 글꼴, 미리보기와 작업 이어하기 옵션](docs/images/preferences.png)
+
+### 라이선스 원문 확인하기
+
+**도움말 → 라이선스 및 오픈소스 고지**에서 wText의 MIT 라이선스와 구성요소별 원문을 읽을 수 있습니다. **wText 정보**에서도 같은 화면으로 이동할 수 있으며, 글꼴의 OFL 고지와 배포 도구·런타임 고지도 포함합니다.
+
+![wText와 구성요소별 라이선스를 앱 안에서 읽는 화면](docs/images/licenses.png)
+
+위 이미지는 실제 WPF 화면을 예제 문서로 렌더링한 것입니다. 클릭하면 원래 크기로 볼 수 있습니다.
 
 ## 현재 기능
 
@@ -28,10 +62,23 @@ Windows x64용 무료 텍스트 편집기입니다. **0.3.0**은 파일 검색·
 - YAML, HTML, JavaScript, TypeScript, JSP, Java, JSON, XML, CSS, C#, C/C++, Python, SQL, PowerShell, Shell, INI/TOML/Properties, Markdown, PHP 및 일반 텍스트 모드
 - 일반 텍스트 검색, 대소문자 구분, 바꾸기·모두 바꾸기
 - UTF-8, BOM이 있는 UTF-16/32, 사용자 확인 후 CP949 열기와 원본 인코딩·줄바꿈 보존
-- 저장되지 않은 문서의 닫기 확인, 외부 변경 감지, 임시 파일을 통한 원본 교체 저장
+- 창 종료 후 탭·미저장 내용 복원, 주기적인 로컬 복구본, 개별 탭을 버릴 때 저장 확인
+- 외부 변경 감지, 임시 파일을 통한 원본 교체 저장, 도움말의 라이선스 원문 보기
 - 두 파일의 추가·삭제·수정 줄 및 단어 표시, 스크롤 동기화, 변경 구간 이동, 공백 옵션, 줄바꿈·인코딩 차이 안내
 
-비교 화면은 디스크에 저장된 파일을 읽습니다. 편집 중인 변경은 먼저 저장하세요. 파일 열기·저장은 16 MiB, 비교는 파일당 500,000자·20,000줄까지 지원합니다. 자동 복구, 정규식 검색, 다중 커서, 미니맵, 비교 병합은 아직 제공하지 않습니다.
+파일 열기·저장은 16 MiB, 비교는 파일당 500,000자·20,000줄까지 지원합니다. 정규식 검색, 다중 커서, 미니맵, 비교 병합은 아직 제공하지 않습니다.
+
+## 종료와 작업 복원
+
+- **창 X / 끝내기:** 기본 설정에서는 저장 여부를 묻지 않고 현재 작업을 보관한 뒤 종료합니다. 파일에 반영할 때는 `Ctrl+S`를 사용하세요.
+- **개별 탭 X / Ctrl+W:** 미저장 문서는 저장 여부를 묻습니다. **아니오**로 닫은 탭은 다음 실행에서 복원하지 않습니다.
+- **작업 이어하기를 끈 경우:** 창을 닫을 때도 **예 / 아니오 / 취소**로 저장·버리기·종료 취소를 선택합니다.
+
+복구본은 `%LocalAppData%\wText\sessions\`에 저장합니다. 입력이 멈춘 뒤 약 2초, 계속 입력 중에는 최대 10초 간격으로 백그라운드에 보관하고 정상 종료 시 마지막 변경까지 기록합니다. 보관에 실패하면 창을 열어 두어 내용을 저장하거나 다시 시도할 수 있습니다. 이전 복구본도 유지하며 손상된 파일은 덮어쓰지 않습니다.
+
+저장한 뒤 수정하지 않은 파일은 재실행 시 최신 디스크 내용을 읽습니다. 미저장 버퍼는 보관 내용을 유지하며, 원본이 외부에서 바뀌었으면 덮어쓰기를 막습니다. 원본 파일이 없어졌거나 읽을 수 없으면 보관 내용으로 복구하고 안내합니다. 실행 취소 기록은 재실행 후 새로 시작합니다.
+
+창별 보관 파일을 잠가 여러 실행이 같은 작업을 덮어쓰지 않도록 합니다. 여러 창을 사용했다면 가장 최근의 사용 가능한 작업부터 복원하며, 추가 실행에서 다른 보관 작업을 열 수 있습니다. 보관 한도는 창당 문서 256개·JSON 파일 128 MiB입니다. 강제 종료·전원 장애 때는 마지막 주기적 보관 이후 입력이 남지 않을 수 있습니다.
 
 ## 프로젝트 탐색기
 
@@ -63,6 +110,7 @@ Windows x64의 PowerShell에서 저장소 루트를 기준으로 실행합니다
 .\scripts\package.ps1 -SmokeInstaller   # 격리된 설치 검증용 패키지 생성
 .\scripts\test-installer.ps1            # 설치·재설치·제거 및 사용자 파일 보존 검증
 .\scripts\make-icon.ps1                 # 벡터 원본에서 PNG와 다중 크기 ICO 재생성
+.\scripts\update-screenshots.ps1        # WPF 검증 결과에서 README 화면 5개 갱신
 ```
 
 패키징 결과는 `artifacts/installer/`의 설치 파일과 `artifacts/`의 무설치 ZIP에 생성됩니다. 게시 전 실행 파일은 `artifacts/publish/win-x64/wText.exe`입니다. 새 버전 배포 시 설치 파일·ZIP·`SHA256SUMS.txt`를 해당 GitHub 릴리스에 첨부하고 위 다운로드 버전과 링크를 함께 갱신하세요.
@@ -76,21 +124,22 @@ Windows x64의 PowerShell에서 저장소 루트를 기준으로 실행합니다
 
 PowerShell 실행 정책 때문에 스크립트가 차단되면 명령별로 `powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\build.ps1`처럼 실행할 수 있습니다. 시스템 정책을 변경할 필요는 없습니다. 빌드와 패키징은 같은 `obj` 폴더를 사용하므로 동시에 실행하지 마세요.
 
-설치 검증은 설치된 바이너리·글꼴에서도 WPF 검증을 실행하며 실제 사용자 설정을 건드리지 않습니다. 이전 검증용 설치 파일이 있다면 `test-installer.ps1 -PreviousSmokeInstaller artifacts/installer/wText-0.2.0-win-x64-setup-smoke.exe`로 업그레이드도 확인할 수 있습니다.
+설치 검증은 설치된 바이너리·글꼴에서도 WPF 검증을 실행하며 실제 사용자 설정을 건드리지 않습니다. 이전 검증용 설치 파일이 있다면 `test-installer.ps1 -PreviousSmokeInstaller artifacts/installer/wText-0.3.0-win-x64-setup-smoke.exe`로 업그레이드도 확인할 수 있습니다.
 
 ## 프로젝트 구조
 
 | 경로 | 역할 |
 | --- | --- |
-| `src/WookText.App/` | WPF 화면, 편집·비교·설정, 테마와 `SyntaxDefinitions/` 구문 정의 |
+| `src/WookText.App/` | WPF 화면, 편집·비교·설정·라이선스, `SessionCoordinator` 작업 보관, 테마·구문 정의 |
 | `src/WookText.App/Explorer/` | 탐색기 화면·상태, 지연 로딩·자동 갱신, 파일명 입력창 |
 | `src/WookText.App/Assets/` | 앱 아이콘, 기본 글꼴과 출처·체크섬 |
-| `src/WookText.Core/` | 파일 저장·인코딩·텍스트 비교, `WorkspaceFiles` 탐색·파일 작업, 설정 저장 |
+| `src/WookText.Core/` | 파일·인코딩·비교, `WorkspaceFiles` 탐색·파일 작업, `SessionStore` 복구본과 설정 저장 |
 | `tests/WookText.Core.Tests/` | xUnit 파일·인코딩·비교·검색·탐색기·설정 회귀 테스트 |
 | `tests/WookText.App.SmokeTests/` | 실제 WPF 컨트롤 동작 검증과 화면 렌더링 |
 | `installer/`, `scripts/` | NSIS 설치 정의 및 개발·배포 자동화 |
 | `rules/rules.md` | 제품 결정과 개발 규칙 |
 | `docs/REQUIREMENTS.md` | 요구사항 분석, 수용 기준, 후속 범위 |
+| `docs/images/` | README의 실제 앱 화면 |
 | `licenses/` | 의존성 라이선스 원문 |
 | `artifacts/` | 실행 파일, 설치 패키지, 화면 검증 결과; Git 제외 |
 

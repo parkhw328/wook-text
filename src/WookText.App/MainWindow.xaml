@@ -99,7 +99,7 @@
       </MenuItem>
       <MenuItem x:Name="LanguageMenu" Header="언어(_L)" SubmenuOpened="OnLanguageMenuOpened" />
       <MenuItem Header="비교(_C)"><MenuItem Header="두 파일 비교…" Command="{x:Static local:EditorCommands.Compare}" InputGestureText="Ctrl+Shift+D" /></MenuItem>
-      <MenuItem Header="도움말(_H)"><MenuItem Header="GitHub 프로젝트 열기" Click="OnOpenRepository" /><MenuItem Header="wText 정보 · Hyunwook Park" Click="OnAbout" /></MenuItem>
+      <MenuItem Header="도움말(_H)"><MenuItem Header="GitHub 프로젝트 열기" Click="OnOpenRepository" /><MenuItem x:Name="LicensesMenu" Header="라이선스 및 오픈소스 고지" Click="OnLicenses" /><MenuItem Header="wText 정보 · Hyunwook Park" Click="OnAbout" /></MenuItem>
     </Menu>
     <Grid Grid.Row="2">
       <Grid.ColumnDefinitions><ColumnDefinition x:Name="SidebarColumn" Width="240" MinWidth="170" MaxWidth="500" /><ColumnDefinition x:Name="SplitterColumn" Width="4" /><ColumnDefinition Width="*" MinWidth="380" /></Grid.ColumnDefinitions>

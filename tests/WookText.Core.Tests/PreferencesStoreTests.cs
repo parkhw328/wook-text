@@ -27,7 +27,8 @@ public sealed class PreferencesStoreTests : IDisposable
             ExplorerExpanded = false,
             ShowLineNumbers = false,
             WordWrap = true,
-            ShowWhitespace = true
+            ShowWhitespace = true,
+            RememberSession = false
         };
         Store.Save(expected);
         Assert.Equal(expected, Store.Load(out string? warning));

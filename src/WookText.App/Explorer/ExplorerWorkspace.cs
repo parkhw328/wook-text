@@ -23,6 +23,10 @@ public sealed class ExplorerWorkspace : INotifyPropertyChanged, IDisposable
     private bool _restoreAfterRefresh;
     private bool _refreshAgain;
     private bool _disposed, _restoring;
+    private Task _stateWriteTask = Task.CompletedTask;
+    private WorkspaceState? _pendingState;
+    private readonly List<(string Before, string After)> _pendingRenames = [];
+    private DateTime _lastRename;
     private string _query = "", _notice = "폴더를 열어 프로젝트를 탐색하세요.", _activeFile = "";
     public ObservableCollection<ExplorerNode> Nodes => _root?.Children ?? _empty;
     private readonly ObservableCollection<ExplorerNode> _empty = [];
@@ -63,6 +67,7 @@ public sealed class ExplorerWorkspace : INotifyPropertyChanged, IDisposable
         _refreshTask = null;
         _restoreAfterRefresh = false;
         _refreshAgain = false;
+        _pendingRenames.Clear();
         CancellationToken token = _scope.Token;
         string name = Path.GetFileName(path);
         _root = CreateNode(new WorkspaceEntry(path, name.Length == 0 ? path : name, true), path);
@@ -168,6 +173,7 @@ public sealed class ExplorerWorkspace : INotifyPropertyChanged, IDisposable
     {
         if (_root is null) return;
         ExplorerNode root = _root;
+        ApplySettledRenames();
         string? selected = SelectedNode?.FullPath;
         List<ExplorerNode> expanded = Walk(root.Children).Where(n => n.IsDirectory && n.IsExpanded).ToList();
         await LoadNodeAsync(root, token);
@@ -338,24 +344,43 @@ public sealed class ExplorerWorkspace : INotifyPropertyChanged, IDisposable
         _dispatcher.BeginInvoke(() =>
         {
             if (_disposed || !ReferenceEquals(sender, _watcher) || RootPath is not { } root) return;
-            if (WorkspaceFiles.IsWithin(root, e.OldFullPath) && WorkspaceFiles.IsWithin(root, e.FullPath))
+            _pendingRenames.Add((e.OldFullPath, e.FullPath));
+            _lastRename = DateTime.UtcNow;
+            ScheduleRefresh();
+        });
+    }
+
+    private void ApplySettledRenames()
+    {
+        if (RootPath is not { } root || DateTime.UtcNow - _lastRename < TimeSpan.FromMilliseconds(200)) return;
+        foreach ((string before, string initialAfter) in _pendingRenames)
+        {
+            string after = initialAfter;
+            for (int i = 0; i < _pendingRenames.Count; i++)
             {
-                // A rename can concern a directory that is currently collapsed.
-                // Retarget exact matches and any open descendants without reading file contents.
-                PathRenamed?.Invoke(e.OldFullPath, e.FullPath, true);
-                if (Find(e.OldFullPath) is { IsDirectory: true })
+                (string nextBefore, string nextAfter) = _pendingRenames[i];
+                if (string.Equals(after, nextBefore, StringComparison.Ordinal) && !string.Equals(after, nextAfter, StringComparison.Ordinal)) after = nextAfter;
+            }
+            // ReplaceFile emits transient old -> ~RF...TMP renames. Only follow a real,
+            // settled move, never redirect an editor buffer into an atomic-save temporary file.
+            bool samePath = string.Equals(before, after, StringComparison.OrdinalIgnoreCase);
+            if ((!File.Exists(after) && !Directory.Exists(after)) || (!samePath && (File.Exists(before) || Directory.Exists(before)))) continue;
+            if (WorkspaceFiles.IsWithin(root, before) && WorkspaceFiles.IsWithin(root, after))
+            {
+                PathRenamed?.Invoke(before, after, true);
+                if (Find(before) is { IsDirectory: true })
                 {
                     _state = _state with
                     {
                         ExpandedFolders = Walk(Nodes).Where(n => n.IsDirectory && n.IsExpanded).Select(n =>
-                        Path.GetRelativePath(root, WorkspaceFiles.IsWithin(e.OldFullPath, n.FullPath)
-                            ? Path.Combine(e.FullPath, Path.GetRelativePath(e.OldFullPath, n.FullPath)) : n.FullPath)).ToArray()
+                        Path.GetRelativePath(root, WorkspaceFiles.IsWithin(before, n.FullPath)
+                            ? Path.Combine(after, Path.GetRelativePath(before, n.FullPath)) : n.FullPath)).ToArray()
                     };
                     _restoreAfterRefresh = true;
                 }
             }
-            ScheduleRefresh();
-        });
+        }
+        _pendingRenames.Clear();
     }
     private void ScheduleRefresh()
     {
@@ -374,8 +399,25 @@ public sealed class ExplorerWorkspace : INotifyPropertyChanged, IDisposable
     private void SaveState()
     {
         _state = _state with { RootPath = RootPath, ExpandedFolders = Walk(Nodes).Where(n => n.IsDirectory && n.IsExpanded).Select(n => n.RelativePath).Take(200).ToArray() };
-        try { _store.Save(_state); }
-        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { Notice = "작업 폴더 상태를 저장하지 못했습니다. " + ex.Message; }
+        _pendingState = _state;
+        if (_stateWriteTask.IsCompleted) _stateWriteTask = WriteStateAsync();
+    }
+
+    private async Task WriteStateAsync()
+    {
+        while (_pendingState is { } state)
+        {
+            _pendingState = null;
+            try { await Task.Run(() => _store.Save(state)); }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { Notice = "작업 폴더 상태를 저장하지 못했습니다. " + ex.Message; }
+        }
+    }
+
+    public async Task FlushStateAsync()
+    {
+        _saveTimer.Stop();
+        SaveState();
+        await _stateWriteTask;
     }
 
     public void CloseFolder()
@@ -391,7 +433,7 @@ public sealed class ExplorerWorkspace : INotifyPropertyChanged, IDisposable
     public void Dispose()
     {
         if (_disposed) return;
-        _disposed = true; _refreshTimer.Stop(); _saveTimer.Stop(); SaveState();
+        _disposed = true; _refreshTimer.Stop(); _saveTimer.Stop();
         _scope.Cancel(); _scope.Dispose(); _search?.Cancel(); _search?.Dispose(); _watcher?.Dispose();
     }
 }

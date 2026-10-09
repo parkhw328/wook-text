@@ -6,6 +6,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
+using System.Windows.Threading;
 using ICSharpCode.AvalonEdit;
 using Microsoft.Win32;
 using WookText.Core;
@@ -19,6 +20,13 @@ public partial class MainWindow : Window
     private bool _busy;
     private bool _allowClose;
     private readonly EditorPreferencesService _preferences;
+    private readonly Func<EditorDocument, MessageBoxResult>? _confirmClose;
+    private readonly SessionCoordinator _session;
+    private bool _restoringSession = true;
+    private bool _closing;
+    private Task? _initialization;
+    public Task ClosingCompletion { get; private set; } = Task.CompletedTask;
+    public string? SessionFilePath => _session.StoragePath;
     private bool _layoutReady;
     private bool _applyingPreferences;
     private bool _focusMode;
@@ -26,9 +34,13 @@ public partial class MainWindow : Window
     public EditorDocument? ActiveDocument => DocumentTabs.SelectedItem as EditorDocument;
     public Explorer.ExplorerView Explorer => WorkspaceExplorer;
 
-    public MainWindow(EditorPreferencesService? preferences = null)
+    public MainWindow(EditorPreferencesService? preferences = null, Func<EditorDocument, MessageBoxResult>? confirmClose = null)
     {
         _preferences = preferences ?? new EditorPreferencesService();
+        _confirmClose = confirmClose;
+        string settingsName = Path.GetFileNameWithoutExtension(_preferences.StoragePath);
+        string sessionDirectory = Path.Combine(Path.GetDirectoryName(_preferences.StoragePath)!, settingsName == "settings" ? "sessions" : settingsName + ".sessions");
+        _session = new(sessionDirectory, CaptureSession, () => _preferences.Current.RememberSession);
         InitializeComponent();
         NativeWindowTheme.Attach(this);
         DataContext = this;
@@ -64,7 +76,9 @@ public partial class MainWindow : Window
         Bind(ApplicationCommands.Replace, () => { ShowSearch(true); return Task.CompletedTask; });
         PreviewKeyDown += OnWindowKeyDown;
         _preferences.Changed += OnPreferencesChanged;
-        Closed += (_, _) => { WorkspaceExplorer.Dispose(); _preferences.Changed -= OnPreferencesChanged; foreach (EditorDocument document in Documents) document.Dispose(); };
+        Closed += (_, _) => { WorkspaceExplorer.Dispose(); _session.Dispose(); _preferences.Changed -= OnPreferencesChanged; foreach (EditorDocument document in Documents) document.Dispose(); };
+        Loaded += async (_, _) => await InitializeSessionAsync();
+        _session.Warning += warning => Status.Text = warning;
         _layoutReady = true;
         ApplyLayoutPreferences();
         NewDocument();
@@ -82,18 +96,77 @@ public partial class MainWindow : Window
 
     public EditorDocument NewDocument()
     {
-        EditorDocument document = new($"새 문서 {++_untitledCount}", _preferences);
-        document.Editor.TextArea.Caret.PositionChanged += (_, _) => UpdateStatus();
-        document.Editor.TextChanged += (_, _) => UpdateStatus();
-        document.PropertyChanged += (_, _) => { UpdateStatus(); WorkspaceExplorer.Workspace.MarkActive(ActiveDocument?.FilePath); };
+        string name;
+        do { name = $"새 문서 {++_untitledCount}"; } while (Documents.Any(d => d.UntitledName == name));
+        return AddDocument(name);
+    }
+
+    private EditorDocument AddDocument(string name)
+    {
+        EditorDocument document = new(name, _preferences);
+        document.Editor.TextArea.Caret.PositionChanged += (_, _) => { UpdateStatus(); SessionChanged(); };
+        document.Editor.TextChanged += (_, _) => { UpdateStatus(); SessionChanged(); };
+        document.PropertyChanged += (_, _) => { UpdateStatus(); WorkspaceExplorer.Workspace.MarkActive(ActiveDocument?.FilePath); SessionChanged(); };
         Documents.Add(document);
         DocumentTabs.SelectedItem = document;
         document.Editor.Focus();
+        SessionChanged();
         return document;
+    }
+
+    private void SessionChanged() { if (!_restoringSession && !_closing) _session.Changed(); }
+
+    private Func<SessionState> CaptureSession()
+    {
+        Guid? active = ActiveDocument?.SessionId;
+        Func<SessionDocumentState>[] documents = Documents.Select(d => d.CaptureSession()).ToArray();
+        return () => new SessionState { ActiveDocumentId = active, Documents = documents.Select(capture => capture()).ToArray() };
+    }
+
+    public Task InitializeSessionAsync() => _initialization ??= RestoreSessionAsync();
+
+    private async Task RestoreSessionAsync()
+    {
+        _busy = true; Root.IsEnabled = false;
+        try
+        {
+            SessionState state = await _session.InitializeAsync();
+            if (state.Documents.Length > 0)
+            {
+                foreach (EditorDocument previous in Documents) previous.Dispose();
+                Documents.Clear();
+                int recovered = 0;
+                foreach (SessionDocumentState saved in state.Documents)
+                {
+                    LoadedTextFile? current = null;
+                    if (!saved.IsModified && saved.FilePath is { } path)
+                    {
+                        try
+                        {
+                            try { current = await _files.ReadAsync(path); }
+                            catch (DecoderFallbackException) { current = await _files.ReadAsync(path, saved.Encoding); }
+                        }
+                        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ArgumentException) { recovered++; }
+                    }
+                    AddDocument(saved.Name).RestoreSession(saved, current);
+                }
+                DocumentTabs.SelectedItem = Documents.FirstOrDefault(d => d.SessionId == state.ActiveDocumentId) ?? Documents[0];
+                Status.Text = $"이전 작업 복원 · {Documents.Count}개 문서" + (recovered > 0 ? $" · 읽을 수 없는 원본 {recovered}개는 보관 내용으로 복구" : "");
+            }
+            if (_session.LastWarning is { } warning) Status.Text = warning;
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ArgumentException)
+        { Status.Text = "작업 보관 폴더를 열지 못했습니다. " + ex.Message; }
+        finally
+        {
+            _restoringSession = false; _busy = false; Root.IsEnabled = true;
+            _session.Changed(); UpdateStatus(); CommandManager.InvalidateRequerySuggested();
+        }
     }
 
     public async Task OpenFileAsync(string path)
     {
+        await InitializeSessionAsync();
         try
         {
             string fullPath = Path.GetFullPath(path);
@@ -188,7 +261,7 @@ public partial class MainWindow : Window
     private async Task<bool> ConfirmCloseAsync(EditorDocument document)
     {
         if (!document.Editor.IsModified) return true;
-        MessageBoxResult choice = MessageBox.Show(this, $"‘{document.Name}’의 변경 내용을 저장할까요?",
+        MessageBoxResult choice = _confirmClose?.Invoke(document) ?? MessageBox.Show(this, $"‘{document.Name}’의 변경 내용을 저장할까요?",
             "저장하지 않은 변경 내용", MessageBoxButton.YesNoCancel, MessageBoxImage.Question);
         return choice == MessageBoxResult.No || choice == MessageBoxResult.Yes && await SaveDocumentAsync(document);
     }
@@ -208,20 +281,41 @@ public partial class MainWindow : Window
                 ? previous : Documents[Math.Clamp(index, 0, Documents.Count - 1)];
             ActiveDocument?.Editor.Focus();
         }
+        SessionChanged();
+        // Persist explicit tab removal now, so a discarded buffer cannot return after a restart.
+        await _session.FlushAsync(_preferences.Current.RememberSession);
     }
 
-    private async void OnWindowClosing(object? sender, CancelEventArgs e)
+    private void OnWindowClosing(object? sender, CancelEventArgs e)
     {
         if (_allowClose) return;
-        if (_busy) { e.Cancel = true; return; }
-        if (Documents.All(d => !d.Editor.IsModified)) return;
         e.Cancel = true;
-        await RunAsync(async () =>
+        if (_busy || _closing) return;
+        _closing = true;
+        ClosingCompletion = FinishClosingAsync();
+    }
+
+    private async Task FinishClosingAsync()
+    {
+        // WPF forbids Close() inside an in-progress Closing event. Even No/clean paths must yield.
+        await Dispatcher.Yield(DispatcherPriority.Background);
+        _busy = true; Root.IsEnabled = false;
+        try
         {
-            foreach (EditorDocument document in Documents.ToArray())
-                if (!await ConfirmCloseAsync(document)) return;
+            if (!_preferences.Current.RememberSession)
+                foreach (EditorDocument document in Documents.ToArray())
+                    if (!await ConfirmCloseAsync(document)) return;
+            Status.Text = "작업을 보관하고 종료하는 중…";
+            await _session.FlushAsync(_preferences.Current.RememberSession);
+            await WorkspaceExplorer.Workspace.FlushStateAsync();
             _allowClose = true;
-        });
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ArgumentException)
+        {
+            Status.Text = "종료 취소 · 작업을 보관하지 못했습니다. 파일로 저장하거나 다시 시도하세요.";
+            Status.ToolTip = ex.Message;
+        }
+        finally { _busy = false; _closing = false; Root.IsEnabled = true; CommandManager.InvalidateRequerySuggested(); }
         if (_allowClose) Close();
     }
 
@@ -350,6 +444,7 @@ public partial class MainWindow : Window
         if (ActiveDocument is { } document && WrapMenu is not null) WrapMenu.IsChecked = document.Editor.WordWrap;
         WorkspaceExplorer?.Workspace?.MarkActive(ActiveDocument?.FilePath);
         UpdateStatus();
+        SessionChanged();
     }
 
     private void UpdateStatus()
@@ -372,6 +467,7 @@ public partial class MainWindow : Window
     private void OnConvertEncoding(object sender, RoutedEventArgs e) { ActiveDocument?.ConvertToUtf8(); UpdateStatus(); }
     private void OnExit(object sender, RoutedEventArgs e) => Close();
     private void OnAbout(object sender, RoutedEventArgs e) => new AboutWindow { Owner = this }.ShowDialog();
+    private void OnLicenses(object sender, RoutedEventArgs e) => new LicenseWindow { Owner = this }.ShowDialog();
     private void OnOpenRepository(object sender, RoutedEventArgs e) => AppInfo.OpenRepository(this);
 
     private void ShowPreferences()
@@ -401,6 +497,7 @@ public partial class MainWindow : Window
         ApplyLayoutPreferences();
         UpdateStatus();
         if (_preferences.LastWarning is { } warning) Status.Text = warning;
+        SessionChanged();
     }
 
     private void ApplyLayoutPreferences()

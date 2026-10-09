@@ -19,7 +19,7 @@ internal static class ExplorerChecks
         Dictionary<string, string> samples = new()
         {
             ["README.md"] = "# Orange workspace\n한글과 코드를 함께 편집합니다.\n",
-            ["package.json"] = "{\n  \"name\": \"orange-workspace\",\n  \"version\": \"0.3.0\"\n}\n",
+            ["package.json"] = "{\n  \"name\": \"orange-workspace\",\n  \"version\": \"0.4.0\"\n}\n",
             ["src\\app.js"] = "// 편안한 편집 환경\nimport { Editor } from './components/Editor';\n\nconst preferences = {\n    language: '한국어',\n    theme: 'black-orange',\n    fontSize: 15\n};\n\nexport function start() {\n    return new Editor(preferences);\n}\n",
             ["src\\theme.css"] = "body { color: #cecdc3; background: #100f0f; }\n",
             ["src\\components\\Editor.tsx"] = "export function Editor() { return 'wText'; }\n",
@@ -37,6 +37,7 @@ internal static class ExplorerChecks
         preferences.Update(new EditorPreferences { SidebarWidth = 296 });
         MainWindow window = new(preferences);
         Program.ShowOffscreen(window);
+        await window.InitializeSessionAsync();
         await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
         await window.OpenWorkspaceAsync(root);
         ExplorerWorkspace workspace = window.Explorer.Workspace;
@@ -68,13 +69,14 @@ internal static class ExplorerChecks
         fileTree.ContextMenu.IsOpen = false;
         await WaitAsync(() => window.ActiveDocument?.Name == "README.md");
         EditorCommands.CloseTab.Execute(null, window);
+        await Program.WaitForIdleAsync(window);
         await window.OpenFileAsync(appFile);
         await workspace.RevealAsync(appFile);
         await Program.RenderAsync(window, Path.Combine(output, "explorer-small.png"), 960, 600);
         for (int i = 0; i < 9; i++) window.NewDocument();
         window.UpdateLayout();
         Check(((TreeView)window.Explorer.FindName("FileTree")).ActualHeight >= 100, "Even with many open documents, the tree must retain usable space in the smallest window.");
-        for (int i = 0; i < 9; i++) EditorCommands.CloseTab.Execute(null, window);
+        for (int i = 0; i < 9; i++) { EditorCommands.CloseTab.Execute(null, window); await Program.WaitForIdleAsync(window); }
         await VerifyNameDialogAsync(workspace, root, output);
 
         workspace.Query = "nonexistent";
@@ -110,6 +112,8 @@ internal static class ExplorerChecks
         ApplicationCommands.Save.Execute(null, window);
         await WaitAsync(() => ((Grid)window.FindName("Root")).IsEnabled);
         Check(await File.ReadAllTextAsync(editing.FilePath!) == editing.Editor.Text, "Saving after a folder rename must use the new path.");
+        await Task.Delay(650);
+        Check(editing.FilePath == Path.Combine(root, "source", "renamed.txt"), "Atomic-save temporary renames must never redirect an open document's path.");
         string external = Path.Combine(root, "external-created.txt");
         await File.WriteAllTextAsync(external, "external");
         await WaitAsync(() => workspace.Find(external) is not null);
@@ -137,18 +141,20 @@ internal static class ExplorerChecks
         await workspace.RevealAsync(finalFile);
         await VerifyLargeFolderAsync(window, sandbox, root);
         await workspace.RevealAsync(finalFile);
-        window.Close();
+        int documentCount = window.Documents.Count;
+        await Program.CloseWindowAsync(window);
 
         MainWindow reopened = new(new EditorPreferencesService(new PreferencesStore(settings)));
         Program.ShowOffscreen(reopened);
+        await reopened.InitializeSessionAsync();
         await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
         await reopened.Explorer.Restoration;
         Check(reopened.Explorer.Workspace.RootPath == root && reopened.Explorer.Workspace.Find(Path.Combine(root, "source", "components")) is { IsExpanded: true }, "A new window must restore the workspace and expanded paths.");
         reopened.Explorer.Workspace.CollapseAll();
         Check(reopened.Explorer.Workspace.Nodes.Where(n => n.IsDirectory).All(n => !n.IsExpanded), "Collapse all must close top-level folders.");
         reopened.Explorer.Workspace.CloseFolder();
-        Check(!reopened.Explorer.Workspace.HasRoot && reopened.Documents.Count == 1, "Closing a workspace must leave editor documents alone.");
-        reopened.Close();
+        Check(!reopened.Explorer.Workspace.HasRoot && reopened.Documents.Count == documentCount, "Closing a workspace must leave restored editor documents alone.");
+        await Program.CloseWindowAsync(reopened);
         Console.WriteLine("PASS: explorer async loading, path search, keyboard open, reveal, create/rename with unsaved buffers, live refresh, filters, and workspace restoration.");
     }
 

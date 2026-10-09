@@ -1,0 +1,34 @@
+<Window x:Class="WookText.App.LicenseWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="라이선스 및 오픈소스 고지 — wText" Style="{StaticResource {x:Type Window}}"
+        Width="960" Height="700" MinWidth="760" MinHeight="540" WindowStartupLocation="CenterOwner">
+  <Border Padding="26" Background="{StaticResource Canvas}">
+    <Grid>
+      <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="*" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
+      <StackPanel Margin="0,0,0,22">
+        <TextBlock Text="라이선스 및 오픈소스 고지" FontSize="25" FontWeight="SemiBold" Foreground="{StaticResource Bright}" />
+        <TextBlock Text="wText는 MIT 라이선스입니다. 포함된 구성요소의 원문과 저작권 고지를 확인하세요." Foreground="{StaticResource Muted}" Margin="0,7,0,0" TextWrapping="Wrap" />
+      </StackPanel>
+      <Grid Grid.Row="1">
+        <Grid.ColumnDefinitions><ColumnDefinition Width="194" /><ColumnDefinition Width="18" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+        <ListBox x:Name="ComponentList" SelectionChanged="OnComponentChanged" AutomationProperties.Name="라이선스 구성요소">
+          <ListBox.ItemTemplate><DataTemplate>
+            <StackPanel Margin="0,3"><TextBlock Text="{Binding Name}" /><TextBlock Text="{Binding License}" Foreground="{StaticResource Muted}" FontSize="11" Margin="0,5,0,0" TextWrapping="Wrap" /></StackPanel>
+          </DataTemplate></ListBox.ItemTemplate>
+        </ListBox>
+        <Border Grid.Column="2" BorderBrush="{StaticResource Stroke}" BorderThickness="1" CornerRadius="6" Padding="14">
+          <Grid><Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="*" /></Grid.RowDefinitions>
+            <TextBlock x:Name="ComponentName" FontSize="19" FontWeight="SemiBold" Foreground="{StaticResource Bright}" />
+            <TextBlock x:Name="LicenseName" Grid.Row="1" Foreground="{StaticResource Accent}" Margin="0,6,0,12" />
+            <ContentControl x:Name="NoticeHost" Grid.Row="2" />
+          </Grid>
+        </Border>
+      </Grid>
+      <DockPanel Grid.Row="2" Margin="0,18,0,0">
+        <Button Content="닫기" MinWidth="82" DockPanel.Dock="Right" IsCancel="True" IsDefault="True" Style="{StaticResource AccentButton}" />
+        <TextBlock Text="배포 시 각 구성요소의 라이선스와 저작권 고지를 함께 유지하세요." Foreground="{StaticResource Muted}" FontSize="11" VerticalAlignment="Center" TextWrapping="Wrap" Margin="0,0,20,0" />
+      </DockPanel>
+    </Grid>
+  </Border>
+</Window>

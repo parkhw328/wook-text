@@ -7,6 +7,7 @@ namespace WookText.App;
 public partial class AboutWindow : Window
 {
     public AboutWindow() { InitializeComponent(); NativeWindowTheme.Attach(this); }
+    private void OnLicenses(object sender, RoutedEventArgs e) => new LicenseWindow { Owner = this }.ShowDialog();
     private void OnRepositoryNavigate(object sender, RequestNavigateEventArgs e)
     { e.Handled = true; AppInfo.OpenRepository(this); }
     private void OnCopyLink(object sender, RoutedEventArgs e)

@@ -15,6 +15,7 @@ public sealed record EditorPreferences
     public bool ShowLineNumbers { get; init; } = true;
     public bool WordWrap { get; init; }
     public bool ShowWhitespace { get; init; }
+    public bool RememberSession { get; init; } = true;
 
     public EditorPreferences Normalize() => this with
     {
