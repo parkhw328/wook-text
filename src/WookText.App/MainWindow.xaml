@@ -31,77 +31,70 @@
   </Window.InputBindings>
   <Grid x:Name="Root" Background="{StaticResource Canvas}">
     <Grid.RowDefinitions>
-      <RowDefinition x:Name="HeaderRow" Height="62" /><RowDefinition Height="Auto" />
+      <RowDefinition x:Name="HeaderRow" Height="40" />
       <RowDefinition Height="*" /><RowDefinition x:Name="StatusRow" Height="32" />
     </Grid.RowDefinitions>
     <Border x:Name="MainHeader" Background="{StaticResource Panel}" BorderThickness="0">
-      <DockPanel Margin="20,0">
-        <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
-          <Button Content="열기" Command="ApplicationCommands.Open" Margin="0,0,4,0" Style="{StaticResource FlatButton}" ToolTip="파일 열기 · Ctrl+O" />
-          <Button Content="저장" Command="ApplicationCommands.Save" Margin="0,0,4,0" Style="{StaticResource FlatButton}" ToolTip="저장 · Ctrl+S" />
-          <Button Content="찾기" Command="ApplicationCommands.Find" Margin="0,0,4,0" Style="{StaticResource FlatButton}" ToolTip="찾기 · Ctrl+F" />
-          <Button Content="Aa" Command="{x:Static local:EditorCommands.Preferences}" FontSize="17" Style="{StaticResource FlatButton}" ToolTip="글꼴 및 편집 설정 · Ctrl+," Margin="0,0,14,0" />
-          <Button Content="⇄  파일 비교" Command="{x:Static local:EditorCommands.Compare}" Style="{StaticResource AccentButton}" />
-        </StackPanel>
-        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-          <Button x:Name="SidebarToggleButton" Command="{x:Static local:EditorCommands.ToggleSidebar}" Style="{StaticResource FlatButton}" Margin="-8,0,10,0" AutomationProperties.Name="사이드바 접기 또는 펼치기">
+      <DockPanel Margin="8,0">
+        <StackPanel DockPanel.Dock="Left" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,14,0">
+          <Button x:Name="SidebarToggleButton" Command="{x:Static local:EditorCommands.ToggleSidebar}" Style="{StaticResource FlatButton}" Margin="0,0,6,0" Padding="8,6" AutomationProperties.Name="사이드바 접기 또는 펼치기">
             <Path Data="M 1,1 L 19,1 L 19,17 L 1,17 Z M 7,1 L 7,17" Stroke="{StaticResource Muted}" StrokeThickness="1.4" Width="20" Height="18" />
           </Button>
-          <Image Source="{StaticResource AppMark}" Width="36" Height="36" Margin="0,0,10,0" />
-          <TextBlock Text="wText" FontSize="23" FontWeight="SemiBold" Foreground="{StaticResource Bright}" VerticalAlignment="Center" />
-          <TextBlock Text="TEXT / CODE / DIFF" FontSize="10" Foreground="{StaticResource Muted}" Margin="14,7,0,0" VerticalAlignment="Center" />
+          <Image Source="{StaticResource AppMark}" Width="24" Height="24" Margin="0,0,7,0" />
+          <TextBlock Text="wText" FontSize="16" FontWeight="SemiBold" Foreground="{StaticResource Bright}" VerticalAlignment="Center" />
         </StackPanel>
+        <Menu x:Name="MainMenu" VerticalAlignment="Center" Padding="0,1" BorderThickness="0">
+          <Menu.Resources>
+            <Style TargetType="MenuItem" BasedOn="{StaticResource {x:Type MenuItem}}">
+              <Setter Property="CommandTarget" Value="{Binding}" />
+            </Style>
+          </Menu.Resources>
+          <MenuItem x:Name="FileMenu" Header="파일(_F)">
+            <MenuItem Header="새 문서" Command="ApplicationCommands.New" InputGestureText="Ctrl+N" />
+            <MenuItem Header="파일 열기…" Command="ApplicationCommands.Open" InputGestureText="Ctrl+O" />
+            <MenuItem Header="작업 폴더 추가…" Command="{x:Static local:EditorCommands.OpenFolder}" InputGestureText="Ctrl+Shift+O" />
+            <MenuItem Header="작업 폴더에서 파일 찾기…" Command="{x:Static local:EditorCommands.FindFile}" InputGestureText="Ctrl+P" />
+            <Separator />
+            <MenuItem Header="저장" Command="ApplicationCommands.Save" InputGestureText="Ctrl+S" />
+            <MenuItem Header="다른 이름으로 저장…" Command="{x:Static local:EditorCommands.SaveAs}" InputGestureText="Ctrl+Shift+S" />
+            <MenuItem Header="UTF-8로 변환" Click="OnConvertEncoding" />
+            <Separator />
+            <MenuItem Header="탭 닫기" Command="{x:Static local:EditorCommands.CloseTab}" InputGestureText="Ctrl+W" />
+            <MenuItem Header="끝내기" Click="OnExit" />
+          </MenuItem>
+          <MenuItem Header="편집(_E)">
+            <MenuItem Header="실행 취소" Click="OnUndo" InputGestureText="Ctrl+Z" />
+            <MenuItem Header="다시 실행" Click="OnRedo" InputGestureText="Ctrl+Y" />
+            <Separator />
+            <MenuItem Header="찾기" Command="ApplicationCommands.Find" InputGestureText="Ctrl+F" />
+            <MenuItem Header="바꾸기" Command="ApplicationCommands.Replace" InputGestureText="Ctrl+H" />
+          </MenuItem>
+          <MenuItem Header="보기(_V)">
+            <MenuItem x:Name="SidebarMenu" Header="사이드바 표시" IsCheckable="True" Command="{x:Static local:EditorCommands.ToggleSidebar}" InputGestureText="Ctrl+B" />
+            <MenuItem x:Name="FocusMenu" Header="집중 모드" IsCheckable="True" Command="{x:Static local:EditorCommands.ToggleFocus}" InputGestureText="F11" />
+            <MenuItem Header="탐색기에서 현재 문서 찾기" Command="{x:Static local:EditorCommands.RevealFile}" InputGestureText="Ctrl+Shift+E" />
+            <Separator />
+            <MenuItem Header="자동 줄바꿈" IsCheckable="True" Click="OnWordWrap" x:Name="WrapMenu" />
+            <MenuItem Header="줄 번호 표시" IsCheckable="True" Click="OnLineNumbers" x:Name="LineNumbersMenu" />
+            <MenuItem Header="공백 · 탭 표시" IsCheckable="True" Click="OnWhitespace" x:Name="WhitespaceMenu" />
+            <Separator />
+            <MenuItem Header="글자 크게" Command="{x:Static local:EditorCommands.ZoomIn}" InputGestureText="Ctrl++" />
+            <MenuItem Header="글자 작게" Command="{x:Static local:EditorCommands.ZoomOut}" InputGestureText="Ctrl+−" />
+            <MenuItem Header="기본 글자 크기" Command="{x:Static local:EditorCommands.ResetZoom}" InputGestureText="Ctrl+0" />
+            <MenuItem Header="글꼴 및 편집 설정…" Command="{x:Static local:EditorCommands.Preferences}" InputGestureText="Ctrl+," />
+          </MenuItem>
+          <MenuItem x:Name="LanguageMenu" Header="언어(_L)" SubmenuOpened="OnLanguageMenuOpened" />
+          <MenuItem Header="비교(_C)"><MenuItem Header="두 파일 비교…" Command="{x:Static local:EditorCommands.Compare}" InputGestureText="Ctrl+Shift+D" /></MenuItem>
+          <MenuItem Header="도움말(_H)"><MenuItem Header="GitHub 프로젝트 열기" Click="OnOpenRepository" /><MenuItem x:Name="LicensesMenu" Header="라이선스 및 오픈소스 고지" Click="OnLicenses" /><MenuItem Header="wText 정보 · Hyunwook Park" Click="OnAbout" /></MenuItem>
+        </Menu>
       </DockPanel>
     </Border>
     <DockPanel x:Name="FocusToolbar" Visibility="Collapsed" Background="{StaticResource Panel}" Margin="8,0">
       <Button DockPanel.Dock="Right" Content="집중 모드 나가기  Esc" Command="{x:Static local:EditorCommands.ToggleFocus}" Style="{StaticResource FlatButton}" Padding="12,3" />
       <TextBlock Text="wText · 집중 모드" FontSize="11" Foreground="{StaticResource Muted}" VerticalAlignment="Center" Margin="8,0" />
     </DockPanel>
-    <Menu x:Name="MainMenu" Grid.Row="1" Padding="8,1" BorderThickness="0">
-      <Menu.Resources>
-        <Style TargetType="MenuItem" BasedOn="{StaticResource {x:Type MenuItem}}">
-          <Setter Property="CommandTarget" Value="{Binding}" />
-        </Style>
-      </Menu.Resources>
-      <MenuItem x:Name="FileMenu" Header="파일(_F)">
-        <MenuItem Header="새 문서" Command="ApplicationCommands.New" InputGestureText="Ctrl+N" />
-        <MenuItem Header="파일 열기…" Command="ApplicationCommands.Open" InputGestureText="Ctrl+O" />
-        <MenuItem Header="작업 폴더 추가…" Command="{x:Static local:EditorCommands.OpenFolder}" InputGestureText="Ctrl+Shift+O" />
-        <MenuItem Header="작업 폴더에서 파일 찾기…" Command="{x:Static local:EditorCommands.FindFile}" InputGestureText="Ctrl+P" />
-        <Separator />
-        <MenuItem Header="저장" Command="ApplicationCommands.Save" InputGestureText="Ctrl+S" />
-        <MenuItem Header="다른 이름으로 저장…" Command="{x:Static local:EditorCommands.SaveAs}" InputGestureText="Ctrl+Shift+S" />
-        <MenuItem Header="UTF-8로 변환" Click="OnConvertEncoding" />
-        <Separator />
-        <MenuItem Header="탭 닫기" Command="{x:Static local:EditorCommands.CloseTab}" InputGestureText="Ctrl+W" />
-        <MenuItem Header="끝내기" Click="OnExit" />
-      </MenuItem>
-      <MenuItem Header="편집(_E)">
-        <MenuItem Header="실행 취소" Click="OnUndo" InputGestureText="Ctrl+Z" />
-        <MenuItem Header="다시 실행" Click="OnRedo" InputGestureText="Ctrl+Y" />
-        <Separator />
-        <MenuItem Header="찾기" Command="ApplicationCommands.Find" InputGestureText="Ctrl+F" />
-        <MenuItem Header="바꾸기" Command="ApplicationCommands.Replace" InputGestureText="Ctrl+H" />
-      </MenuItem>
-      <MenuItem Header="보기(_V)">
-        <MenuItem x:Name="SidebarMenu" Header="사이드바 표시" IsCheckable="True" Command="{x:Static local:EditorCommands.ToggleSidebar}" InputGestureText="Ctrl+B" />
-        <MenuItem x:Name="FocusMenu" Header="집중 모드" IsCheckable="True" Command="{x:Static local:EditorCommands.ToggleFocus}" InputGestureText="F11" />
-        <MenuItem Header="탐색기에서 현재 문서 찾기" Command="{x:Static local:EditorCommands.RevealFile}" InputGestureText="Ctrl+Shift+E" />
-        <Separator />
-        <MenuItem Header="자동 줄바꿈" IsCheckable="True" Click="OnWordWrap" x:Name="WrapMenu" />
-        <MenuItem Header="줄 번호 표시" IsCheckable="True" Click="OnLineNumbers" x:Name="LineNumbersMenu" />
-        <MenuItem Header="공백 · 탭 표시" IsCheckable="True" Click="OnWhitespace" x:Name="WhitespaceMenu" />
-        <Separator />
-        <MenuItem Header="글자 크게" Command="{x:Static local:EditorCommands.ZoomIn}" InputGestureText="Ctrl++" />
-        <MenuItem Header="글자 작게" Command="{x:Static local:EditorCommands.ZoomOut}" InputGestureText="Ctrl+−" />
-        <MenuItem Header="기본 글자 크기" Command="{x:Static local:EditorCommands.ResetZoom}" InputGestureText="Ctrl+0" />
-        <MenuItem Header="글꼴 및 편집 설정…" Command="{x:Static local:EditorCommands.Preferences}" InputGestureText="Ctrl+," />
-      </MenuItem>
-      <MenuItem x:Name="LanguageMenu" Header="언어(_L)" SubmenuOpened="OnLanguageMenuOpened" />
-      <MenuItem Header="비교(_C)"><MenuItem Header="두 파일 비교…" Command="{x:Static local:EditorCommands.Compare}" InputGestureText="Ctrl+Shift+D" /></MenuItem>
-      <MenuItem Header="도움말(_H)"><MenuItem Header="GitHub 프로젝트 열기" Click="OnOpenRepository" /><MenuItem x:Name="LicensesMenu" Header="라이선스 및 오픈소스 고지" Click="OnLicenses" /><MenuItem Header="wText 정보 · Hyunwook Park" Click="OnAbout" /></MenuItem>
-    </Menu>
-    <Grid Grid.Row="2">
+
+    <Grid Grid.Row="1">
       <Grid.ColumnDefinitions><ColumnDefinition x:Name="SidebarColumn" Width="240" MinWidth="170" MaxWidth="500" /><ColumnDefinition x:Name="SplitterColumn" Width="4" /><ColumnDefinition Width="*" MinWidth="380" /></Grid.ColumnDefinitions>
       <Border x:Name="Sidebar" Background="{StaticResource Panel}" BorderThickness="0" SizeChanged="OnSidebarSizeChanged">
         <Grid Margin="10,12,10,8">
@@ -156,7 +149,7 @@
         </TabControl>
       </Grid>
     </Grid>
-    <Border x:Name="StatusBar" Grid.Row="3" Background="{StaticResource Panel}" Padding="14,0">
+    <Border x:Name="StatusBar" Grid.Row="2" Background="{StaticResource Panel}" Padding="14,0">
       <DockPanel LastChildFill="True">
         <TextBlock x:Name="CaretStatus" DockPanel.Dock="Right" VerticalAlignment="Center" Margin="18,0,0,0" />
         <Button x:Name="FontSizeButton" DockPanel.Dock="Right" Command="{x:Static local:EditorCommands.Preferences}" Style="{StaticResource FlatButton}" Padding="8,2" Margin="12,0,0,0" ToolTip="글꼴 설정 · Ctrl+마우스 휠로 크기 조절" />

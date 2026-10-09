@@ -523,7 +523,7 @@ public partial class MainWindow : Window
             ExplorerSection.IsExpanded = preferences.ExplorerExpanded;
             MainHeader.Visibility = MainMenu.Visibility = _focusMode ? Visibility.Collapsed : Visibility.Visible;
             FocusToolbar.Visibility = _focusMode ? Visibility.Visible : Visibility.Collapsed;
-            HeaderRow.Height = new GridLength(_focusMode ? 34 : 62);
+            HeaderRow.Height = new GridLength(_focusMode ? 34 : 40);
             StatusRow.Height = new GridLength(_focusMode ? 0 : 32);
             StatusBar.Visibility = _focusMode ? Visibility.Collapsed : Visibility.Visible;
             SidebarToggleButton.ToolTip = showSidebar ? "사이드바 접기 · Ctrl+B" : "사이드바 펼치기 · Ctrl+B";
