@@ -4,14 +4,14 @@ Windows x64용 무료 텍스트 편집기입니다. **1.0.2**는 중복 기능 �
 
 ## 최신 배포 버전 다운로드
 
-1.0.2 배포 패키지를 준비했습니다. 아래 다운로드 링크는 현재 공개된 **wText 1.0.1 · Windows x64**입니다. [최신 릴리스 및 변경 내용](https://github.com/parkhw328/wook-text/releases/latest)
+**wText 1.0.2 · Windows x64** — [최신 릴리스 및 변경 내용](https://github.com/parkhw328/wook-text/releases/latest)
 
 | 배포 형태 | 다운로드 | 실행 방법 |
 | --- | --- | --- |
-| 설치형 | [Windows 설치 파일 (.exe)](https://github.com/parkhw328/wook-text/releases/download/v1.0.1/wText-1.0.1-win-x64-setup.exe) | 다운로드한 파일을 실행해 설치 |
-| 무설치형 | [무설치 ZIP](https://github.com/parkhw328/wook-text/releases/download/v1.0.1/wText-1.0.1-win-x64-portable.zip) | **전체 압축 해제**한 뒤 `wText.exe` 실행 |
+| 설치형 | [Windows 설치 파일 (.exe)](https://github.com/parkhw328/wook-text/releases/download/v1.0.2/wText-1.0.2-win-x64-setup.exe) | 다운로드한 파일을 실행해 설치 |
+| 무설치형 | [무설치 ZIP](https://github.com/parkhw328/wook-text/releases/download/v1.0.2/wText-1.0.2-win-x64-portable.zip) | **전체 압축 해제**한 뒤 `wText.exe` 실행 |
 
-[SHA-256 체크섬](https://github.com/parkhw328/wook-text/releases/download/v1.0.1/SHA256SUMS.txt) · [전체 버전 목록](https://github.com/parkhw328/wook-text/releases)
+[SHA-256 체크섬](https://github.com/parkhw328/wook-text/releases/download/v1.0.2/SHA256SUMS.txt) · [전체 버전 목록](https://github.com/parkhw328/wook-text/releases)
 
 배포본에는 .NET 런타임이 포함됩니다. 설치 마법사는 현재 사용자 폴더와 시작 메뉴에 설치하며 관리자 권한이 필요하지 않습니다. Windows 설정의 앱 목록에서 제거할 수 있습니다. 기존 텍스트 파일 연결은 변경하지 않습니다.
 
