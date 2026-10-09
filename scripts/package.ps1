@@ -53,7 +53,7 @@ try {
     $uninstallInclude = Join-Path $generated 'uninstall-files.nsh'
     [System.IO.File]::WriteAllLines($uninstallInclude, $uninstallLines, [System.Text.UTF8Encoding]::new($true))
     $output = Join-Path $installerDirectory "wText-$version-win-x64-setup$suffix.exe"
-    $compilerArguments = @('/V2', "/DAPP_VERSION=$version", "/DPAYLOAD=$publish", "/DOUTPUT=$output", "/DUNINSTALL_FILES=$uninstallInclude")
+    $compilerArguments = @('/V2', '/INPUTCHARSET', 'UTF8', "/DAPP_VERSION=$version", "/DPAYLOAD=$publish", "/DOUTPUT=$output", "/DUNINSTALL_FILES=$uninstallInclude")
     if ($SmokeInstaller) { $compilerArguments += '/DSMOKE_INSTALLER' }
     & $compiler @compilerArguments (Join-Path $RepoRoot 'installer\wText.nsi')
     if ($LASTEXITCODE -ne 0) { throw 'NSIS failed to create the installer.' }

@@ -14,12 +14,35 @@ if ($PreviousSmokeInstaller) {
 $testKey = 'HKCU:\Software\wText-install-smoke'
 $uninstallKey = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\wText-install-smoke'
 $shortcutDirectory = Join-Path ([Environment]::GetFolderPath('StartMenu')) 'Programs\wText-install-smoke'
-if ((Test-Path $testKey) -or (Test-Path $uninstallKey) -or (Test-Path -LiteralPath $shortcutDirectory)) {
+$desktopShortcut = Join-Path ([Environment]::GetFolderPath('DesktopDirectory')) 'wText-install-smoke.lnk'
+if ((Test-Path $testKey) -or (Test-Path $uninstallKey) -or (Test-Path -LiteralPath $shortcutDirectory) -or (Test-Path -LiteralPath $desktopShortcut)) {
     throw 'A previous installation test exists. Review and uninstall it before running another test.'
 }
 
 $sandbox = Join-Path $RepoRoot ('artifacts\install-smoke\' + [Guid]::NewGuid().ToString('N'))
 $target = Join-Path $sandbox 'wText test'
+function Assert-DesktopShortcut([bool]$Expected) {
+    if ((Test-Path -LiteralPath $desktopShortcut) -ne $Expected) { throw "Desktop shortcut presence does not match $Expected." }
+    if ((Get-ItemProperty -LiteralPath $testKey).DesktopShortcut -ne [int]$Expected) { throw 'Desktop shortcut preference was not saved.' }
+    if ($Expected) {
+        $shell = New-Object -ComObject WScript.Shell
+        $shortcut = $shell.CreateShortcut($desktopShortcut)
+        try {
+            if ($shortcut.TargetPath -ne (Join-Path $target 'wText.exe')) { throw 'Desktop shortcut points to the wrong executable.' }
+            if ($shortcut.WorkingDirectory -ne $target) { throw 'Desktop shortcut has the wrong working directory.' }
+            if ($shortcut.IconLocation -ne ((Join-Path $target 'wText.exe') + ',0')) { throw 'Desktop shortcut does not use the wText icon.' }
+        } finally {
+            [void][Runtime.InteropServices.Marshal]::FinalReleaseComObject($shortcut)
+            [void][Runtime.InteropServices.Marshal]::FinalReleaseComObject($shell)
+        }
+    }
+}
+function Install-ShortcutOption([string]$Option, [bool]$Expected) {
+    $process = Start-Process -FilePath $setup -ArgumentList "/S $Option /D=$target" -WindowStyle Hidden -PassThru
+    if (-not $process.WaitForExit(60000)) { $process.Kill(); throw 'Shortcut option installation timed out.' }
+    if ($process.ExitCode -ne 0) { throw "Shortcut option installation failed: $($process.ExitCode)" }
+    Assert-DesktopShortcut $Expected
+}
 New-Item -ItemType Directory -Path $sandbox -Force | Out-Null
 $occupied = Join-Path $sandbox 'occupied folder'
 New-Item -ItemType Directory -Path $occupied | Out-Null
@@ -49,6 +72,7 @@ if ((Get-ItemProperty -LiteralPath $uninstallKey).DisplayVersion -ne $version) {
 if ((Get-ItemProperty -LiteralPath $uninstallKey).Publisher -ne 'Hyunwook Park') { throw 'The installer publisher is incorrect.' }
 if ((Get-ItemProperty -LiteralPath $uninstallKey).URLInfoAbout -ne 'https://github.com/parkhw328/wook-text') { throw 'The installer project URL is incorrect.' }
 if (-not (Test-Path -LiteralPath (Join-Path $shortcutDirectory 'wText.lnk'))) { throw 'Start menu shortcut missing.' }
+Assert-DesktopShortcut $true
 if ($PreviousSmokeInstaller -and (Get-Content -LiteralPath $sentinel -Raw) -ne 'Preserve this user file.') { throw 'Upgrade changed a user file.' }
 
 # Exercise the actual installed binaries and bundled fonts in a path with spaces.
@@ -66,6 +90,13 @@ try {
 $process = Start-Process -FilePath $setup -ArgumentList "/S /D=$target" -WindowStyle Hidden -PassThru
 if (-not $process.WaitForExit(60000)) { $process.Kill(); throw 'Reinstallation timed out.' }
 if ($process.ExitCode -ne 0 -or (Get-Content -LiteralPath $sentinel -Raw) -ne 'Preserve this user file.') { throw 'Reinstallation failed or changed a user file.' }
+Assert-DesktopShortcut $true
+Install-ShortcutOption '/DesktopShortcut=0' $false
+Install-ShortcutOption '' $false
+Install-ShortcutOption '/DesktopShortcut=1' $true
+Install-ShortcutOption '' $true
+if (-not (Test-Path -LiteralPath (Join-Path $shortcutDirectory 'wText.lnk'))) { throw 'Desktop preference removed the Start menu shortcut.' }
+Write-Host 'PASS: desktop shortcut target/icon, opt-out removal, opt-in creation, and remembered choices across reinstall.'
 
 # Copy the generated uninstaller outside the payload. _?= prevents NSIS from
 # spawning a detached temporary uninstaller, so this test can wait for completion.
@@ -81,9 +112,16 @@ $process = Start-Process -FilePath $uninstaller -ArgumentList "/S _?=$target" -W
 if (-not $process.WaitForExit(60000)) { $process.Kill(); throw 'Uninstaller timed out.' }
 if ($process.ExitCode -ne 0) { throw "Uninstaller failed: $($process.ExitCode)" }
 if (Test-Path -LiteralPath (Join-Path $target 'wText.exe')) { throw 'Application executable remains after uninstall.' }
-if ((Test-Path $testKey) -or (Test-Path $uninstallKey) -or (Test-Path -LiteralPath $shortcutDirectory)) { throw 'Installer registry or shortcut entries remain.' }
+if ((Test-Path $testKey) -or (Test-Path $uninstallKey) -or (Test-Path -LiteralPath $shortcutDirectory) -or (Test-Path -LiteralPath $desktopShortcut)) { throw 'Installer registry or shortcut entries remain.' }
 if ((Get-Content -LiteralPath $sentinel -Raw) -ne 'Preserve this user file.') { throw 'Uninstaller changed a user file.' }
 $remaining = @(Get-ChildItem -LiteralPath $target -Recurse -File)
 if ($remaining.Count -ne 1 -or $remaining[0].FullName -ne $sentinel) { throw 'Unexpected installed files remain.' }
+$target = Join-Path $sandbox 'no desktop shortcut'
+Install-ShortcutOption '/DesktopShortcut=0' $false
+$process = Start-Process -FilePath $uninstaller -ArgumentList "/S _?=$target" -WindowStyle Hidden -PassThru
+if (-not $process.WaitForExit(60000)) { $process.Kill(); throw 'Opt-out uninstall timed out.' }
+if ($process.ExitCode -ne 0 -or (Test-Path -LiteralPath $target)) { throw 'Fresh opt-out installation was not fully removed.' }
+if ((Test-Path $testKey) -or (Test-Path $uninstallKey) -or (Test-Path -LiteralPath $shortcutDirectory) -or (Test-Path -LiteralPath $desktopShortcut)) { throw 'Opt-out installation left registration or shortcuts.' }
+Write-Host 'PASS: fresh installation without a desktop shortcut and removal of both shortcut types on uninstall.'
 Write-Host 'PASS: per-user installation, registration, shortcut, reinstall, uninstall, directory/marker protection, and preservation of user files.'
 if ($PreviousSmokeInstaller) { Write-Host "PASS: upgrade from $PreviousSmokeInstaller to $version." }

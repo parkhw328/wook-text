@@ -4,6 +4,10 @@ Unicode True
 !include "x64.nsh"
 !include "WinVer.nsh"
 !include "FileFunc.nsh"
+!include "nsDialogs.nsh"
+
+Var CreateDesktopShortcut
+Var DesktopShortcutCheckbox
 
 !ifndef APP_VERSION
   !error "Build with scripts/package.ps1"
@@ -38,12 +42,22 @@ VIAddVersionKey /LANG=1033 "CompanyName" "Hyunwook Park"
 !insertmacro MUI_PAGE_LICENSE "..\LICENSE"
 !define MUI_PAGE_CUSTOMFUNCTION_LEAVE ValidateDirectory
 !insertmacro MUI_PAGE_DIRECTORY
+Page custom ShortcutPage ShortcutPageLeave
 !insertmacro MUI_PAGE_INSTFILES
 !insertmacro MUI_PAGE_FINISH
 !insertmacro MUI_UNPAGE_CONFIRM
 !insertmacro MUI_UNPAGE_INSTFILES
 !insertmacro MUI_LANGUAGE "Korean"
 !insertmacro MUI_LANGUAGE "English"
+
+LangString ShortcutTitle ${LANG_KOREAN} "바로가기 설정"
+LangString ShortcutSubtitle ${LANG_KOREAN} "wText를 실행할 바로가기를 선택하세요."
+LangString ShortcutLabel ${LANG_KOREAN} "바탕화면에 wText 바로가기 만들기(&D)"
+LangString ShortcutInfo ${LANG_KOREAN} "현재 사용자의 바탕화면에 아이콘을 만듭니다.$\r$\n체크를 해제하면 기존 wText 바탕화면 바로가기도 제거합니다.$\r$\n시작 메뉴 바로가기는 선택과 관계없이 설치됩니다."
+LangString ShortcutTitle ${LANG_ENGLISH} "Shortcut settings"
+LangString ShortcutSubtitle ${LANG_ENGLISH} "Choose how to launch wText."
+LangString ShortcutLabel ${LANG_ENGLISH} "Create a wText &desktop shortcut"
+LangString ShortcutInfo ${LANG_ENGLISH} "Create an icon on the current user's desktop.$\r$\nUncheck to also remove an existing wText desktop shortcut.$\r$\nA Start menu shortcut is always installed."
 
 Function .onInit
   SetShellVarContext current
@@ -56,6 +70,47 @@ Function .onInit
     MessageBox MB_ICONSTOP "wText requires Windows 10 or newer." /SD IDOK
     Abort
   ${EndIf}
+  ; Older installations have no preference: offer the shortcut by default.
+  StrCpy $CreateDesktopShortcut ${BST_CHECKED}
+  ClearErrors
+  ReadRegDWORD $0 HKCU "Software\${APP_ID}" "DesktopShortcut"
+  ${IfNot} ${Errors}
+  ${AndIf} $0 == 0
+    StrCpy $CreateDesktopShortcut ${BST_UNCHECKED}
+  ${EndIf}
+  ${GetParameters} $0
+  ClearErrors
+  ${GetOptions} $0 "/DesktopShortcut=" $1
+  ${IfNot} ${Errors}
+    ${If} $1 == "0"
+    ${OrIf} $1 == "1"
+      StrCpy $CreateDesktopShortcut $1
+    ${Else}
+      MessageBox MB_ICONSTOP "Use /DesktopShortcut=0 or /DesktopShortcut=1." /SD IDOK
+      SetErrorLevel 2
+      Abort
+    ${EndIf}
+  ${EndIf}
+FunctionEnd
+
+Function ShortcutPage
+  !insertmacro MUI_HEADER_TEXT "$(ShortcutTitle)" "$(ShortcutSubtitle)"
+  nsDialogs::Create 1018
+  Pop $0
+  ${If} $0 == error
+    Abort
+  ${EndIf}
+  ${NSD_CreateCheckbox} 0 8u 100% 16u "$(ShortcutLabel)"
+  Pop $DesktopShortcutCheckbox
+  ${NSD_SetState} $DesktopShortcutCheckbox $CreateDesktopShortcut
+  ${NSD_CreateLabel} 0 36u 100% 48u "$(ShortcutInfo)"
+  Pop $0
+  ${NSD_OnBack} ShortcutPageLeave
+  nsDialogs::Show
+FunctionEnd
+
+Function ShortcutPageLeave
+  ${NSD_GetState} $DesktopShortcutCheckbox $CreateDesktopShortcut
 FunctionEnd
 
 Function ValidateDirectory
@@ -109,7 +164,21 @@ Section "wText" MainSection
   WriteUninstaller "$INSTDIR\Uninstall.exe"
   CreateDirectory "$SMPROGRAMS\${APP_ID}"
   CreateShortcut "$SMPROGRAMS\${APP_ID}\wText.lnk" "$INSTDIR\wText.exe"
+  ClearErrors
+  ${If} $CreateDesktopShortcut == ${BST_CHECKED}
+    CreateShortcut "$DESKTOP\${APP_ID}.lnk" "$INSTDIR\wText.exe" "" "$INSTDIR\wText.exe" 0
+  ${Else}
+    ${If} ${FileExists} "$DESKTOP\${APP_ID}.lnk"
+      Delete "$DESKTOP\${APP_ID}.lnk"
+    ${EndIf}
+  ${EndIf}
+  ${If} ${Errors}
+    MessageBox MB_ICONSTOP "Could not update the desktop shortcut. Check desktop access and retry." /SD IDOK
+    SetErrorLevel 3
+    Abort
+  ${EndIf}
   WriteRegStr HKCU "Software\${APP_ID}" "InstallDir" "$INSTDIR"
+  WriteRegDWORD HKCU "Software\${APP_ID}" "DesktopShortcut" $CreateDesktopShortcut
   WriteRegStr HKCU "${UNINSTALL_KEY}" "DisplayName" "${APP_NAME}"
   WriteRegStr HKCU "${UNINSTALL_KEY}" "DisplayVersion" "${APP_VERSION}"
   WriteRegStr HKCU "${UNINSTALL_KEY}" "Publisher" "Hyunwook Park"
@@ -147,6 +216,7 @@ Section "Uninstall"
   Delete "$INSTDIR\Uninstall.exe"
   RMDir "$INSTDIR"
   Delete "$SMPROGRAMS\${APP_ID}\wText.lnk"
+  Delete "$DESKTOP\${APP_ID}.lnk"
   RMDir "$SMPROGRAMS\${APP_ID}"
   DeleteRegKey HKCU "${UNINSTALL_KEY}"
   DeleteRegKey HKCU "Software\${APP_ID}"

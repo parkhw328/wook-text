@@ -1,19 +1,21 @@
 # wText
 
-Windows x64용 무료 텍스트 편집기입니다. **1.0.0**은 작업 폴더를 최대 10개까지 함께 열고 관리하며, 블랙·오렌지 테마의 확인창을 제공합니다. 열린 탭과 미저장 내용 복원, 다국어 구문 강조, 글꼴 설정, 집중 모드와 두 파일 비교를 지원합니다. 제작자는 **Hyunwook Park**이며 [GitHub 프로젝트](https://github.com/parkhw328/wook-text)에서 소스와 의견을 확인할 수 있습니다.
+Windows x64용 무료 텍스트 편집기입니다. **1.0.1**은 설치 마법사에 바탕화면 바로가기 생성 옵션을 추가했습니다. 작업 폴더를 최대 10개까지 함께 관리하며, 블랙·오렌지 테마의 확인창을 제공합니다. 열린 탭과 미저장 내용 복원, 다국어 구문 강조, 글꼴 설정, 집중 모드와 두 파일 비교를 지원합니다. 제작자는 **Hyunwook Park**이며 [GitHub 프로젝트](https://github.com/parkhw328/wook-text)에서 소스와 의견을 확인할 수 있습니다.
 
 ## 최신 버전 다운로드
 
-**wText 1.0.0 · Windows x64** — [최신 릴리스 및 변경 내용](https://github.com/parkhw328/wook-text/releases/latest)
+**wText 1.0.1 · Windows x64** — [최신 릴리스 및 변경 내용](https://github.com/parkhw328/wook-text/releases/latest)
 
 | 배포 형태 | 다운로드 | 실행 방법 |
 | --- | --- | --- |
-| 설치형 | [Windows 설치 파일 (.exe)](https://github.com/parkhw328/wook-text/releases/download/v1.0.0/wText-1.0.0-win-x64-setup.exe) | 다운로드한 파일을 실행해 설치 |
-| 무설치형 | [무설치 ZIP](https://github.com/parkhw328/wook-text/releases/download/v1.0.0/wText-1.0.0-win-x64-portable.zip) | **전체 압축 해제**한 뒤 `wText.exe` 실행 |
+| 설치형 | [Windows 설치 파일 (.exe)](https://github.com/parkhw328/wook-text/releases/download/v1.0.1/wText-1.0.1-win-x64-setup.exe) | 다운로드한 파일을 실행해 설치 |
+| 무설치형 | [무설치 ZIP](https://github.com/parkhw328/wook-text/releases/download/v1.0.1/wText-1.0.1-win-x64-portable.zip) | **전체 압축 해제**한 뒤 `wText.exe` 실행 |
 
-[SHA-256 체크섬](https://github.com/parkhw328/wook-text/releases/download/v1.0.0/SHA256SUMS.txt) · [전체 버전 목록](https://github.com/parkhw328/wook-text/releases)
+[SHA-256 체크섬](https://github.com/parkhw328/wook-text/releases/download/v1.0.1/SHA256SUMS.txt) · [전체 버전 목록](https://github.com/parkhw328/wook-text/releases)
 
 배포본에는 .NET 런타임이 포함됩니다. 설치 마법사는 현재 사용자 폴더와 시작 메뉴에 설치하며 관리자 권한이 필요하지 않습니다. Windows 설정의 앱 목록에서 제거할 수 있습니다. 기존 텍스트 파일 연결은 변경하지 않습니다.
+
+설치 중 **바로가기 설정 → 바탕화면에 wText 바로가기 만들기**를 선택할 수 있습니다. 처음에는 체크되어 있으며 재설치·업그레이드는 이전 선택을 기억합니다. 체크를 해제하면 기존 바탕화면 바로가기도 제거하고, 시작 메뉴 바로가기는 유지합니다. 프로그램 제거 시 두 바로가기를 함께 정리합니다.
 
 ## 화면으로 보는 사용법
 
@@ -151,7 +153,7 @@ Windows x64의 PowerShell에서 저장소 루트를 기준으로 실행합니다
 
 PowerShell 실행 정책 때문에 스크립트가 차단되면 명령별로 `powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\build.ps1`처럼 실행할 수 있습니다. 시스템 정책을 변경할 필요는 없습니다. 빌드와 패키징은 같은 `obj` 폴더를 사용하므로 동시에 실행하지 마세요.
 
-설치 검증은 설치된 바이너리·글꼴에서도 WPF 검증을 실행하며 실제 사용자 설정을 건드리지 않습니다. 이전 검증용 설치 파일이 있다면 `test-installer.ps1 -PreviousSmokeInstaller artifacts/installer/wText-0.4.0-win-x64-setup-smoke.exe`로 업그레이드도 확인할 수 있습니다.
+설치 검증은 설치된 바이너리·글꼴에서도 WPF 검증을 실행하며 실제 사용자 설정을 건드리지 않습니다. 이전 검증용 설치 파일이 있다면 `test-installer.ps1 -PreviousSmokeInstaller artifacts/installer/wText-1.0.0-win-x64-setup-smoke.exe`로 업그레이드도 확인할 수 있습니다.
 
 ## 프로젝트 구조
 
