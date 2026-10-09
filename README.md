@@ -89,7 +89,6 @@ PowerShell 실행 정책 때문에 스크립트가 차단되면 명령별로 `po
 | `tests/WookText.Core.Tests/` | xUnit 파일·인코딩·비교·검색·탐색기·설정 회귀 테스트 |
 | `tests/WookText.App.SmokeTests/` | 실제 WPF 컨트롤 동작 검증과 화면 렌더링 |
 | `installer/`, `scripts/` | NSIS 설치 정의 및 개발·배포 자동화 |
-| `resources/settings.txt` | 원본 요구사항 |
 | `rules/rules.md` | 제품 결정과 개발 규칙 |
 | `docs/REQUIREMENTS.md` | 요구사항 분석, 수용 기준, 후속 범위 |
 | `licenses/` | 의존성 라이선스 원문 |

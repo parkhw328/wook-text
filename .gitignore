@@ -6,3 +6,5 @@ TestResults/
 .vs/
 *.user
 *.suo
+/resources/setting.txt
+/resources/settings.txt
