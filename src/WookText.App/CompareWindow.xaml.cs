@@ -4,7 +4,9 @@ using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
+using System.Windows.Documents;
 using System.Windows.Input;
+using System.Windows.Media;
 using DiffPlex.DiffBuilder.Model;
 using ICSharpCode.AvalonEdit;
 using Microsoft.Win32;
@@ -170,12 +172,18 @@ public partial class CompareWindow : Window
             if (changed && !previousLineChanged) _changeLines.Add(i + 1);
             previousLineChanged = changed;
         }
-        Summary.Text = result.ExactMatch ? "텍스트 내용이 같습니다." :
-            result.Added + result.Deleted + result.Modified == 0 ? "비교 옵션 기준으로 같은 내용입니다." :
-            $"+ {result.Added:N0}줄 추가    − {result.Deleted:N0}줄 삭제    ~ {result.Modified:N0}줄 수정";
-        if (result.LineEndingsDiffer) Summary.Text += "  · 줄바꿈 차이 있음";
+        Summary.Inlines.Clear();
+        if (result.ExactMatch) Summary.Text = "텍스트 내용이 같습니다.";
+        else if (result.Added + result.Deleted + result.Modified == 0) Summary.Text = "비교 옵션 기준으로 같은 내용입니다.";
+        else
+        {
+            Summary.Inlines.Add(new Run($"+ {result.Added:N0}줄 추가") { Foreground = (Brush)FindResource("DiffAdded") });
+            Summary.Inlines.Add(new Run($"    − {result.Deleted:N0}줄 삭제") { Foreground = (Brush)FindResource("DiffDeleted") });
+            Summary.Inlines.Add(new Run($"    ~ {result.Modified:N0}줄 수정") { Foreground = (Brush)FindResource("DiffModified") });
+        }
+        if (result.LineEndingsDiffer) Summary.Inlines.Add(new Run("  · 줄바꿈 차이 있음"));
         if (_left is not null && _right is not null && leftText == _left.Text && rightText == _right.Text && _left.Encoding != _right.Encoding)
-            Summary.Text += "  · 인코딩 차이 있음";
+            Summary.Inlines.Add(new Run("  · 인코딩 차이 있음"));
         ResultTab.IsEnabled = true;
         ResultTab.IsSelected = true;
         _leftEditor.ScrollToHome();

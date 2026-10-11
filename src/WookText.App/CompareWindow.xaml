@@ -3,6 +3,11 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="파일 · 텍스트 비교 — wText" Style="{StaticResource {x:Type Window}}" Width="1240" Height="780" MinWidth="940" MinHeight="560" WindowStartupLocation="CenterOwner"
         AllowDrop="True" PreviewDragOver="OnFilesDragOver" PreviewDrop="OnFilesDropped">
+  <Window.Resources>
+    <SolidColorBrush x:Key="DiffAdded" Color="#9DE0BF" />
+    <SolidColorBrush x:Key="DiffDeleted" Color="#F2B1B4" />
+    <SolidColorBrush x:Key="DiffModified" Color="#F4D66A" />
+  </Window.Resources>
   <Grid Margin="20" Background="{StaticResource Canvas}">
     <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="*" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
     <DockPanel Margin="0,0,0,16">
@@ -66,7 +71,11 @@
               <Button x:Name="PreviousButton" Content="↑ 이전" Click="OnPreviousChange" Padding="9,4" Margin="0,0,6,0" ToolTip="Shift+F7" />
               <Button x:Name="NextButton" Content="↓ 다음" Click="OnNextChange" Padding="9,4" ToolTip="F7" />
             </StackPanel>
-            <TextBlock Text="+ 추가     − 삭제     ~ 수정" Foreground="{StaticResource Muted}" VerticalAlignment="Center" />
+            <TextBlock VerticalAlignment="Center">
+              <Run Text="+ 추가" Foreground="{StaticResource DiffAdded}" />
+              <Run Text="     " /><Run Text="− 삭제" Foreground="{StaticResource DiffDeleted}" />
+              <Run Text="     " /><Run Text="~ 수정" Foreground="{StaticResource DiffModified}" />
+            </TextBlock>
           </DockPanel>
           <Grid Grid.Row="1">
             <Grid.ColumnDefinitions><ColumnDefinition Width="*" MinWidth="200" /><ColumnDefinition Width="5" /><ColumnDefinition Width="*" MinWidth="200" /></Grid.ColumnDefinitions>
