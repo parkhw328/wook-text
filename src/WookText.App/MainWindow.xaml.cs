@@ -580,11 +580,17 @@ public partial class MainWindow : Window
     }
 
     private void OnFilesDragOver(object sender, DragEventArgs e)
-    { e.Effects = e.Data.GetDataPresent(DataFormats.FileDrop) ? DragDropEffects.Copy : DragDropEffects.None; e.Handled = true; }
+    {
+        if (!e.Data.GetDataPresent(DataFormats.FileDrop)) return;
+        e.Effects = (e.AllowedEffects & DragDropEffects.Copy) != 0 ? DragDropEffects.Copy : DragDropEffects.None;
+        e.Handled = true;
+    }
     private async void OnFilesDropped(object sender, DragEventArgs e)
     {
         if (e.Data.GetData(DataFormats.FileDrop) is not string[] paths) return;
         e.Handled = true;
+        if ((e.AllowedEffects & DragDropEffects.Copy) == 0) { e.Effects = DragDropEffects.None; return; }
+        e.Effects = DragDropEffects.Copy;
         foreach (string directory in paths.Where(Directory.Exists)) await OpenWorkspaceAsync(directory);
         await RunAsync(async () => { foreach (string path in paths.Where(File.Exists)) await OpenFileAsync(path); });
     }

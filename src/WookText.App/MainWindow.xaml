@@ -4,7 +4,7 @@
         xmlns:local="clr-namespace:WookText.App"
         xmlns:explorer="clr-namespace:WookText.App.Explorer"
         Title="wText" Style="{StaticResource {x:Type Window}}" Width="1240" Height="800" MinWidth="960" MinHeight="600"
-        WindowStartupLocation="CenterScreen" AllowDrop="True" Drop="OnFilesDropped"
+        WindowStartupLocation="CenterScreen" AllowDrop="True" PreviewDrop="OnFilesDropped"
         PreviewDragOver="OnFilesDragOver" Closing="OnWindowClosing">
   <Window.InputBindings>
     <KeyBinding Key="N" Modifiers="Control" Command="ApplicationCommands.New" />
@@ -84,7 +84,7 @@
             <MenuItem Header="글꼴 및 편집 설정…" Command="{x:Static local:EditorCommands.Preferences}" InputGestureText="Ctrl+," />
           </MenuItem>
           <MenuItem x:Name="LanguageMenu" Header="언어(_L)" SubmenuOpened="OnLanguageMenuOpened" />
-          <MenuItem Header="비교(_C)"><MenuItem Header="두 파일 비교…" Command="{x:Static local:EditorCommands.Compare}" InputGestureText="Ctrl+Shift+D" /></MenuItem>
+          <MenuItem Header="비교(_C)"><MenuItem Header="파일 · 텍스트 비교…" Command="{x:Static local:EditorCommands.Compare}" InputGestureText="Ctrl+Shift+D" /></MenuItem>
           <MenuItem Header="도움말(_H)"><MenuItem Header="GitHub 프로젝트 열기" Click="OnOpenRepository" /><MenuItem x:Name="LicensesMenu" Header="라이선스 및 오픈소스 고지" Click="OnLicenses" /><MenuItem Header="wText 정보 · Hyunwook Park" Click="OnAbout" /></MenuItem>
         </Menu>
       </DockPanel>

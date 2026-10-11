@@ -26,7 +26,8 @@ public sealed class DiffLineColorizer(IReadOnlyList<DiffPiece> pieces) : Documen
         int offset = line.Offset + PrefixLength;
         foreach (DiffPiece subpiece in piece.SubPieces)
         {
-            int end = Math.Min(offset + subpiece.Text.Length, line.EndOffset);
+            // DiffPlex uses null text for imaginary word-alignment pieces.
+            int end = Math.Min(offset + (subpiece.Text?.Length ?? 0), line.EndOffset);
             if (end > offset && subpiece.Type is ChangeType.Inserted or ChangeType.Deleted or ChangeType.Modified)
                 ChangeLinePart(offset, end, element => element.TextRunProperties.SetBackgroundBrush(EditorFactory.Brush("#615034")));
             offset = end;

@@ -6,7 +6,7 @@ public static class EditorCommands
 {
     public static RoutedUICommand SaveAs { get; } = new("다른 이름으로 저장", nameof(SaveAs), typeof(EditorCommands));
     public static RoutedUICommand CloseTab { get; } = new("탭 닫기", nameof(CloseTab), typeof(EditorCommands));
-    public static RoutedUICommand Compare { get; } = new("두 파일 비교", nameof(Compare), typeof(EditorCommands));
+    public static RoutedUICommand Compare { get; } = new("파일 · 텍스트 비교", nameof(Compare), typeof(EditorCommands));
     public static RoutedUICommand OpenFolder { get; } = new("폴더 열기", nameof(OpenFolder), typeof(EditorCommands));
     public static RoutedUICommand FindFile { get; } = new("작업 폴더에서 파일 찾기", nameof(FindFile), typeof(EditorCommands));
     public static RoutedUICommand RevealFile { get; } = new("탐색기에서 현재 문서 찾기", nameof(RevealFile), typeof(EditorCommands));

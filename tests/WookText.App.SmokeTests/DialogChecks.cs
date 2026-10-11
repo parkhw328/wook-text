@@ -79,7 +79,7 @@ internal static class DialogChecks
         Console.WriteLine("PASS: themed save, discard, cancel, Escape, window-close, encoding prompts, error details, and bounded dialog layouts.");
     }
 
-    private static async Task WithDialogAsync(Action trigger, Action<AppDialogWindow> interact)
+    internal static async Task WithDialogAsync(Action trigger, Action<AppDialogWindow> interact)
     {
         TaskCompletionSource completion = new();
         DispatcherTimer timer = new() { Interval = TimeSpan.FromMilliseconds(20) };

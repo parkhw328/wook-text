@@ -28,12 +28,12 @@ public sealed class TextDiffService
             model.NewText.Lines.Count(line => line.Type == ChangeType.Modified));
     }
 
-    private static void Validate(string text)
+    public static void Validate(string text)
     {
         if (text.Length > MaximumCharacters || text.Count(c => c == '\n' || c == '\r') > MaximumLines * 2 ||
             text.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None).Length > MaximumLines)
         {
-            throw new InvalidOperationException("첫 버전의 비교 한도는 파일당 500,000자, 20,000줄입니다.");
+            throw new InvalidOperationException("비교 한도는 한쪽당 500,000자, 20,000줄입니다. 입력 내용을 줄인 뒤 다시 비교해 주세요.");
         }
     }
 }

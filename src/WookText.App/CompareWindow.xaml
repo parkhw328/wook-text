@@ -1,51 +1,82 @@
 <Window x:Class="WookText.App.CompareWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="두 파일 비교 — wText" Style="{StaticResource {x:Type Window}}" Width="1240" Height="780" MinWidth="940" MinHeight="560" WindowStartupLocation="CenterOwner">
+        Title="파일 · 텍스트 비교 — wText" Style="{StaticResource {x:Type Window}}" Width="1240" Height="780" MinWidth="940" MinHeight="560" WindowStartupLocation="CenterOwner"
+        AllowDrop="True" PreviewDragOver="OnFilesDragOver" PreviewDrop="OnFilesDropped">
   <Grid Margin="20" Background="{StaticResource Canvas}">
     <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="*" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
-    <DockPanel Margin="0,0,0,20">
+    <DockPanel Margin="0,0,0,16">
       <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
         <CheckBox x:Name="IgnoreWhitespace" Content="줄 앞뒤 공백 무시" Margin="0,0,18,0" VerticalAlignment="Center" Click="OnIgnoreWhitespaceChanged" />
-        <Button x:Name="SwapButton" Content="⇄  좌우 바꾸기" Click="OnSwap" />
+        <Button x:Name="SwapButton" Content="⇄  좌우 바꾸기" Click="OnSwap" Margin="0,0,8,0" />
+        <Button x:Name="CompareButton" Content="비교하기" Style="{StaticResource AccentButton}" Click="OnCompare" ToolTip="Ctrl+Enter" />
       </StackPanel>
-      <StackPanel><TextBlock Text="두 파일 비교" FontSize="24" FontWeight="SemiBold" /><TextBlock Text="변경된 줄과 단어를 나란히 확인하세요." Foreground="{StaticResource Muted}" Margin="0,6,0,0" /></StackPanel>
+      <StackPanel><TextBlock Text="파일 · 텍스트 비교" FontSize="24" FontWeight="SemiBold" /><TextBlock Text="붙여넣거나 파일을 끌어 놓고 비교하세요." Foreground="{StaticResource Muted}" Margin="0,6,0,0" /></StackPanel>
     </DockPanel>
-    <Grid Grid.Row="1" Margin="0,0,0,14">
+    <Grid Grid.Row="1" Margin="0,0,0,10">
       <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="16" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
-      <Border Background="{StaticResource Panel}" CornerRadius="7" Padding="14">
-        <DockPanel>
-          <Button x:Name="LeftBrowse" Content="파일 선택" DockPanel.Dock="Right" Click="OnChooseLeft" Margin="14,0,0,0" />
-          <StackPanel><TextBlock Text="원본 파일" Foreground="{StaticResource Muted}" FontSize="11" /><TextBlock x:Name="LeftPath" Text="비교할 원본을 선택하세요" Margin="0,6,0,0" TextTrimming="CharacterEllipsis" /></StackPanel>
-        </DockPanel>
+      <Border x:Name="LeftSource" Background="{StaticResource Panel}" CornerRadius="7" Padding="12">
+        <StackPanel>
+          <TextBlock Text="원본 · 왼쪽" Foreground="{StaticResource Muted}" FontSize="11" />
+          <TextBlock x:Name="LeftPath" Text="직접 입력 / 붙여넣기 / 파일 드롭" Margin="0,5,0,10" TextTrimming="CharacterEllipsis" />
+          <StackPanel Orientation="Horizontal">
+            <Button x:Name="LeftBrowse" Content="파일 열기" Click="OnChooseLeft" Margin="0,0,6,0" />
+            <Button x:Name="LeftPaste" Content="붙여넣기" Click="OnPasteLeft" Margin="0,0,6,0" ToolTip="클립보드 텍스트로 왼쪽 내용을 바꿉니다. Ctrl+Z로 되돌릴 수 있습니다." />
+            <Button x:Name="LeftClear" Content="비우기" Click="OnClearLeft" ToolTip="왼쪽 내용을 비웁니다. Ctrl+Z로 되돌릴 수 있습니다." />
+          </StackPanel>
+        </StackPanel>
       </Border>
-      <Border Grid.Column="2" Background="{StaticResource Panel}" CornerRadius="7" Padding="14">
-        <DockPanel>
-          <Button x:Name="RightBrowse" Content="파일 선택" DockPanel.Dock="Right" Click="OnChooseRight" Margin="14,0,0,0" />
-          <StackPanel><TextBlock Text="수정 파일" Foreground="{StaticResource Muted}" FontSize="11" /><TextBlock x:Name="RightPath" Text="비교할 수정본을 선택하세요" Margin="0,6,0,0" TextTrimming="CharacterEllipsis" /></StackPanel>
-        </DockPanel>
+      <Border x:Name="RightSource" Grid.Column="2" Background="{StaticResource Panel}" CornerRadius="7" Padding="12">
+        <StackPanel>
+          <TextBlock Text="수정본 · 오른쪽" Foreground="{StaticResource Muted}" FontSize="11" />
+          <TextBlock x:Name="RightPath" Text="직접 입력 / 붙여넣기 / 파일 드롭" Margin="0,5,0,10" TextTrimming="CharacterEllipsis" />
+          <StackPanel Orientation="Horizontal">
+            <Button x:Name="RightBrowse" Content="파일 열기" Click="OnChooseRight" Margin="0,0,6,0" />
+            <Button x:Name="RightPaste" Content="붙여넣기" Click="OnPasteRight" Margin="0,0,6,0" ToolTip="클립보드 텍스트로 오른쪽 내용을 바꿉니다. Ctrl+Z로 되돌릴 수 있습니다." />
+            <Button x:Name="RightClear" Content="비우기" Click="OnClearRight" ToolTip="오른쪽 내용을 비웁니다. Ctrl+Z로 되돌릴 수 있습니다." />
+          </StackPanel>
+        </StackPanel>
       </Border>
     </Grid>
-    <DockPanel Grid.Row="2" Margin="0,0,0,10">
-      <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
-        <Button Content="↑ 이전" Click="OnPreviousChange" Padding="9,4" Margin="0,0,6,0" />
-        <Button Content="↓ 다음" Click="OnNextChange" Padding="9,4" />
-      </StackPanel>
-      <TextBlock x:Name="Summary" Text="두 파일을 선택하면 비교가 시작됩니다." Foreground="{StaticResource Accent}" VerticalAlignment="Center" />
-    </DockPanel>
-    <Grid Grid.Row="3">
-      <Grid.ColumnDefinitions><ColumnDefinition Width="*" MinWidth="200" /><ColumnDefinition Width="5" /><ColumnDefinition Width="*" MinWidth="200" /></Grid.ColumnDefinitions>
-      <Border BorderBrush="{StaticResource Stroke}" BorderThickness="1"><ContentControl x:Name="LeftHost" /></Border>
-      <GridSplitter Grid.Column="1" Width="5" HorizontalAlignment="Stretch" Background="{StaticResource Stroke}" />
-      <Border Grid.Column="2" BorderBrush="{StaticResource Stroke}" BorderThickness="1"><ContentControl x:Name="RightHost" /></Border>
-    </Grid>
-    <DockPanel Grid.Row="4" Margin="0,12,0,0">
-      <TextBlock Text="읽기 전용 · 디스크에 저장된 파일 비교" DockPanel.Dock="Right" Foreground="{StaticResource Muted}" FontSize="11" />
-      <StackPanel Orientation="Horizontal">
-        <TextBlock Text="+ 추가" Foreground="#9DE0BF" Margin="0,0,18,0" />
-        <TextBlock Text="− 삭제" Foreground="#F2B1B4" Margin="0,0,18,0" />
-        <TextBlock Text="~ 수정" Foreground="#E8CE96" />
-      </StackPanel>
-    </DockPanel>
+    <TextBlock Grid.Row="2" x:Name="Summary" Text="양쪽에 텍스트를 입력한 뒤 비교하기를 누르세요. 빈 내용도 비교할 수 있습니다." Foreground="{StaticResource Accent}" Margin="0,0,0,8" TextWrapping="Wrap" />
+    <TabControl Grid.Row="3" x:Name="CompareTabs">
+      <TabItem x:Name="InputTab" Header="텍스트 입력">
+        <Grid Margin="0,8,0,0">
+          <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="5" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+          <Border BorderBrush="{StaticResource Stroke}" BorderThickness="1">
+            <Grid>
+              <ContentControl x:Name="LeftInputHost" />
+              <TextBlock x:Name="LeftHint" Text="원본 텍스트를 입력하거나 Ctrl+V로 붙여넣으세요.&#x0a;파일을 이곳에 끌어 놓아도 됩니다." Foreground="{StaticResource Muted}" Margin="44,14,12,0" IsHitTestVisible="False" TextWrapping="Wrap" />
+            </Grid>
+          </Border>
+          <GridSplitter Grid.Column="1" Width="5" HorizontalAlignment="Stretch" Background="{StaticResource Stroke}" />
+          <Border Grid.Column="2" BorderBrush="{StaticResource Stroke}" BorderThickness="1">
+            <Grid>
+              <ContentControl x:Name="RightInputHost" />
+              <TextBlock x:Name="RightHint" Text="수정본 텍스트를 입력하거나 Ctrl+V로 붙여넣으세요.&#x0a;파일 두 개를 함께 놓으면 좌우에 열립니다." Foreground="{StaticResource Muted}" Margin="44,14,12,0" IsHitTestVisible="False" TextWrapping="Wrap" />
+            </Grid>
+          </Border>
+        </Grid>
+      </TabItem>
+      <TabItem x:Name="ResultTab" Header="비교 결과" IsEnabled="False">
+        <Grid Margin="0,8,0,0">
+          <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="*" /></Grid.RowDefinitions>
+          <DockPanel Margin="0,0,0,8">
+            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+              <Button x:Name="PreviousButton" Content="↑ 이전" Click="OnPreviousChange" Padding="9,4" Margin="0,0,6,0" ToolTip="Shift+F7" />
+              <Button x:Name="NextButton" Content="↓ 다음" Click="OnNextChange" Padding="9,4" ToolTip="F7" />
+            </StackPanel>
+            <TextBlock Text="+ 추가     − 삭제     ~ 수정" Foreground="{StaticResource Muted}" VerticalAlignment="Center" />
+          </DockPanel>
+          <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions><ColumnDefinition Width="*" MinWidth="200" /><ColumnDefinition Width="5" /><ColumnDefinition Width="*" MinWidth="200" /></Grid.ColumnDefinitions>
+            <Border BorderBrush="{StaticResource Stroke}" BorderThickness="1"><ContentControl x:Name="LeftHost" /></Border>
+            <GridSplitter Grid.Column="1" Width="5" HorizontalAlignment="Stretch" Background="{StaticResource Stroke}" />
+            <Border Grid.Column="2" BorderBrush="{StaticResource Stroke}" BorderThickness="1"><ContentControl x:Name="RightHost" /></Border>
+          </Grid>
+        </Grid>
+      </TabItem>
+    </TabControl>
+    <TextBlock Grid.Row="4" Text="Ctrl+Enter 비교 · 파일 1개는 놓은 쪽에, 2개는 좌우에 열기 · 원본 파일은 변경하지 않습니다." Foreground="{StaticResource Muted}" FontSize="11" Margin="0,10,0,0" TextWrapping="Wrap" />
   </Grid>
 </Window>
