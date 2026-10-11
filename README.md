@@ -1,19 +1,17 @@
 # wText
 
-Windows x64용 무료 텍스트 편집기입니다. **개발 버전 1.1.1 (배포 준비)**은 비교창의 추가·삭제·수정을 초록·빨강·노랑으로 구분하고 수정 줄의 노란 배경을 강화했습니다. 스크롤 문제 수정, 직접 입력·붙여넣기 비교와 파일 드롭도 포함합니다. 작업 폴더를 최대 10개까지 함께 관리하며, 열린 탭과 미저장 내용 복원, 다국어 구문 강조, 글꼴 설정과 집중 모드를 제공합니다. 제작자는 **Hyunwook Park**이며 [GitHub 프로젝트](https://github.com/parkhw328/wook-text)에서 소스와 의견을 확인할 수 있습니다.
+Windows x64용 무료 텍스트 편집기입니다. **1.1.1**은 비교창의 추가·삭제·수정을 초록·빨강·노랑으로 구분하고 수정 줄의 노란 배경을 강화했습니다. 스크롤 문제 수정, 직접 입력·붙여넣기 비교와 파일 드롭도 포함합니다. 작업 폴더를 최대 10개까지 함께 관리하며, 열린 탭과 미저장 내용 복원, 다국어 구문 강조, 글꼴 설정과 집중 모드를 제공합니다. 제작자는 **Hyunwook Park**이며 [GitHub 프로젝트](https://github.com/parkhw328/wook-text)에서 소스와 의견을 확인할 수 있습니다.
 
 ## 최신 배포 버전 다운로드
 
-**wText 1.0.2 · Windows x64** — [최신 릴리스 및 변경 내용](https://github.com/parkhw328/wook-text/releases/latest)
+**wText 1.1.1 · Windows x64** — [최신 릴리스 및 변경 내용](https://github.com/parkhw328/wook-text/releases/latest)
 
 | 배포 형태 | 다운로드 | 실행 방법 |
 | --- | --- | --- |
-| 설치형 | [Windows 설치 파일 (.exe)](https://github.com/parkhw328/wook-text/releases/download/v1.0.2/wText-1.0.2-win-x64-setup.exe) | 다운로드한 파일을 실행해 설치 |
-| 무설치형 | [무설치 ZIP](https://github.com/parkhw328/wook-text/releases/download/v1.0.2/wText-1.0.2-win-x64-portable.zip) | **전체 압축 해제**한 뒤 `wText.exe` 실행 |
+| 설치형 | [Windows 설치 파일 (.exe)](https://github.com/parkhw328/wook-text/releases/download/v1.1.1/wText-1.1.1-win-x64-setup.exe) | 다운로드한 파일을 실행해 설치 |
+| 무설치형 | [무설치 ZIP](https://github.com/parkhw328/wook-text/releases/download/v1.1.1/wText-1.1.1-win-x64-portable.zip) | **전체 압축 해제**한 뒤 `wText.exe` 실행 |
 
-[SHA-256 체크섬](https://github.com/parkhw328/wook-text/releases/download/v1.0.2/SHA256SUMS.txt) · [전체 버전 목록](https://github.com/parkhw328/wook-text/releases)
-
-위 다운로드는 공개된 **1.0.2**입니다. 아래 기능 설명과 화면은 **1.1.1 준비 버전** 기준이며, 새 버전 공개 전까지 기존 다운로드를 유지합니다. 1.1.1 패키지는 아래 개발 명령으로 생성할 수 있습니다.
+[SHA-256 체크섬](https://github.com/parkhw328/wook-text/releases/download/v1.1.1/SHA256SUMS.txt) · [전체 버전 목록](https://github.com/parkhw328/wook-text/releases)
 
 배포본에는 .NET 런타임이 포함됩니다. 설치 마법사는 현재 사용자 폴더와 시작 메뉴에 설치하며 관리자 권한이 필요하지 않습니다. Windows 설정의 앱 목록에서 제거할 수 있습니다. 기존 텍스트 파일 연결은 변경하지 않습니다.
 
