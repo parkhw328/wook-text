@@ -7,6 +7,8 @@ artwork, trademarks, or binaries are included.
 | Component | Version | License | Use |
 | --- | --- | --- | --- |
 | [AvalonEdit](https://github.com/icsharpcode/AvalonEdit) | 6.3.1.120 | MIT | Editing and syntax highlighting |
+| [Prettier](https://github.com/prettier/prettier) | 3.9.6 | MIT and bundled third-party notices | Offline document formatting |
+| [Node.js](https://nodejs.org/) | 26.10.0 | MIT and bundled third-party notices | Private Windows x64 formatting runtime |
 | [DiffPlex](https://github.com/mmanela/diffplex) | 1.9.0 | Apache-2.0 | Text comparison |
 | [.NET / WPF](https://github.com/dotnet/wpf) | 10.0 | MIT and bundled third-party notices | Windows runtime |
 | [NSIS](https://nsis.sourceforge.io/License) | 3.13 | zlib/libpng; component licenses | Installer; zlib compression |
@@ -37,3 +39,10 @@ Resolved application and test dependencies are pinned in `packages.lock.json`.
 
 Source references were checked on 2026-10-09. Preserve these notices when
 redistributing wText, and recheck licenses when adding or updating dependencies.
+
+Formatter licenses were reviewed on 2026-10-11. Prettier standalone and parser
+bundles retain their full upstream notices in `licenses/Prettier.txt` and
+`licenses/Prettier-THIRD-PARTY-NOTICES.md`. The complete Node.js license, including
+its embedded dependencies, is in `licenses/Nodejs.txt`. These permit free
+redistribution with the included notices; neither tool is installed system-wide.
+Downloads and checksums are pinned in `scripts/prepare-formatter.ps1`.

@@ -64,6 +64,8 @@ public partial class CompareWindow : Window
     {
         foreach (TextEditor editor in new[] { _leftEditor, _rightEditor, _leftInput, _rightInput })
             EditorFactory.ApplyPreferences(editor, _preferences.Current);
+        UpdateSource(_left, _leftInput, LeftPath, LeftHint);
+        UpdateSource(_right, _rightInput, RightPath, RightHint);
     }
 
     public Task CompareFilesAsync(string left, string right) => LoadFilesAsync([left, right]);
@@ -208,8 +210,13 @@ public partial class CompareWindow : Window
         UpdateSource(_right, _rightInput, RightPath, RightHint);
     }
 
-    private static void UpdateSource(LoadedTextFile? file, TextEditor input, TextBlock label, TextBlock hint)
+    private void UpdateSource(LoadedTextFile? file, TextEditor input, TextBlock label, TextBlock hint)
     {
+        IndentationOptions indentation = IndentationService.Resolve(_preferences.Current,
+            SyntaxCatalog.Resolve(file?.Path).Id, file?.Path, input.Text);
+        input.Options.IndentationSize = indentation.Size;
+        input.Options.ConvertTabsToSpaces = !indentation.UseTabs;
+        (input == _leftInput ? _leftEditor : _rightEditor).Options.IndentationSize = indentation.Size;
         label.Text = file is null ? input.Document.TextLength == 0 ? "직접 입력 / 붙여넣기 / 파일 드롭" : $"입력한 텍스트 · {input.Document.TextLength:N0}자"
             : Path.GetFileName(file.Path) + (input.Text == file.Text ? "" : " · 편집됨");
         label.ToolTip = file?.Path;

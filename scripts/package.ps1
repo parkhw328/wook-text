@@ -1,5 +1,6 @@
 param([switch]$SmokeInstaller)
 . "$PSScriptRoot\common.ps1"
+& "$PSScriptRoot\prepare-formatter.ps1"
 Push-Location $RepoRoot
 try {
     [xml]$properties = Get-Content -LiteralPath 'Directory.Build.props'

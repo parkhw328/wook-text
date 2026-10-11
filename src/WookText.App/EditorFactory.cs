@@ -46,6 +46,8 @@ public static class EditorFactory
         editor.ShowLineNumbers = !editor.IsReadOnly && preferences.ShowLineNumbers;
         editor.Options.ShowSpaces = preferences.ShowWhitespace;
         editor.Options.ShowTabs = preferences.ShowWhitespace;
+        editor.Options.IndentationSize = preferences.Indentation.Size;
+        editor.Options.ConvertTabsToSpaces = !preferences.Indentation.UseTabs;
         AppliedPreferences.Remove(editor);
         AppliedPreferences.Add(editor, preferences);
     }

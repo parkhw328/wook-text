@@ -64,7 +64,7 @@ if ($PreviousSmokeInstaller) {
 $process = Start-Process -FilePath $setup -ArgumentList "/S /D=$target" -WindowStyle Hidden -PassThru
 if (-not $process.WaitForExit(60000)) { $process.Kill(); throw 'Installer timed out.' }
 if ($process.ExitCode -ne 0) { throw "Installer failed: $($process.ExitCode)" }
-foreach ($requiredFile in @('wText.exe', 'Uninstall.exe', 'LICENSE', 'THIRD-PARTY-NOTICES.md', '.wtext-install', 'licenses\DiffPlex.txt', 'licenses\NotoSansKR-OFL.txt', 'licenses\JetBrainsMono-OFL.txt', 'Assets\Fonts\JetBrainsMono-Regular.ttf', 'Assets\Fonts\NotoSansKR-Regular.otf')) {
+foreach ($requiredFile in @('wText.exe', 'Uninstall.exe', 'LICENSE', 'THIRD-PARTY-NOTICES.md', '.wtext-install', 'licenses\DiffPlex.txt', 'licenses\NotoSansKR-OFL.txt', 'licenses\JetBrainsMono-OFL.txt', 'Assets\Fonts\JetBrainsMono-Regular.ttf', 'Assets\Fonts\NotoSansKR-Regular.otf', 'Formatting\node.exe', 'Formatting\format.cjs', 'Formatting\prettier\standalone.js', 'licenses\Prettier.txt', 'licenses\Prettier-THIRD-PARTY-NOTICES.md', 'licenses\Nodejs.txt')) {
     if (-not (Test-Path -LiteralPath (Join-Path $target $requiredFile))) { throw "Missing installed file: $requiredFile" }
 }
 if ((Get-ItemProperty -LiteralPath $testKey).InstallDir -ne $target) { throw 'The install directory was not registered.' }

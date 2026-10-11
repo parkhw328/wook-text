@@ -39,8 +39,10 @@ public sealed class EditorDocument : INotifyPropertyChanged, IDisposable
         {
             _analysisTimer.Stop();
             LineEndingDescription = TextAnalysis.LineEndings(Editor.Text);
+            ApplyIndentation();
             Notify();
         };
+        ApplyIndentation();
     }
 
     public void Load(LoadedTextFile file)
@@ -55,6 +57,7 @@ public sealed class EditorDocument : INotifyPropertyChanged, IDisposable
         LineEndingDescription = TextAnalysis.LineEndings(file.Text);
         LanguageOverride = null;
         EditorFactory.ApplySyntax(Editor, FilePath);
+        ApplyIndentation();
         Notify();
     }
 
@@ -64,6 +67,7 @@ public sealed class EditorDocument : INotifyPropertyChanged, IDisposable
         Fingerprint = fingerprint;
         Editor.IsModified = false;
         EditorFactory.ApplySyntax(Editor, FilePath, LanguageOverride);
+        ApplyIndentation();
         Notify();
     }
 
@@ -71,6 +75,7 @@ public sealed class EditorDocument : INotifyPropertyChanged, IDisposable
     {
         Encoding = TextFileEncoding.Utf8;
         Editor.IsModified = true;
+        ApplyIndentation();
         Notify();
     }
 
@@ -78,6 +83,7 @@ public sealed class EditorDocument : INotifyPropertyChanged, IDisposable
     {
         LanguageOverride = id;
         EditorFactory.ApplySyntax(Editor, FilePath, id);
+        ApplyIndentation();
         Notify();
     }
 
@@ -85,6 +91,7 @@ public sealed class EditorDocument : INotifyPropertyChanged, IDisposable
     {
         FilePath = System.IO.Path.GetFullPath(path);
         EditorFactory.ApplySyntax(Editor, FilePath, LanguageOverride);
+        ApplyIndentation();
         Notify();
     }
 
@@ -128,6 +135,7 @@ public sealed class EditorDocument : INotifyPropertyChanged, IDisposable
         Editor.CaretOffset = Math.Clamp(state.CaretOffset, 0, Editor.Document.TextLength);
         _restoredView = state;
         if (Editor.IsLoaded) RestoreView();
+        ApplyIndentation();
         Notify();
     }
 
@@ -142,7 +150,19 @@ public sealed class EditorDocument : INotifyPropertyChanged, IDisposable
         }, DispatcherPriority.Loaded);
     }
 
-    private void OnPreferencesChanged(object? sender, EventArgs e) => EditorFactory.ApplyPreferences(Editor, _preferences.Current);
+    private void ApplyIndentation()
+    {
+        IndentationOptions options = IndentationService.Resolve(_preferences.Current,
+            SyntaxCatalog.Resolve(FilePath, LanguageOverride).Id, FilePath, Editor.Text);
+        Editor.Options.IndentationSize = options.Size;
+        Editor.Options.ConvertTabsToSpaces = !options.UseTabs;
+    }
+
+    private void OnPreferencesChanged(object? sender, EventArgs e)
+    {
+        EditorFactory.ApplyPreferences(Editor, _preferences.Current);
+        ApplyIndentation();
+    }
 
     private void Notify() => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(null));
 

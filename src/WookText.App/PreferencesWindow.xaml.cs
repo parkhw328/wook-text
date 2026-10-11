@@ -9,6 +9,10 @@ public partial class PreferencesWindow : Window
 {
     private readonly EditorPreferences _original;
     private bool _ready;
+    private bool _loadingIndent;
+    private string _indentKey = "default";
+    private IndentationOptions _defaultIndent = new();
+    private IndentationProfiles _indentProfiles = new();
     public TextEditor PreviewEditor { get; }
     public EditorPreferences? Result { get; private set; }
 
@@ -22,12 +26,22 @@ public partial class PreferencesWindow : Window
         EditorFactory.ApplySyntax(PreviewEditor, "preview.js");
         PreviewHost.Content = PreviewEditor;
         EnglishFontBox.ItemsSource = KoreanFontBox.ItemsSource = EditorFonts.AvailableFamilies;
+        IndentSizeBox.ItemsSource = Enumerable.Range(1, 8);
+        IndentLanguageBox.ItemsSource = new[] { new IndentLanguage("default", "공통 기본값") }
+            .Concat(SyntaxCatalog.Languages.Select(language => new IndentLanguage(language.Id, language.Label)))
+            .Concat(new[] { new IndentLanguage("jsonc", "JSONC"), new IndentLanguage("vue", "Vue"), new IndentLanguage("scss", "SCSS"), new IndentLanguage("less", "Less") }).ToArray();
         Populate(preferences);
     }
 
     private void Populate(EditorPreferences preferences)
     {
         _ready = false;
+        _defaultIndent = preferences.Indentation;
+        _indentProfiles = new();
+        foreach (var pair in preferences.IndentationByLanguage) _indentProfiles[pair.Key] = pair.Value;
+        _indentKey = "default";
+        IndentLanguageBox.SelectedValue = "default";
+        LoadIndentControls();
         EnglishFontBox.SelectedItem = EditorFonts.AvailableFamilies.Contains(preferences.EnglishFont) ? preferences.EnglishFont : "JetBrains Mono";
         KoreanFontBox.SelectedItem = EditorFonts.AvailableFamilies.Contains(preferences.KoreanFont) ? preferences.KoreanFont : "Noto Sans KR";
         SizeBox.Text = preferences.FontSize.ToString(CultureInfo.CurrentCulture);
@@ -55,8 +69,11 @@ public partial class PreferencesWindow : Window
             ShowLineNumbers = LineNumbersBox.IsChecked == true,
             WordWrap = WordWrapBox.IsChecked == true,
             ShowWhitespace = WhitespaceBox.IsChecked == true,
-            RememberSession = RememberSessionBox.IsChecked == true
+            RememberSession = RememberSessionBox.IsChecked == true,
+            Indentation = _defaultIndent,
+            IndentationByLanguage = new IndentationProfiles()
         };
+        foreach (var pair in _indentProfiles) preferences.IndentationByLanguage[pair.Key] = pair.Value;
         ValidationMessage.Text = "다음 실행에도 이 설정을 사용합니다.";
         return true;
     }
@@ -82,6 +99,58 @@ public partial class PreferencesWindow : Window
         DialogResult = true;
     }
     private void OnReset(object sender, RoutedEventArgs e) => Populate(new EditorPreferences());
+    private sealed record IndentLanguage(string Id, string Label)
+    {
+        public override string ToString() => Label;
+    }
+
+    private void OnIndentLanguageChanged(object sender, RoutedEventArgs e)
+    {
+        if (!_ready || IndentLanguageBox.SelectedValue is not string key) return;
+        _indentKey = key;
+        LoadIndentControls();
+    }
+
+    private void LoadIndentControls()
+    {
+        _loadingIndent = true;
+        bool isDefault = _indentKey == "default";
+        bool overridden = _indentProfiles.TryGetValue(_indentKey, out IndentationOptions? options);
+        options ??= _defaultIndent;
+        IndentOverrideBox.IsEnabled = !isDefault;
+        IndentOverrideBox.IsChecked = !isDefault && overridden;
+        IndentOptionsPanel.IsEnabled = isDefault || overridden;
+        DetectIndentBox.IsChecked = options.DetectFromDocument;
+        IndentStyleBox.IsEnabled = _indentKey != "yaml";
+        IndentStyleBox.SelectedIndex = options.UseTabs && _indentKey != "yaml" ? 1 : 0;
+        IndentSizeBox.SelectedItem = options.Size;
+        _loadingIndent = false;
+        ShowIndentPreview();
+    }
+
+    private void OnIndentOverrideChanged(object sender, RoutedEventArgs e)
+    {
+        if (!_ready || _indentKey == "default") return;
+        if (IndentOverrideBox.IsChecked == true) _indentProfiles[_indentKey] = _defaultIndent;
+        else _indentProfiles.Remove(_indentKey);
+        LoadIndentControls();
+    }
+
+    private void OnIndentOptionChanged(object sender, RoutedEventArgs e)
+    {
+        if (!_ready || _loadingIndent || IndentSizeBox.SelectedItem is not int size) return;
+        IndentationOptions options = new() { Size = size, UseTabs = IndentStyleBox.SelectedIndex == 1 && _indentKey != "yaml", DetectFromDocument = DetectIndentBox.IsChecked == true };
+        if (_indentKey == "default") _defaultIndent = options;
+        else if (IndentOverrideBox.IsChecked == true) _indentProfiles[_indentKey] = options;
+        ShowIndentPreview();
+    }
+
+    private void ShowIndentPreview()
+    {
+        int size = IndentSizeBox.SelectedItem is int selected ? selected : 4;
+        string indent = new(' ', size);
+        IndentPreview.Text = "{\n" + indent + "\"editor\": {\n" + indent + indent + "\"indent\": " + size + "\n" + indent + "}\n}";
+    }
     private void OnIncrease(object sender, RoutedEventArgs e) => Resize(1);
     private void OnDecrease(object sender, RoutedEventArgs e) => Resize(-1);
     private void Resize(int delta)

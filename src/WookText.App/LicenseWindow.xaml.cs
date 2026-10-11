@@ -15,6 +15,8 @@ public partial class LicenseWindow : Window
         new("구성요소 전체 고지", "배포 구성요소와 저작권", ["THIRD-PARTY-NOTICES.md"]),
         new("AvalonEdit", "MIT", ["licenses/AvalonEdit.txt"]),
         new("DiffPlex", "Apache-2.0", ["licenses/DiffPlex.txt"]),
+        new("Prettier", "MIT · 타사 구성요소 고지", ["licenses/Prettier.txt", "licenses/Prettier-THIRD-PARTY-NOTICES.md"]),
+        new("Node.js", "MIT · 타사 구성요소 고지", ["licenses/Nodejs.txt"]),
         new("JetBrains Mono", "SIL OFL 1.1", ["licenses/JetBrainsMono-OFL.txt"]),
         new("Noto Sans KR", "SIL OFL 1.1", ["licenses/NotoSansKR-OFL.txt"]),
         new("Flexoki", "MIT", ["licenses/Flexoki-MIT.txt"]),

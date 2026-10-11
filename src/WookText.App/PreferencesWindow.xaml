@@ -2,7 +2,11 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="글꼴 및 편집 설정 — wText" Style="{StaticResource {x:Type Window}}" Width="680" Height="690" MinWidth="620" MinHeight="660" WindowStartupLocation="CenterOwner">
-  <Grid Margin="26" Background="{StaticResource Canvas}">
+  <Grid Margin="22" Background="{StaticResource Canvas}">
+    <Grid.RowDefinitions><RowDefinition Height="*" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
+    <TabControl x:Name="SettingsTabs">
+      <TabItem Header="글꼴 및 편집">
+      <Grid Margin="4,12,4,0">
     <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="*" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
     <StackPanel Margin="0,0,0,22">
       <TextBlock Text="편안한 편집 환경" Foreground="{StaticResource Bright}" FontSize="25" FontWeight="SemiBold" />
@@ -31,7 +35,7 @@
           <Button Content="+" Width="34" Click="OnIncrease" ToolTip="글자 크게" />
           <TextBlock Text="px" VerticalAlignment="Center" Foreground="{StaticResource Muted}" Margin="8,0,0,0" />
         </StackPanel>
-        <TextBlock Text="9–48 px · Ctrl+마우스 휠로 조절" Foreground="{StaticResource Muted}" FontSize="11" Margin="0,7,0,0" />
+        <TextBlock Text="9–48 px" Foreground="{StaticResource Muted}" FontSize="11" Margin="0,7,0,0" />
       </StackPanel>
       <StackPanel Grid.Column="2" Margin="0,22,0,0">
         <CheckBox x:Name="LineNumbersBox" Content="줄 번호 표시" Checked="OnPreviewChanged" Unchecked="OnPreviewChanged" Margin="0,0,0,9" />
@@ -50,7 +54,40 @@
       <TextBlock Text="앱을 닫을 때 로컬에 보관합니다. 끄면 종료 시 저장 여부를 묻습니다." Foreground="{StaticResource Muted}" FontSize="11" Margin="20,6,0,0" TextWrapping="Wrap" />
       <TextBlock x:Name="ValidationMessage" Foreground="#E8A26B" TextWrapping="Wrap" MinHeight="30" Margin="0,10,0,0" />
     </StackPanel>
-    <DockPanel Grid.Row="5" Margin="0,8,0,0">
+      </Grid>
+      </TabItem>
+      <TabItem Header="들여쓰기" x:Name="IndentationTab">
+        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+        <StackPanel Margin="16,16,16,0">
+          <TextBlock Text="소스별 들여쓰기" FontSize="25" FontWeight="SemiBold" />
+          <TextBlock Text="Tab 키 입력과 문서 자동 정렬에 같은 설정을 사용합니다." Foreground="{StaticResource Muted}" Margin="0,8,0,14" TextWrapping="Wrap" />
+          <TextBlock Text="소스 형식" Margin="0,0,0,8" />
+          <ComboBox x:Name="IndentLanguageBox" DisplayMemberPath="Label" SelectedValuePath="Id" SelectionChanged="OnIndentLanguageChanged" AutomationProperties.Name="들여쓰기 소스 형식" />
+          <CheckBox x:Name="IndentOverrideBox" Content="이 형식에 별도 설정 사용" Margin="0,12,0,12" Click="OnIndentOverrideChanged" />
+          <StackPanel x:Name="IndentOptionsPanel">
+            <CheckBox x:Name="DetectIndentBox" Content="기존 문서의 들여쓰기 감지 · 우선 적용" Margin="0,0,0,12" Click="OnIndentOptionChanged" />
+            <Grid>
+              <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="16" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+              <StackPanel>
+                <TextBlock Text="들여쓰기 문자" Margin="0,0,0,8" />
+                <ComboBox x:Name="IndentStyleBox" SelectionChanged="OnIndentOptionChanged" AutomationProperties.Name="들여쓰기 문자"><ComboBoxItem Content="공백" /><ComboBoxItem Content="탭" /></ComboBox>
+              </StackPanel>
+              <StackPanel Grid.Column="2">
+                <TextBlock Text="들여쓰기 / 탭 표시 너비" Margin="0,0,0,8" />
+                <ComboBox x:Name="IndentSizeBox" SelectionChanged="OnIndentOptionChanged" AutomationProperties.Name="들여쓰기 너비" />
+              </StackPanel>
+            </Grid>
+          </StackPanel>
+          <TextBlock Text="감지를 켜면 기존 문서의 공백 수나 탭을 우선 유지합니다. 새 문서이거나 감지하기 어려우면 지정한 값을 사용합니다. 지정한 값으로 통일하려면 감지를 끄세요." Foreground="{StaticResource Muted}" Margin="0,14,0,8" TextWrapping="Wrap" />
+          <TextBlock Text="YAML은 문법에 따라 공백만 사용합니다. 미지원 언어는 Tab 입력에만 적용되며 자동 정렬 지원 범위는 동일합니다." Foreground="{StaticResource Muted}" TextWrapping="Wrap" />
+          <Border Background="{StaticResource Panel}" Padding="16" Margin="0,12,0,0" CornerRadius="6">
+            <StackPanel><TextBlock Text="지정한 값 미리보기" Foreground="{StaticResource Muted}" Margin="0,0,0,8" /><TextBlock x:Name="IndentPreview" FontFamily="Consolas" /></StackPanel>
+          </Border>
+        </StackPanel>
+        </ScrollViewer>
+      </TabItem>
+    </TabControl>
+    <DockPanel Grid.Row="1" Margin="0,8,0,0">
       <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
         <Button Content="취소" IsCancel="True" MinWidth="76" Margin="0,0,8,0" />
         <Button x:Name="ApplyButton" Content="적용" IsDefault="True" Click="OnApply" MinWidth="88" Style="{StaticResource AccentButton}" />

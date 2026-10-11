@@ -108,6 +108,8 @@ internal static class Program
         Check(comparison.Result is { Added: 1, Modified: 2 }, "The comparison screen should report one added and two modified lines.");
         await RenderAsync(comparison, Path.Combine(output, "comparison.png"), 1240, 780);
         await RenderAsync(window, Path.Combine(output, "editor-small.png"), 960, 600);
+        await ThemeChecks.RunAsync(window, output);
+        await FormattingChecks.RunAsync(window, output);
         await ExperienceChecks.RunAsync(window, comparison, preferences, settingsPath, output);
         comparison.Close();
         await ComparisonChecks.RunAsync(preferences, output);

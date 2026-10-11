@@ -28,7 +28,9 @@ public sealed class PreferencesStoreTests : IDisposable
             ShowLineNumbers = false,
             WordWrap = true,
             ShowWhitespace = true,
-            RememberSession = false
+            RememberSession = false,
+            Indentation = new() { Size = 2 },
+            IndentationByLanguage = new() { ["csharp"] = new() { Size = 4, UseTabs = true, DetectFromDocument = false } }
         };
         Store.Save(expected);
         Assert.Equal(expected, Store.Load(out string? warning));

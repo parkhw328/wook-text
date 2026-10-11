@@ -1,5 +1,6 @@
 param([switch]$SkipTests)
 . "$PSScriptRoot\common.ps1"
+& "$PSScriptRoot\prepare-formatter.ps1"
 Push-Location $RepoRoot
 try {
     Invoke-Dotnet restore WookText.slnx --locked-mode

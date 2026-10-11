@@ -16,6 +16,10 @@
     <PackageReference Include="AvalonEdit" Version="6.3.1.120" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Formatting/format.cjs" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="../../.tools/formatter/node.exe" Link="Formatting/node.exe" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="../../.tools/formatter/package/standalone.js" Link="Formatting/prettier/standalone.js" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="../../.tools/formatter/package/plugins/*.js" Link="Formatting/prettier/plugins/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="Assets/Fonts/*.ttf" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="Assets/Fonts/*.otf" CopyToOutputDirectory="PreserveNewest" />
     <Resource Include="Assets/wText.ico" />
@@ -25,4 +29,7 @@
     <Content Include="../../CHANGELOG.md" Link="CHANGELOG.md" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="../../licenses/**/*" Link="licenses/%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
+  <Target Name="CheckFormatter" BeforeTargets="PrepareForBuild" Condition="!Exists('../../.tools/formatter/node.exe') Or !Exists('../../.tools/formatter/package/standalone.js')">
+    <Error Text="Run scripts/prepare-formatter.ps1 before building wText." />
+  </Target>
 </Project>

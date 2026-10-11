@@ -1,17 +1,17 @@
 # wText
 
-Windows x64용 무료 텍스트 편집기입니다. **1.1.1**은 비교창의 추가·삭제·수정을 초록·빨강·노랑으로 구분하고 수정 줄의 노란 배경을 강화했습니다. 스크롤 문제 수정, 직접 입력·붙여넣기 비교와 파일 드롭도 포함합니다. 작업 폴더를 최대 10개까지 함께 관리하며, 열린 탭과 미저장 내용 복원, 다국어 구문 강조, 글꼴 설정과 집중 모드를 제공합니다. 제작자는 **Hyunwook Park**이며 [GitHub 프로젝트](https://github.com/parkhw328/wook-text)에서 소스와 의견을 확인할 수 있습니다.
+Windows x64용 무료 텍스트 편집기입니다. **1.2.3**은 문서 자동 정렬, 소스별 들여쓰기 설정과 기존 들여쓰기 감지, 비교 화면 개선을 제공합니다. 설정 콤보박스 전체 클릭과 탭·목록의 안정적인 다크 테마도 적용했습니다. 작업 폴더를 최대 10개까지 함께 관리하며, 열린 탭과 미저장 내용 복원, 다국어 구문 강조, 글꼴 설정과 집중 모드를 제공합니다. 제작자는 **Hyunwook Park**이며 [GitHub 프로젝트](https://github.com/parkhw328/wook-text)에서 소스와 의견을 확인할 수 있습니다.
 
 ## 최신 배포 버전 다운로드
 
-**wText 1.1.1 · Windows x64** — [최신 릴리스 및 변경 내용](https://github.com/parkhw328/wook-text/releases/latest)
+**wText 1.2.3 · Windows x64** — [최신 릴리스 및 변경 내용](https://github.com/parkhw328/wook-text/releases/latest)
 
 | 배포 형태 | 다운로드 | 실행 방법 |
 | --- | --- | --- |
-| 설치형 | [Windows 설치 파일 (.exe)](https://github.com/parkhw328/wook-text/releases/download/v1.1.1/wText-1.1.1-win-x64-setup.exe) | 다운로드한 파일을 실행해 설치 |
-| 무설치형 | [무설치 ZIP](https://github.com/parkhw328/wook-text/releases/download/v1.1.1/wText-1.1.1-win-x64-portable.zip) | **전체 압축 해제**한 뒤 `wText.exe` 실행 |
+| 설치형 | [Windows 설치 파일 (.exe)](https://github.com/parkhw328/wook-text/releases/download/v1.2.3/wText-1.2.3-win-x64-setup.exe) | 다운로드한 파일을 실행해 설치 |
+| 무설치형 | [무설치 ZIP](https://github.com/parkhw328/wook-text/releases/download/v1.2.3/wText-1.2.3-win-x64-portable.zip) | **전체 압축 해제**한 뒤 `wText.exe` 실행 |
 
-[SHA-256 체크섬](https://github.com/parkhw328/wook-text/releases/download/v1.1.1/SHA256SUMS.txt) · [전체 버전 목록](https://github.com/parkhw328/wook-text/releases)
+[SHA-256 체크섬](https://github.com/parkhw328/wook-text/releases/download/v1.2.3/SHA256SUMS.txt) · [전체 버전 목록](https://github.com/parkhw328/wook-text/releases)
 
 배포본에는 .NET 런타임이 포함됩니다. 설치 마법사는 현재 사용자 폴더와 시작 메뉴에 설치하며 관리자 권한이 필요하지 않습니다. Windows 설정의 앱 목록에서 제거할 수 있습니다. 기존 텍스트 파일 연결은 변경하지 않습니다.
 
@@ -31,15 +31,37 @@ Windows x64용 무료 텍스트 편집기입니다. **1.1.1**은 비교창의 �
 
 ![세 작업 폴더를 함께 탐색하고 서로 다른 프로젝트의 문서를 편집하는 화면](docs/images/workspaces.png)
 
+### 문서 자동 정렬하기
+
+**보기 → 문서 자동 정렬** 또는 `Ctrl+Shift+F`로 현재 문서 전체의 들여쓰기와 줄바꿈을 정리합니다. JSON·JSONC·JavaScript(JSX)·TypeScript(TSX)·HTML·Vue·CSS·SCSS·Less·YAML·Markdown을 지원합니다. 파일 확장자 또는 언어 메뉴에서 선택한 형식을 사용하며, 새 문서에 붙여넣은 JSON 객체·배열은 자동 인식합니다. 다른 형식을 붙여넣었다면 먼저 **언어** 메뉴에서 선택하세요.
+
+들여쓰기는 기본적으로 기존 문서에서 감지한 공백 수나 탭을 유지합니다. 감지하기 어려운 문서는 언어별 설정 또는 공통 기본값(공백 4칸)을 사용합니다. 줄 길이 기준은 100자입니다. 문법에 따라 실제 줄 길이는 달라질 수 있습니다. 인코딩과 마지막 줄바꿈 유무를 유지하고, 줄바꿈은 문서의 첫 줄바꿈 방식으로 맞춥니다. 결과는 미저장 변경으로 적용하며 **Ctrl+Z 한 번**으로 원문으로 돌아갑니다. 문법 오류·미지원 형식·200만 자 초과·30초 시간 초과 시 원문을 유지하고 이유를 안내합니다. 자동 정렬 지원 범위는 구문 강조 지원 범위보다 좁습니다.
+
+![문서 자동 정렬로 들여쓰기와 줄바꿈을 정리한 JSON](docs/images/formatting.png)
+
+정렬은 배포본에 포함된 Prettier와 Node.js로 로컬에서 실행됩니다. 사용자 PC에 별도 도구를 설치할 필요가 없으며, 문서나 프로젝트의 설정 파일을 실행하거나 네트워크로 문서를 전송하지 않습니다.
+
+### 언어별 들여쓰기 설정하기
+
+**보기 → 글꼴 및 편집 설정 → 들여쓰기**에서 공통 기본값 또는 소스 형식을 선택하세요. JSON·JSONC·JavaScript·TypeScript·HTML·Vue·CSS·SCSS·Less 등을 각각 설정할 수 있으며, 다른 언어도 Tab 키 입력 설정을 지원합니다.
+
+- **이 형식에 별도 설정 사용**: 켜면 해당 언어에 독립적인 설정을 저장하고, 끄면 공통 기본값을 따릅니다.
+- **공백 / 탭**, **1~8칸 너비**: Tab 입력과 지원 언어의 자동 정렬에 적용합니다. 탭 문서의 표시 너비는 지정한 값을 사용합니다.
+- **기존 문서의 들여쓰기 감지 · 우선 적용**: 기본적으로 켜져 있습니다. 기존의 2칸·4칸 공백이나 탭을 감지하여 단순한 들여쓰기 차이로 재정렬되는 일을 줄입니다. 비어 있거나 혼합·정렬용 공백 때문에 감지하기 어려우면 지정값을 사용합니다. 원하는 너비로 통일하려면 이 옵션을 끄세요.
+
+설정을 적용해도 본문은 바뀌지 않습니다. 실제 변환은 **문서 자동 정렬**을 실행할 때 이루어지며 `Ctrl+Z`로 되돌릴 수 있습니다. 감지는 선행 공백을 이용한 추정이고, 따옴표·줄 길이 등 다른 포맷 규칙까지 다른 IDE와 같게 맞추는 기능은 아닙니다. YAML은 문법에 맞춰 공백만 사용합니다.
+
+![JSON에 공백 2칸을 지정하는 언어별 들여쓰기 설정](docs/images/indentation.png)
+
 ### 파일과 붙여넣은 텍스트 비교하기
 
-**비교 → 파일 · 텍스트 비교** 또는 `Ctrl+Shift+D`로 비교창을 여세요. **텍스트 입력**의 좌우 칸에 직접 입력하거나 `Ctrl+V`로 붙여넣고, **비교하기** 또는 `Ctrl+Enter`를 누르세요. 각 칸의 **붙여넣기** 버튼은 그쪽 전체 내용을 클립보드 텍스트로 바꾸며, **비우기**와 함께 `Ctrl+Z`로 되돌릴 수 있습니다. 한쪽 또는 양쪽이 비어 있어도 비교할 수 있습니다.
+**보기 → 파일 · 텍스트 비교** 또는 `Ctrl+Shift+D`로 비교창을 여세요. **텍스트 입력**의 좌우 칸에 직접 입력하거나 `Ctrl+V`로 붙여넣고, **비교하기** 또는 `Ctrl+Enter`를 누르세요. 파일명과 **파일 열기 / 붙여넣기 / 비우기**는 각 편집기 위 한 줄에 표시합니다. 긴 파일명은 말줄임하며 마우스를 올리면 전체 경로를 볼 수 있습니다. 각 칸의 **붙여넣기** 버튼은 그쪽 전체 내용을 클립보드 텍스트로 바꾸며, **비우기**와 함께 `Ctrl+Z`로 되돌릴 수 있습니다. 한쪽 또는 양쪽이 비어 있어도 비교할 수 있습니다.
 
 ![파일 없이 좌우 텍스트를 붙여넣어 비교를 준비하는 화면](docs/images/comparison-input.png)
 
 **파일 열기** 버튼이나 파일 드래그도 사용할 수 있습니다. 파일 **한 개**는 놓은 쪽에, **두 개**는 전달된 순서대로 좌우에 열립니다. 입력 칸·파일 이름 카드·비교 결과 어디에 놓아도 됩니다. 두 파일이 준비되면 자동으로 비교하며, 파일과 직접 입력한 텍스트를 섞어 비교할 수도 있습니다. 좌우가 반대라면 **좌우 바꾸기**를 누르세요. 폴더·세 개 이상의 파일은 받지 않으며, 읽기 실패나 인코딩 선택 취소 시 기존 입력을 유지합니다.
 
-**비교 결과**에서는 추가·삭제·수정 줄과 변경된 단어를 표시하고 양쪽 스크롤을 맞춥니다. 상단의 변경 줄 수와 범례는 **추가=초록, 삭제=빨강, 수정=노랑**으로 구분합니다. 수정 줄에는 진한 노란 배경을, 변경된 단어에는 더 밝은 배경을 표시합니다. 이전·다음 변경 버튼 또는 `Shift+F7`·`F7`로 이동하세요. **텍스트 입력**으로 돌아가 수정하면 이전 결과를 비활성화하므로 다시 **비교하기**를 누르면 됩니다. 입력 내용과 실행 취소 기록은 두 화면을 오가도 유지됩니다.
+**비교 결과**에서는 추가·삭제·수정 줄과 변경된 단어를 표시하고 양쪽 스크롤을 맞춥니다. 우측 하단의 굵은 변경 줄 수와 결과 범례는 **추가=초록, 삭제=빨강, 수정=노랑**으로 구분합니다. 수정 줄에는 진한 노란 배경을, 변경된 단어에는 더 밝은 배경을 표시합니다. 이전·다음 변경 버튼 또는 `Shift+F7`·`F7`로 이동하세요. **텍스트 입력**으로 돌아가 수정하면 이전 결과를 비활성화하므로 다시 **비교하기**를 누르면 됩니다. 입력 내용과 실행 취소 기록은 두 화면을 오가도 유지됩니다.
 
 ![두 파일을 좌우로 비교하고 변경된 줄과 단어를 표시하는 화면](docs/images/comparison.png)
 
@@ -62,6 +84,10 @@ Windows x64용 무료 텍스트 편집기입니다. **1.1.1**은 비교창의 �
 **보기 → 글꼴 및 편집 설정** 또는 `Ctrl+,`에서 한글·영문 글꼴과 크기를 미리 보고 적용하세요. **다음 실행에서 열린 문서와 미저장 내용 이어하기**를 끄면 종료할 때 저장 여부를 묻습니다. `Ctrl+B`로 사이드바를 숨기고 `F11`로 편집에 집중할 수도 있습니다.
 
 ![영문·한글 글꼴, 미리보기와 작업 이어하기 옵션](docs/images/preferences.png)
+
+글꼴·들여쓰기 선택 상자는 값이나 빈 공간을 눌러도 목록이 열립니다. 글꼴 이름 직접 입력도 유지하며, `F4`로 열고 `Esc`로 닫을 수 있습니다.
+
+선택한 탭은 본문에서 마우스를 움직이거나 포커스를 옮겨도 배경색을 유지합니다. 탭과 열린 문서 목록의 키보드 포커스는 어두운 테두리로 구분합니다.
 
 ### 라이선스 원문 확인하기
 
@@ -148,10 +174,12 @@ Windows x64의 PowerShell에서 저장소 루트를 기준으로 실행합니다
 .\scripts\package.ps1 -SmokeInstaller   # 격리된 설치 검증용 패키지 생성
 .\scripts\test-installer.ps1            # 설치·재설치·제거 및 사용자 파일 보존 검증
 .\scripts\make-icon.ps1                 # 벡터 원본에서 PNG와 다중 크기 ICO 재생성
-.\scripts\update-screenshots.ps1        # WPF 검증 결과에서 README 화면 8개 갱신
+.\scripts\update-screenshots.ps1        # WPF 검증 결과에서 README 화면 10개 갱신
 ```
 
 패키징 결과는 `artifacts/installer/`의 설치 파일과 `artifacts/`의 무설치 ZIP에 생성됩니다. 게시 전 실행 파일은 `artifacts/publish/win-x64/wText.exe`입니다. 새 버전 배포 시 설치 파일·ZIP·`SHA256SUMS.txt`를 해당 GitHub 릴리스에 첨부하고 위 다운로드 버전과 링크를 함께 갱신하세요.
+
+빌드·실행·패키징 스크립트는 `prepare-formatter.ps1`로 고정 버전 Node.js 26.10.0과 Prettier 3.9.6을 준비하고 체크섬을 확인합니다. 최초 준비에는 인터넷 연결과 Windows의 `tar`가 필요합니다. 직접 `dotnet build`를 실행할 때는 먼저 `.\scripts\prepare-formatter.ps1`을 실행하세요. 런타임은 앱 전용 폴더에 포함되므로 배포 용량이 증가합니다.
 
 시스템 SDK 대신 `.tools/dotnet/dotnet.exe`를 사용할 수 있습니다.
 
@@ -170,6 +198,7 @@ PowerShell 실행 정책 때문에 스크립트가 차단되면 명령별로 `po
 | --- | --- |
 | `src/WookText.App/` | WPF 화면, 편집·비교·설정·라이선스, `SessionCoordinator` 작업 보관, 테마·구문 정의 |
 | `src/WookText.App/Explorer/` | 탐색기 화면·상태, 지연 로딩·자동 갱신, 파일명 입력창 |
+| `src/WookText.App/Formatting/` | 내장 Prettier 실행 진입점; 고정 버전 도구는 `.tools/formatter/`에서 빌드 시 복사 |
 | `src/WookText.App/Assets/` | 앱 아이콘, 기본 글꼴과 출처·체크섬 |
 | `src/WookText.Core/` | 파일·인코딩·비교, `WorkspaceFiles` 탐색·파일 작업, `SessionStore` 복구본과 설정 저장 |
 | `tests/WookText.Core.Tests/` | xUnit 파일·인코딩·비교·검색·탐색기·설정 회귀 테스트 |
@@ -190,6 +219,7 @@ PowerShell 실행 정책 때문에 스크립트가 차단되면 명령별로 `po
 | `Ctrl+F`, `Ctrl+H`, `F3` | 찾기, 바꾸기, 다음 찾기 |
 | `Ctrl+Z`, `Ctrl+Y` | 실행 취소, 다시 실행 |
 | `Ctrl+Tab`, `Ctrl+Shift+Tab` | 다음·이전 탭 |
+| `Ctrl+Shift+F` | 현재 문서 자동 정렬 |
 | `Ctrl+Shift+D` | 파일 · 텍스트 비교창 열기 |
 | `Ctrl+Enter` | 비교창의 현재 입력 비교 |
 | `F7`, `Shift+F7` | 비교창에서 다음·이전 변경 구간 |
@@ -200,7 +230,7 @@ PowerShell 실행 정책 때문에 스크립트가 차단되면 명령별로 `po
 | `Ctrl+B` | 사이드바 접기·펼치기 |
 | `F11`, `Esc` | 집중 모드 전환, 검색 닫기·집중 모드 나가기 |
 | `Ctrl+,` | 글꼴 및 편집 설정 |
-| `Ctrl+마우스 휠`, `Ctrl++`, `Ctrl+-` | 글자 크게·작게 |
+| `Ctrl++`, `Ctrl+-` | 글자 크게·작게 |
 | `Ctrl+0` | 기본 글자 크기 15 px |
 
 ## 기여 및 버전 관리
@@ -211,4 +241,4 @@ PowerShell 실행 정책 때문에 스크립트가 차단되면 명령별로 `po
 
 ## 라이선스
 
-자체 코드는 [MIT](LICENSE)입니다. AvalonEdit(MIT), DiffPlex(Apache-2.0), JetBrains Mono·Noto Sans KR(OFL-1.1), Flexoki(MIT), .NET/WPF, NSIS의 고지는 [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md)를 확인하세요. 글꼴은 앱 폴더에서 직접 불러오며 Windows에 별도로 설치하지 않습니다. Sublime Text와 Notepad++는 사용성 참고 대상이며 해당 제품의 코드나 이미지를 포함하지 않습니다.
+자체 코드는 [MIT](LICENSE)입니다. AvalonEdit(MIT), DiffPlex(Apache-2.0), JetBrains Mono·Noto Sans KR(OFL-1.1), Flexoki(MIT), Prettier·Node.js(MIT 및 포함 구성요소 고지), .NET/WPF, NSIS의 고지는 [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md)를 확인하세요. 글꼴은 앱 폴더에서 직접 불러오며 Windows에 별도로 설치하지 않습니다. Sublime Text와 Notepad++는 사용성 참고 대상이며 해당 제품의 코드나 이미지를 포함하지 않습니다.

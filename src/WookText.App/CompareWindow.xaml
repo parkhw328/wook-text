@@ -9,7 +9,7 @@
     <SolidColorBrush x:Key="DiffModified" Color="#F4D66A" />
   </Window.Resources>
   <Grid Margin="20" Background="{StaticResource Canvas}">
-    <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="*" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
+    <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="*" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
     <DockPanel Margin="0,0,0,16">
       <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
         <CheckBox x:Name="IgnoreWhitespace" Content="줄 앞뒤 공백 무시" Margin="0,0,18,0" VerticalAlignment="Center" Click="OnIgnoreWhitespaceChanged" />
@@ -20,30 +20,30 @@
     </DockPanel>
     <Grid Grid.Row="1" Margin="0,0,0,10">
       <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="16" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
-      <Border x:Name="LeftSource" Background="{StaticResource Panel}" CornerRadius="7" Padding="12">
-        <StackPanel>
-          <TextBlock Text="원본 · 왼쪽" Foreground="{StaticResource Muted}" FontSize="11" />
-          <TextBlock x:Name="LeftPath" Text="직접 입력 / 붙여넣기 / 파일 드롭" Margin="0,5,0,10" TextTrimming="CharacterEllipsis" />
-          <StackPanel Orientation="Horizontal">
-            <Button x:Name="LeftBrowse" Content="파일 열기" Click="OnChooseLeft" Margin="0,0,6,0" />
-            <Button x:Name="LeftPaste" Content="붙여넣기" Click="OnPasteLeft" Margin="0,0,6,0" ToolTip="클립보드 텍스트로 왼쪽 내용을 바꿉니다. Ctrl+Z로 되돌릴 수 있습니다." />
-            <Button x:Name="LeftClear" Content="비우기" Click="OnClearLeft" ToolTip="왼쪽 내용을 비웁니다. Ctrl+Z로 되돌릴 수 있습니다." />
+      <Border x:Name="LeftSource" Background="{StaticResource Panel}" CornerRadius="7" Padding="10,8">
+        <DockPanel>
+          <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+            <Button x:Name="LeftBrowse" Content="파일 열기" Padding="7,4" Click="OnChooseLeft" Margin="0,0,6,0" />
+            <Button x:Name="LeftPaste" Content="붙여넣기" Padding="7,4" Click="OnPasteLeft" Margin="0,0,6,0" ToolTip="클립보드 텍스트로 왼쪽 내용을 바꿉니다. Ctrl+Z로 되돌릴 수 있습니다." />
+            <Button x:Name="LeftClear" Content="비우기" Padding="7,4" Click="OnClearLeft" ToolTip="왼쪽 내용을 비웁니다. Ctrl+Z로 되돌릴 수 있습니다." />
           </StackPanel>
-        </StackPanel>
+          <TextBlock Text="원본 · 왼쪽" DockPanel.Dock="Left" Foreground="{StaticResource Muted}" FontSize="11" VerticalAlignment="Center" Margin="0,0,10,0" />
+          <TextBlock x:Name="LeftPath" Text="직접 입력 / 파일 드롭" VerticalAlignment="Center" Margin="0,0,10,0" TextTrimming="CharacterEllipsis" />
+        </DockPanel>
       </Border>
-      <Border x:Name="RightSource" Grid.Column="2" Background="{StaticResource Panel}" CornerRadius="7" Padding="12">
-        <StackPanel>
-          <TextBlock Text="수정본 · 오른쪽" Foreground="{StaticResource Muted}" FontSize="11" />
-          <TextBlock x:Name="RightPath" Text="직접 입력 / 붙여넣기 / 파일 드롭" Margin="0,5,0,10" TextTrimming="CharacterEllipsis" />
-          <StackPanel Orientation="Horizontal">
-            <Button x:Name="RightBrowse" Content="파일 열기" Click="OnChooseRight" Margin="0,0,6,0" />
-            <Button x:Name="RightPaste" Content="붙여넣기" Click="OnPasteRight" Margin="0,0,6,0" ToolTip="클립보드 텍스트로 오른쪽 내용을 바꿉니다. Ctrl+Z로 되돌릴 수 있습니다." />
-            <Button x:Name="RightClear" Content="비우기" Click="OnClearRight" ToolTip="오른쪽 내용을 비웁니다. Ctrl+Z로 되돌릴 수 있습니다." />
+      <Border x:Name="RightSource" Grid.Column="2" Background="{StaticResource Panel}" CornerRadius="7" Padding="10,8">
+        <DockPanel>
+          <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+            <Button x:Name="RightBrowse" Content="파일 열기" Padding="7,4" Click="OnChooseRight" Margin="0,0,6,0" />
+            <Button x:Name="RightPaste" Content="붙여넣기" Padding="7,4" Click="OnPasteRight" Margin="0,0,6,0" ToolTip="클립보드 텍스트로 오른쪽 내용을 바꿉니다. Ctrl+Z로 되돌릴 수 있습니다." />
+            <Button x:Name="RightClear" Content="비우기" Padding="7,4" Click="OnClearRight" ToolTip="오른쪽 내용을 비웁니다. Ctrl+Z로 되돌릴 수 있습니다." />
           </StackPanel>
-        </StackPanel>
+          <TextBlock Text="수정본 · 오른쪽" DockPanel.Dock="Left" Foreground="{StaticResource Muted}" FontSize="11" VerticalAlignment="Center" Margin="0,0,10,0" />
+          <TextBlock x:Name="RightPath" Text="직접 입력 / 파일 드롭" VerticalAlignment="Center" Margin="0,0,10,0" TextTrimming="CharacterEllipsis" />
+        </DockPanel>
       </Border>
     </Grid>
-    <TextBlock Grid.Row="2" x:Name="Summary" Text="양쪽에 텍스트를 입력한 뒤 비교하기를 누르세요. 빈 내용도 비교할 수 있습니다." Foreground="{StaticResource Accent}" Margin="0,0,0,8" TextWrapping="Wrap" />
+    <TextBlock Grid.Row="5" x:Name="Summary" HorizontalAlignment="Right" TextAlignment="Right" FontWeight="Bold" Text="양쪽에 텍스트를 입력한 뒤 비교하기를 누르세요. 빈 내용도 비교할 수 있습니다." Foreground="{StaticResource Accent}" Margin="0,8,0,0" TextWrapping="Wrap" />
     <TabControl Grid.Row="3" x:Name="CompareTabs">
       <TabItem x:Name="InputTab" Header="텍스트 입력">
         <Grid Margin="0,8,0,0">
@@ -71,7 +71,7 @@
               <Button x:Name="PreviousButton" Content="↑ 이전" Click="OnPreviousChange" Padding="9,4" Margin="0,0,6,0" ToolTip="Shift+F7" />
               <Button x:Name="NextButton" Content="↓ 다음" Click="OnNextChange" Padding="9,4" ToolTip="F7" />
             </StackPanel>
-            <TextBlock VerticalAlignment="Center">
+            <TextBlock VerticalAlignment="Center" FontWeight="Bold">
               <Run Text="+ 추가" Foreground="{StaticResource DiffAdded}" />
               <Run Text="     " /><Run Text="− 삭제" Foreground="{StaticResource DiffDeleted}" />
               <Run Text="     " /><Run Text="~ 수정" Foreground="{StaticResource DiffModified}" />

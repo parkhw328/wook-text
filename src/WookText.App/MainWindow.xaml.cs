@@ -65,6 +65,7 @@ public partial class MainWindow : Window
             await WorkspaceExplorer.RevealCurrentAsync();
             WorkspaceExplorer.FocusTree();
         });
+        Bind(EditorCommands.FormatDocument, FormatDocumentAsync);
         Bind(EditorCommands.Compare, () => { new CompareWindow(_preferences) { Owner = this }.Show(); return Task.CompletedTask; });
         Bind(EditorCommands.ToggleSidebar, () => { ToggleSidebar(); return Task.CompletedTask; });
         Bind(EditorCommands.ToggleFocus, () => { ToggleFocus(); return Task.CompletedTask; });
@@ -316,6 +317,33 @@ public partial class MainWindow : Window
         }
         finally { _busy = false; _closing = false; Root.IsEnabled = true; CommandManager.InvalidateRequerySuggested(); }
         if (_allowClose) Close();
+    }
+
+    public async Task FormatDocumentAsync()
+    {
+        if (ActiveDocument is not { } document) return;
+        string original = document.Editor.Text;
+        if (string.IsNullOrWhiteSpace(original)) { Status.Text = "정렬할 내용이 없습니다."; return; }
+        Status.Text = "문서를 자동 정렬하는 중…";
+        try
+        {
+            string language = SyntaxCatalog.Resolve(document.FilePath, document.LanguageOverride).Id;
+            string formatted = await new TextFormattingService().FormatAsync(original, language, document.FilePath, preferences: _preferences.Current);
+            if (_closing || !Documents.Contains(document) || document.Editor.Text != original)
+            { Status.Text = "문서가 변경되어 정렬 결과를 적용하지 않았습니다."; return; }
+            if (formatted == original) { Status.Text = "이미 정렬된 문서입니다."; return; }
+            int caret = document.Editor.CaretOffset;
+            using (document.Editor.Document.RunUpdate())
+                document.Editor.Document.Replace(0, document.Editor.Document.TextLength, formatted);
+            document.Editor.CaretOffset = Math.Min(caret, formatted.Length);
+            document.Editor.Focus();
+            Status.Text = "문서 자동 정렬 완료 · Ctrl+Z로 되돌리기";
+        }
+        catch (Exception ex) when (ex is InvalidOperationException or IOException or System.Text.Json.JsonException)
+        {
+            Status.Text = "자동 정렬을 완료하지 못했습니다.";
+            AppDialogs.Alert(this, "문서 자동 정렬", "원문을 유지했습니다. 아래 내용을 확인해 주세요.", ex.Message);
+        }
     }
 
     private async Task RunAsync(Func<Task> action)

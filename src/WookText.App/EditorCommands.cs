@@ -4,6 +4,7 @@ namespace WookText.App;
 
 public static class EditorCommands
 {
+    public static RoutedUICommand FormatDocument { get; } = new("문서 자동 정렬", nameof(FormatDocument), typeof(EditorCommands));
     public static RoutedUICommand SaveAs { get; } = new("다른 이름으로 저장", nameof(SaveAs), typeof(EditorCommands));
     public static RoutedUICommand CloseTab { get; } = new("탭 닫기", nameof(CloseTab), typeof(EditorCommands));
     public static RoutedUICommand Compare { get; } = new("파일 · 텍스트 비교", nameof(Compare), typeof(EditorCommands));
