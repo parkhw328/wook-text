@@ -402,8 +402,14 @@ public partial class MainWindow : Window
         SearchPanel.Visibility = Visibility.Visible;
         ReplacePanel.Visibility = replace ? Visibility.Visible : Visibility.Collapsed;
         if (ActiveDocument?.Editor.SelectedText is { Length: > 0 } selected && !selected.Contains('\n')) FindBox.Text = selected;
-        FindBox.Focus();
-        FindBox.SelectAll();
+        // RunAsync disables Root while executing the command. Wait for it to
+        // re-enable the controls and for menu dismissal/layout to finish.
+        Dispatcher.BeginInvoke(DispatcherPriority.Input, () =>
+        {
+            if (!IsVisible || !SearchPanel.IsVisible || !FindBox.IsEnabled) return;
+            FindBox.Focus();
+            FindBox.SelectAll();
+        });
     }
 
     private void FindNext()

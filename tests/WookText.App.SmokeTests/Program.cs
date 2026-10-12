@@ -71,6 +71,7 @@ internal static class Program
         Check(document.Editor.IsModified, "Redo must restore the modified state.");
         document.Editor.Undo();
 
+        await SearchFocusChecks.RunAsync(window, output);
         ApplicationCommands.Find.Execute(null, window);
         TextBox find = (TextBox)window.FindName("FindBox");
         find.Text = "한국어";
