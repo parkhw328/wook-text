@@ -1,17 +1,17 @@
 # wText
 
-Windows x64용 무료 텍스트 편집기입니다. **1.2.4 준비 버전**은 찾기·바꾸기를 열 때 검색 입력란으로 포커스가 이동하도록 수정했습니다. 문서 자동 정렬, 소스별 들여쓰기 설정과 기존 들여쓰기 감지, 비교 화면 개선을 제공합니다. 설정 콤보박스 전체 클릭과 탭·목록의 안정적인 다크 테마도 적용했습니다. 작업 폴더를 최대 10개까지 함께 관리하며, 열린 탭과 미저장 내용 복원, 다국어 구문 강조, 글꼴 설정과 집중 모드를 제공합니다. 제작자는 **Hyunwook Park**이며 [GitHub 프로젝트](https://github.com/parkhw328/wook-text)에서 소스와 의견을 확인할 수 있습니다.
+Windows x64용 무료 텍스트 편집기입니다. **1.2.4**은 찾기·바꾸기를 열 때 검색 입력란으로 포커스가 이동하도록 수정했습니다. 문서 자동 정렬, 소스별 들여쓰기 설정과 기존 들여쓰기 감지, 비교 화면 개선을 제공합니다. 설정 콤보박스 전체 클릭과 탭·목록의 안정적인 다크 테마도 적용했습니다. 작업 폴더를 최대 10개까지 함께 관리하며, 열린 탭과 미저장 내용 복원, 다국어 구문 강조, 글꼴 설정과 집중 모드를 제공합니다. 제작자는 **Hyunwook Park**이며 [GitHub 프로젝트](https://github.com/parkhw328/wook-text)에서 소스와 의견을 확인할 수 있습니다.
 
 ## 최신 배포 버전 다운로드
 
-**wText 1.2.3 · Windows x64** — [최신 릴리스 및 변경 내용](https://github.com/parkhw328/wook-text/releases/latest)
+**wText 1.2.4 · Windows x64** — [최신 릴리스 및 변경 내용](https://github.com/parkhw328/wook-text/releases/latest)
 
 | 배포 형태 | 다운로드 | 실행 방법 |
 | --- | --- | --- |
-| 설치형 | [Windows 설치 파일 (.exe)](https://github.com/parkhw328/wook-text/releases/download/v1.2.3/wText-1.2.3-win-x64-setup.exe) | 다운로드한 파일을 실행해 설치 |
-| 무설치형 | [무설치 ZIP](https://github.com/parkhw328/wook-text/releases/download/v1.2.3/wText-1.2.3-win-x64-portable.zip) | **전체 압축 해제**한 뒤 `wText.exe` 실행 |
+| 설치형 | [Windows 설치 파일 (.exe)](https://github.com/parkhw328/wook-text/releases/download/v1.2.4/wText-1.2.4-win-x64-setup.exe) | 다운로드한 파일을 실행해 설치 |
+| 무설치형 | [무설치 ZIP](https://github.com/parkhw328/wook-text/releases/download/v1.2.4/wText-1.2.4-win-x64-portable.zip) | **전체 압축 해제**한 뒤 `wText.exe` 실행 |
 
-[SHA-256 체크섬](https://github.com/parkhw328/wook-text/releases/download/v1.2.3/SHA256SUMS.txt) · [전체 버전 목록](https://github.com/parkhw328/wook-text/releases)
+[SHA-256 체크섬](https://github.com/parkhw328/wook-text/releases/download/v1.2.4/SHA256SUMS.txt) · [전체 버전 목록](https://github.com/parkhw328/wook-text/releases)
 
 배포본에는 .NET 런타임이 포함됩니다. 설치 마법사는 현재 사용자 폴더와 시작 메뉴에 설치하며 관리자 권한이 필요하지 않습니다. Windows 설정의 앱 목록에서 제거할 수 있습니다. 기존 텍스트 파일 연결은 변경하지 않습니다.
 
