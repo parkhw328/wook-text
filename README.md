@@ -2,18 +2,18 @@
 
 Windows x64용 무료 텍스트 편집기입니다. 탭 편집, 파일·텍스트 비교, 문서 자동 정렬, 최대 10개 작업 폴더, 열린 탭과 미저장 내용 복원, 다국어 구문 강조를 제공합니다. 제작자는 **Hyunwook Park**이며 [GitHub 프로젝트](https://github.com/parkhw328/wook-text)에서 소스와 의견을 확인할 수 있습니다.
 
-**현재 소스·패키지 버전은 1.4.2**입니다. `Ctrl+N` 또는 **파일 → 새 문서** 실행 후 편집기로 포커스가 이동해 바로 입력·붙여넣기할 수 있도록 수정했습니다. 저장 확인 Y/N/C 단축키와 검색 결과 동시 편집도 포함합니다. 1.4.2는 확인용 초안이며 **최신 공개 버전은 1.4.1**입니다. [배포 상태와 검증 결과](docs/RELEASING.md#현재-배포-상태)를 확인하세요.
+**현재 소스·패키지 버전은 1.4.2**입니다. `Ctrl+N` 또는 **파일 → 새 문서** 실행 후 편집기로 포커스가 이동해 바로 입력·붙여넣기할 수 있도록 수정했습니다. 저장 확인 Y/N/C 단축키와 검색 결과 동시 편집도 포함합니다. 사용자 확인을 마치고 공개했으며 **최신 공개 버전도 1.4.2**입니다. [배포 상태와 검증 결과](docs/RELEASING.md#현재-배포-상태)를 확인하세요.
 
 ## 최신 배포 버전 다운로드
 
-**wText 1.4.1 · Windows x64** — [최신 릴리스 및 변경 내용](https://github.com/parkhw328/wook-text/releases/latest)
+**wText 1.4.2 · Windows x64** — [최신 릴리스 및 변경 내용](https://github.com/parkhw328/wook-text/releases/latest)
 
 | 배포 형태 | 다운로드 | 실행 방법 |
 | --- | --- | --- |
-| 설치형 | [Windows 설치 파일 (.exe)](https://github.com/parkhw328/wook-text/releases/download/v1.4.1/wText-1.4.1-win-x64-setup.exe) | 다운로드한 파일을 실행해 설치 |
-| 무설치형 | [무설치 ZIP](https://github.com/parkhw328/wook-text/releases/download/v1.4.1/wText-1.4.1-win-x64-portable.zip) | **전체 압축 해제**한 뒤 `wText.exe` 실행 |
+| 설치형 | [Windows 설치 파일 (.exe)](https://github.com/parkhw328/wook-text/releases/download/v1.4.2/wText-1.4.2-win-x64-setup.exe) | 다운로드한 파일을 실행해 설치 |
+| 무설치형 | [무설치 ZIP](https://github.com/parkhw328/wook-text/releases/download/v1.4.2/wText-1.4.2-win-x64-portable.zip) | **전체 압축 해제**한 뒤 `wText.exe` 실행 |
 
-[SHA-256 체크섬](https://github.com/parkhw328/wook-text/releases/download/v1.4.1/SHA256SUMS.txt) · [전체 버전 목록](https://github.com/parkhw328/wook-text/releases)
+[SHA-256 체크섬](https://github.com/parkhw328/wook-text/releases/download/v1.4.2/SHA256SUMS.txt) · [전체 버전 목록](https://github.com/parkhw328/wook-text/releases)
 
 배포본에는 .NET 런타임이 포함됩니다. 설치 마법사는 현재 사용자 폴더와 시작 메뉴에 설치하며 관리자 권한이 필요하지 않습니다. Windows 설정의 앱 목록에서 제거할 수 있습니다. 기존 텍스트 파일 연결은 변경하지 않습니다.
 
@@ -27,7 +27,7 @@ Windows x64용 무료 텍스트 편집기입니다. 탭 편집, 파일·텍스�
 
 **바꾸기 표시/숨기기** 또는 `Ctrl+H`로 바꿀 내용을 입력하세요. **바꾸기**는 현재 선택한 일치 항목을 바꾸고, **모두 바꾸기**는 현재 문서 전체에 적용합니다. `Ctrl+Z` 한 번으로 모두 바꾸기를 취소할 수 있습니다. 빈 검색어는 변경하지 않으며 정규식이 아닌 일반 문자열 검색입니다. `Esc`로 닫으면 강조가 사라집니다.
 
-아래 화면은 1.3.0의 실제 Windows WPF 검증 결과입니다. 공개 버전 1.4.1에는 이 기능과 검색 결과 동시 편집·저장 확인 단축키가 포함됩니다.
+아래 화면은 1.3.0의 실제 Windows WPF 검증 결과입니다. 공개 버전 1.4.2에는 이 기능과 검색 결과 동시 편집·저장 확인 단축키가 포함됩니다.
 
 **편집 → 찾기 / 바꾸기**를 클릭하거나 `Ctrl+F` / `Ctrl+H`를 누르면 두 경우 모두 **찾을 내용** 입력란으로 포커스가 이동합니다. 이미 열려 있어도 다시 이동하며, 기존 검색어를 전체 선택하여 바로 새 검색어를 입력할 수 있습니다. 본문에서 한 줄의 텍스트를 선택했다면 검색어로 채워집니다.
 
