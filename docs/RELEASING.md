@@ -6,30 +6,30 @@
 
 | 항목 | 상태 |
 | --- | --- |
-| 현재 소스·패키지 | **1.4.0**, 검색 결과 동시 편집 체크박스 |
+| 현재 소스·패키지 | **1.4.1**, 저장 확인창 Y/N/C 단축키; 1.4.0 동시 편집 기능 포함 |
 | 공개 다운로드 | **1.2.4**, README의 공개 링크 유지 |
-| 1.4.0 패키지 | 설치 EXE, 런타임 포함 무설치 ZIP, SHA-256 생성·업로드 완료 |
-| GitHub 게시 상태 | [Releases 목록](https://github.com/parkhw328/wook-text/releases)의 **wText 1.4.0** 초안; 저장소 쓰기 권한이 있는 로그인 사용자만 접근 가능 |
-| Windows 화면 | 기존 1.3.0 화면 유지. 1.4.0 동시 편집 화면은 미검증; 생성 코드는 준비 |
+| 1.4.1 패키지 | 설치 EXE, 런타임 포함 무설치 ZIP, SHA-256 생성·업로드 완료 |
+| GitHub 게시 상태 | [Releases 목록](https://github.com/parkhw328/wook-text/releases)의 **wText 1.4.1** 초안; 저장소 쓰기 권한이 있는 로그인 사용자만 접근 가능 |
+| Windows 화면 | 기존 1.3.0 화면 유지. 1.4.0 동시 편집·1.4.1 저장 단축키 화면은 미검증; 생성 코드는 준비 |
 | 추가 CI | 사용자 요청으로 중단; 재개 지시 전에는 실행하지 않음 |
-| 남은 검증 | 1.4.0 Windows WPF 실행·새 화면·IME, 설치·재설치·제거 및 업그레이드 |
+| 남은 검증 | 1.4.1 Windows WPF 실행·새 화면·IME, 설치·재설치·제거 및 업그레이드 |
 
-초안의 임시 URL은 변경될 수 있으므로 문서에서는 Releases 목록으로 연결한다. 초안의 첨부 파일은 다음과 같다. 공개 전에는 `releases/download/v1.4.0/...`을 일반 사용자 다운로드로 안내하지 않는다.
+초안의 임시 URL은 변경될 수 있으므로 문서에서는 Releases 목록으로 연결한다. 초안의 첨부 파일은 다음과 같다. 공개 전에는 `releases/download/v1.4.1/...`을 일반 사용자 다운로드로 안내하지 않는다.
 
-- `wText-1.4.0-win-x64-setup.exe`
-- `wText-1.4.0-win-x64-portable.zip`
+- `wText-1.4.1-win-x64-setup.exe`
+- `wText-1.4.1-win-x64-portable.zip`
 - `SHA256SUMS.txt`
 
-로컬 패키지는 `artifacts/installer/`와 `artifacts/`에 있고, 동일 파일을 `artifacts/distribution/wText-1.4.0/`에도 모았다. 생성물은 Git에서 제외하며 릴리스 초안에 보관한다. 패키지 재생성 시 체크섬이 달라지므로 현재 해시는 첨부된 `SHA256SUMS.txt`를 기준으로 한다.
+로컬 패키지는 `artifacts/installer/`와 `artifacts/`에 있고, 동일 파일을 `artifacts/distribution/wText-1.4.1/`에도 모았다. 생성물은 Git에서 제외하며 릴리스 초안에 보관한다. 패키지 재생성 시 체크섬이 달라지므로 현재 해시는 첨부된 `SHA256SUMS.txt`를 기준으로 한다.
 
 ## 확인한 결과와 한계
 
-| 1.4.0 환경·대상 | 결과와 근거 |
+| 환경·대상 | 결과와 근거 |
 | --- | --- |
-| Linux Core 테스트 | 138개 중 132개 통과. 새 동시 편집 18개와 기존 검색 18개 모두 통과 |
+| Linux Core 테스트 | 1.4.0에서 138개 중 132개 통과. 동시 편집 18개와 검색 18개 모두 통과. 1.4.1은 Core 변경 없음 |
 | 기존 환경 의존 실패 | Windows 경로·숨김 파일·잠금 관련 6개. 앞선 변경 전 코드에서도 재현한 실패이며 이번 작업에서 해당 코드는 변경하지 않음 |
 | Windows 대상 컴파일 | 앱 및 WPF 검사 프로젝트 Release 빌드 경고·오류 0개 |
-| WPF 회귀 검사 | 연속 입력, 붙여넣기, 잘라내기, Unicode 삭제, 인접한 빈 대상, 실행 취소/다시 실행, 모드 해제 검사 추가. 컴파일만 확인, 실행은 미검증 |
+| WPF 회귀 검사 | 1.4.1: 저장창 Y/N/C·실제 종료 저장/버리기/취소·오류창 미적용 검사 추가. 1.4.0: 연속 입력, 붙여넣기, 잘라내기, Unicode 삭제, 인접한 빈 대상, 실행 취소/다시 실행, 모드 해제 검사 추가. 컴파일만 확인, 실행은 미검증 |
 | 새 화면·실제 입력 | `search-linked-editing.png` 생성 코드 준비. Windows WPF·물리 키보드·한글 IME·DPI 검증 미실행 |
 | 패키지 생성 | Linux .NET SDK 10.0.401 → Windows x64 self-contained. NSIS 3.13 POSIX 컴파일러와 동일 버전 공식 배포본 스텁·플러그인 사용 |
 | 패키지 무결성 | ZIP CRC 및 513개 포함 파일과 publish 결과 일치, 업로드 파일 SHA-256 대조 |
@@ -37,7 +37,7 @@
 
 **이전 1.3.0 검증과 구분:** [첫 Windows 실행](https://github.com/parkhw328/wook-text/actions/runs/38329032895)의 Build and test 단계에서 당시 단위 테스트 120개와 전체 WPF 검사가 통과했다. 해당 실행 전체는 패키징 옵션 전달 오류로 실패했고 PowerShell 인수 인용을 수정했다. 이후 추가 CI는 사용자 요청으로 중단했다. 이 결과를 새 동시 편집 기능의 Windows 검증으로 재사용하지 않는다.
 
-`docs/images/search-focus.png`는 위 1.3.0 Windows 실행에서 직접 확인한 실제 화면이다. 새 체크박스가 보이지 않는 이유를 README에도 표시한다. Windows 실행을 재개할 수 있을 때 새 WPF 검사와 `update-screenshots.ps1`을 실행하고 `search-linked-editing.png`를 검토한 뒤 사용 설명에 추가한다.
+`docs/images/search-focus.png`는 위 1.3.0 Windows 실행에서 직접 확인한 실제 화면이다. 새 체크박스가 보이지 않는 이유를 README에도 표시한다. 저장 확인창의 기존 이미지에도 1.4.1 단축키 표시는 없다. Windows 실행을 재개할 수 있을 때 새 WPF 검사와 `update-screenshots.ps1`을 실행하고 `search-linked-editing.png`와 `save-confirmation.png`를 검토한 뒤 사용 설명에 추가한다.
 
 ## 환경에 관계없이 적용할 완료 순서
 

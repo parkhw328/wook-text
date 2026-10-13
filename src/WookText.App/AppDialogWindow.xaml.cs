@@ -1,4 +1,6 @@
 using System.Windows;
+using System.Windows.Automation;
+using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 
@@ -8,7 +10,7 @@ public enum AppDialogResult { Cancel, Primary, Secondary }
 public enum AppDialogKind { Information, Question, Warning, Error }
 public sealed record AppDialogRequest(string Title, string Message, string PrimaryText = "확인",
     string? SecondaryText = null, string? CancelText = null, string? DocumentName = null,
-    string? DocumentPath = null, string? Details = null, AppDialogKind Kind = AppDialogKind.Information);
+    string? DocumentPath = null, string? Details = null, AppDialogKind Kind = AppDialogKind.Information, bool SaveShortcuts = false);
 
 public partial class AppDialogWindow : Window
 {
@@ -42,7 +44,29 @@ public partial class AppDialogWindow : Window
         if (request.Kind is AppDialogKind.Warning or AppDialogKind.Error)
             KindIcon.Data = Geometry.Parse("M 8,1 L 16,16 L 0,16 Z M 8,6 L 8,10 M 8,12 L 8,14");
         BodyScroll.MaxHeight = Math.Max(160, Math.Min(500, SystemParameters.WorkArea.Height - 180));
-        PreviewKeyDown += (_, e) => { if (e.Key == Key.Escape) { e.Handled = true; Close(); } };
+        if (request.SaveShortcuts)
+        {
+            AutomationProperties.SetAcceleratorKey(PrimaryButton, "Y");
+            AutomationProperties.SetAcceleratorKey(SecondaryButton, "N");
+            AutomationProperties.SetAcceleratorKey(CancelButton, "C, Esc");
+            CancelButton.ToolTip = "C 또는 Esc · 변경 내용을 유지하고 계속 편집";
+        }
+        PreviewKeyDown += (_, e) =>
+        {
+            if (e.Key == Key.Escape) { e.Handled = true; Close(); return; }
+            if (!request.SaveShortcuts || e.IsRepeat || (Keyboard.Modifiers & ~ModifierKeys.Shift) != ModifierKeys.None) return;
+            Key key = e.Key == Key.ImeProcessed ? e.ImeProcessedKey : e.Key;
+            Button? button = key switch
+            {
+                Key.Y => PrimaryButton,
+                Key.N => SecondaryButton,
+                Key.C => CancelButton,
+                _ => null
+            };
+            if (button is not { IsVisible: true, IsEnabled: true }) return;
+            e.Handled = true;
+            button.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+        };
         Loaded += (_, _) => PrimaryButton.Focus();
     }
 
@@ -59,7 +83,7 @@ public static class AppDialogs
 {
     public static AppDialogRequest SaveRequest(string name, string? path) => new(
         "변경 내용을 저장할까요?", "저장하지 않고 닫으면 이 문서의 변경 내용은 사라집니다.",
-        "저장", "저장 안 함", "계속 편집", name, path, Kind: AppDialogKind.Question);
+        "저장 (Y)", "저장 안 함 (N)", "계속 편집 (C)", name, path, Kind: AppDialogKind.Question, SaveShortcuts: true);
 
     public static AppDialogResult Show(Window owner, AppDialogRequest request)
     {
