@@ -7,22 +7,25 @@
 | 항목 | 상태 |
 | --- | --- |
 | 현재 소스·패키지 | **1.4.1**, 저장 확인창 Y/N/C 단축키; 1.4.0 동시 편집 기능 포함 |
-| 공개 다운로드 | **1.2.4**, README의 공개 링크 유지 |
+| 공개 다운로드 | **1.4.1**, 설치 EXE·무설치 ZIP·SHA-256 링크 갱신 |
 | 1.4.1 패키지 | 설치 EXE, 런타임 포함 무설치 ZIP, SHA-256 생성·업로드 완료 |
-| GitHub 게시 상태 | [Releases 목록](https://github.com/parkhw328/wook-text/releases)의 **wText 1.4.1** 초안; 저장소 쓰기 권한이 있는 로그인 사용자만 접근 가능 |
+| GitHub 게시 상태 | [wText 1.4.1](https://github.com/parkhw328/wook-text/releases/tag/v1.4.1) 공개·최신 릴리스 |
 | Windows 화면 | 기존 1.3.0 화면 유지. 1.4.0 동시 편집·1.4.1 저장 단축키 화면은 미검증; 생성 코드는 준비 |
+| 사용자 확인 | 사용자 PC에서 기능 동작 확인 후 2026-10-13 공개 요청 |
 | 추가 CI | 사용자 요청으로 중단; 재개 지시 전에는 실행하지 않음 |
 | 남은 검증 | 1.4.1 Windows WPF 실행·새 화면·IME, 설치·재설치·제거 및 업그레이드 |
 
-초안의 임시 URL은 변경될 수 있으므로 문서에서는 Releases 목록으로 연결한다. 초안의 첨부 파일은 다음과 같다. 공개 전에는 `releases/download/v1.4.1/...`을 일반 사용자 다운로드로 안내하지 않는다.
+공개 릴리스의 첨부 파일은 다음과 같다. README의 다운로드 링크는 `releases/download/v1.4.1/...`을 사용한다. 1.3.0·1.4.0은 별도 공개하지 않고 1.4.1에 포함했다.
 
 - `wText-1.4.1-win-x64-setup.exe`
 - `wText-1.4.1-win-x64-portable.zip`
 - `SHA256SUMS.txt`
 
-로컬 패키지는 `artifacts/installer/`와 `artifacts/`에 있고, 동일 파일을 `artifacts/distribution/wText-1.4.1/`에도 모았다. 생성물은 Git에서 제외하며 릴리스 초안에 보관한다. 패키지 재생성 시 체크섬이 달라지므로 현재 해시는 첨부된 `SHA256SUMS.txt`를 기준으로 한다.
+로컬 패키지는 `artifacts/installer/`와 `artifacts/`에 있고, 동일 파일을 `artifacts/distribution/wText-1.4.1/`에도 모았다. 생성물은 Git에서 제외하며 공개 릴리스에 보관한다. 패키지 재생성 시 체크섬이 달라지므로 현재 해시는 첨부된 `SHA256SUMS.txt`를 기준으로 한다.
 
 ## 확인한 결과와 한계
+
+사용자가 PC에서 기능 동작을 확인하고 공개를 요청했다. 이 확인을 전체 자동 WPF·IME·설치/제거 시험 완료로 확대하지 않는다. 공개 패키지는 확인된 앱 바이너리를 유지하고 CHANGELOG만 공개 상태로 갱신해 다시 묶었다. 앱 빌드 커밋은 `25d10d77bd090c31e0dac3313d364c24584cb202`이며, 공개 태그에는 문서 정리도 포함한다.
 
 | 환경·대상 | 결과와 근거 |
 | --- | --- |
@@ -33,7 +36,7 @@
 | 새 화면·실제 입력 | `search-linked-editing.png` 생성 코드 준비. Windows WPF·물리 키보드·한글 IME·DPI 검증 미실행 |
 | 패키지 생성 | Linux .NET SDK 10.0.401 → Windows x64 self-contained. NSIS 3.13 POSIX 컴파일러와 동일 버전 공식 배포본 스텁·플러그인 사용 |
 | 패키지 무결성 | ZIP CRC 및 513개 포함 파일과 publish 결과 일치, 업로드 파일 SHA-256 대조 |
-| 설치 실행 | 미실행. 패키지 생성·체크섬 일치를 Windows 설치·제거 성공으로 간주하지 않음 |
+| 설치 실행 | 자동 검증 미실행. 패키지 생성·체크섬 일치를 Windows 설치·제거 성공으로 간주하지 않음 |
 
 **이전 1.3.0 검증과 구분:** [첫 Windows 실행](https://github.com/parkhw328/wook-text/actions/runs/38329032895)의 Build and test 단계에서 당시 단위 테스트 120개와 전체 WPF 검사가 통과했다. 해당 실행 전체는 패키징 옵션 전달 오류로 실패했고 PowerShell 인수 인용을 수정했다. 이후 추가 CI는 사용자 요청으로 중단했다. 이 결과를 새 동시 편집 기능의 Windows 검증으로 재사용하지 않는다.
 
