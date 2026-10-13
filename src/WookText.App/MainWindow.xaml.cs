@@ -102,7 +102,14 @@ public partial class MainWindow : Window
     {
         string name;
         do { name = $"새 문서 {++_untitledCount}"; } while (Documents.Any(d => d.UntitledName == name));
-        return AddDocument(name);
+        EditorDocument document = AddDocument(name);
+        // Command execution disables Root; focus after it is enabled and the tab is laid out.
+        Dispatcher.BeginInvoke(DispatcherPriority.Input, () =>
+        {
+            if (_closing || !IsVisible || ActiveDocument != document || !document.Editor.IsEnabled) return;
+            document.Editor.TextArea.Focus();
+        });
+        return document;
     }
 
     private EditorDocument AddDocument(string name)

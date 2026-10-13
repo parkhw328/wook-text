@@ -71,6 +71,7 @@ internal static class Program
         Check(document.Editor.IsModified, "Redo must restore the modified state.");
         document.Editor.Undo();
 
+        await NewDocumentFocusChecks.RunAsync(window, output);
         await SearchFocusChecks.RunAsync(window, output);
         await SearchLinkedEditingChecks.RunAsync(window, output);
         ApplicationCommands.Find.Execute(null, window);
