@@ -16,6 +16,8 @@ namespace WookText.App;
 public partial class MainWindow : Window
 {
     private readonly TextFileService _files = new();
+    private readonly SearchMatchColorizer _searchHighlight = new();
+    private TextEditor? _searchEditor;
     private int _untitledCount;
     private bool _busy;
     private bool _allowClose;
@@ -106,7 +108,8 @@ public partial class MainWindow : Window
     {
         EditorDocument document = new(name, _preferences);
         document.Editor.TextArea.Caret.PositionChanged += (_, _) => { UpdateStatus(); SessionChanged(); };
-        document.Editor.TextChanged += (_, _) => { UpdateStatus(); SessionChanged(); };
+        document.Editor.TextChanged += (_, _) => { UpdateStatus(); SessionChanged(); if (ActiveDocument == document) RefreshSearch(); };
+        document.Editor.TextArea.SelectionChanged += (_, _) => { if (ActiveDocument == document) UpdateSearchSummary(); };
         document.PropertyChanged += (_, _) => { UpdateStatus(); WorkspaceExplorer.Workspace.MarkActive(ActiveDocument?.FilePath); SessionChanged(); };
         Documents.Add(document);
         DocumentTabs.SelectedItem = document;
@@ -401,6 +404,7 @@ public partial class MainWindow : Window
     {
         SearchPanel.Visibility = Visibility.Visible;
         ReplacePanel.Visibility = replace ? Visibility.Visible : Visibility.Collapsed;
+        RefreshSearch();
         if (ActiveDocument?.Editor.SelectedText is { Length: > 0 } selected && !selected.Contains('\n')) FindBox.Text = selected;
         // RunAsync disables Root while executing the command. Wait for it to
         // re-enable the controls and for menu dismissal/layout to finish.
@@ -412,18 +416,59 @@ public partial class MainWindow : Window
         });
     }
 
-    private void FindNext()
+    private void OnSearchTextChanged(object sender, TextChangedEventArgs e) => RefreshSearch();
+    private void OnSearchOptionsChanged(object sender, RoutedEventArgs e) => RefreshSearch();
+    private void OnToggleReplace(object sender, RoutedEventArgs e) =>
+        ReplacePanel.Visibility = ReplacePanel.Visibility == Visibility.Visible ? Visibility.Collapsed : Visibility.Visible;
+
+    private void RefreshSearch()
+    {
+        if (SearchSummary is null || DocumentTabs is null) return;
+        TextEditor? editor = SearchPanel.Visibility == Visibility.Visible ? ActiveDocument?.Editor : null;
+        if (_searchEditor != editor)
+        {
+            if (_searchEditor is not null)
+            {
+                _searchEditor.TextArea.TextView.LineTransformers.Remove(_searchHighlight);
+                _searchEditor.TextArea.TextView.Redraw();
+            }
+            _searchEditor = editor;
+            editor?.TextArea.TextView.LineTransformers.Add(_searchHighlight);
+        }
+        _searchHighlight.MatchLength = FindBox.Text.Length;
+        _searchHighlight.Offsets = editor is null ? [] : TextAnalysis.FindAll(editor.Text, FindBox.Text, MatchCase.IsChecked == true);
+        editor?.TextArea.TextView.Redraw();
+        UpdateSearchSummary();
+    }
+
+    private void UpdateSearchSummary()
+    {
+        if (SearchSummary is null) return;
+        int count = _searchHighlight.Offsets.Count;
+        int current = ActiveDocument?.Editor is { } editor && editor.SelectionLength == FindBox.Text.Length
+            ? _searchHighlight.Offsets.BinarySearch(editor.SelectionStart) : -1;
+        SearchSummary.Text = FindBox.Text.Length == 0 ? "찾을 내용을 입력하세요."
+            : count == 0 ? "일치하는 내용이 없습니다."
+            : current >= 0 ? $"현재 문서 · {current + 1:N0} / {count:N0}개 일치" : $"현재 문서 · {count:N0}개 일치";
+    }
+
+    private void FindNext(bool previous = false)
     {
         if (ActiveDocument?.Editor is not { } editor || FindBox.Text.Length == 0) return;
-        int index = TextAnalysis.FindNext(editor.Text, FindBox.Text, editor.SelectionStart + editor.SelectionLength, MatchCase.IsChecked == true);
-        if (index < 0) { Status.Text = "일치하는 내용이 없습니다."; return; }
-        editor.Select(index, FindBox.Text.Length);
-        editor.TextArea.Caret.Offset = index + FindBox.Text.Length;
-        editor.ScrollToLine(editor.Document.GetLineByOffset(index).LineNumber);
-        Status.Text = "일치하는 내용을 찾았습니다.";
+        List<int> offsets = TextAnalysis.FindAll(editor.Text, FindBox.Text, MatchCase.IsChecked == true);
+        if (offsets.Count == 0) { Status.Text = "일치하는 내용이 없습니다."; return; }
+        int index = previous
+            ? offsets.FindLastIndex(offset => offset < editor.SelectionStart)
+            : offsets.FindIndex(offset => offset >= editor.SelectionStart + editor.SelectionLength);
+        if (index < 0) index = previous ? offsets.Count - 1 : 0;
+        editor.Select(offsets[index], FindBox.Text.Length);
+        editor.ScrollToLine(editor.Document.GetLineByOffset(offsets[index]).LineNumber);
+        UpdateSearchSummary();
+        Status.Text = $"{index + 1:N0} / {offsets.Count:N0}개 일치";
     }
 
     private void OnFindNext(object sender, RoutedEventArgs e) => FindNext();
+    private void OnFindPrevious(object sender, RoutedEventArgs e) => FindNext(true);
     private void OnReplaceOne(object sender, RoutedEventArgs e)
     {
         if (ActiveDocument?.Editor is not { } editor || FindBox.Text.Length == 0) return;
@@ -435,17 +480,7 @@ public partial class MainWindow : Window
     private void OnReplaceAll(object sender, RoutedEventArgs e)
     {
         if (ActiveDocument?.Editor is not { } editor || FindBox.Text.Length == 0) return;
-        StringComparison comparison = MatchCase.IsChecked == true ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase;
-        List<int> offsets = [];
-        string text = editor.Text;
-        int start = 0;
-        while (start <= text.Length)
-        {
-            int found = text.IndexOf(FindBox.Text, start, comparison);
-            if (found < 0) break;
-            offsets.Add(found);
-            start = found + FindBox.Text.Length;
-        }
+        List<int> offsets = TextAnalysis.FindAll(editor.Text, FindBox.Text, MatchCase.IsChecked == true);
         using (editor.Document.RunUpdate())
             foreach (int offset in offsets.AsEnumerable().Reverse()) editor.Document.Replace(offset, FindBox.Text.Length, ReplaceBox.Text);
         Status.Text = $"{offsets.Count:N0}개 항목을 바꿨습니다. Ctrl+Z로 취소할 수 있습니다.";
@@ -453,7 +488,7 @@ public partial class MainWindow : Window
 
     private void OnSearchKeyDown(object sender, KeyEventArgs e)
     {
-        if (e.Key == Key.Enter) { FindNext(); e.Handled = true; }
+        if (e.Key == Key.Enter) { FindNext(Keyboard.Modifiers.HasFlag(ModifierKeys.Shift)); e.Handled = true; }
     }
 
     private void OnWindowKeyDown(object sender, KeyEventArgs e)
@@ -464,7 +499,7 @@ public partial class MainWindow : Window
             if (SearchPanel.Visibility == Visibility.Visible) { OnHideSearch(sender, e); e.Handled = true; }
             else if (_focusMode) { ToggleFocus(); e.Handled = true; }
         }
-        if (e.Key == Key.F3) { FindNext(); e.Handled = true; }
+        if (e.Key == Key.F3) { FindNext(Keyboard.Modifiers.HasFlag(ModifierKeys.Shift)); e.Handled = true; }
         if (e.Key == Key.Tab && Keyboard.Modifiers.HasFlag(ModifierKeys.Control) && Documents.Count > 0)
         {
             int delta = Keyboard.Modifiers.HasFlag(ModifierKeys.Shift) ? -1 : 1;
@@ -473,10 +508,11 @@ public partial class MainWindow : Window
         }
     }
 
-    private void OnHideSearch(object sender, RoutedEventArgs e) { SearchPanel.Visibility = Visibility.Collapsed; ActiveDocument?.Editor.Focus(); }
+    private void OnHideSearch(object sender, RoutedEventArgs e) { SearchPanel.Visibility = Visibility.Collapsed; RefreshSearch(); ActiveDocument?.Editor.Focus(); }
     private void OnTabChanged(object sender, SelectionChangedEventArgs e)
     {
         if (e.Source != DocumentTabs) return;
+        RefreshSearch();
         if (ActiveDocument is { } document && WrapMenu is not null) WrapMenu.IsChecked = document.Editor.WordWrap;
         WorkspaceExplorer?.Workspace?.MarkActive(ActiveDocument?.FilePath);
         UpdateStatus();

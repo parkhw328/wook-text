@@ -128,13 +128,18 @@
           <StackPanel>
             <DockPanel>
               <Button Content="닫기" DockPanel.Dock="Right" Click="OnHideSearch" Margin="10,0,0,0" Padding="8,4" />
-              <CheckBox x:Name="MatchCase" Content="대소문자" DockPanel.Dock="Right" Margin="12,0" VerticalAlignment="Center" />
+              <CheckBox x:Name="MatchCase" Content="대소문자" Checked="OnSearchOptionsChanged" Unchecked="OnSearchOptionsChanged" DockPanel.Dock="Right" Margin="12,0" VerticalAlignment="Center" />
               <Button Content="다음 찾기" DockPanel.Dock="Right" Click="OnFindNext" Margin="8,0,0,0" />
-              <TextBox x:Name="FindBox" AutomationProperties.Name="찾을 내용" ToolTip="찾을 내용" KeyDown="OnSearchKeyDown" />
+              <Button Content="이전 찾기" DockPanel.Dock="Right" Click="OnFindPrevious" Margin="8,0,0,0" />
+              <TextBox x:Name="FindBox" TextChanged="OnSearchTextChanged" AutomationProperties.Name="찾을 내용" ToolTip="찾을 내용" KeyDown="OnSearchKeyDown" />
+            </DockPanel>
+            <DockPanel Margin="0,8,0,0">
+              <Button Content="바꾸기 표시/숨기기" DockPanel.Dock="Right" Click="OnToggleReplace" Padding="8,4" />
+              <TextBlock x:Name="SearchSummary" VerticalAlignment="Center" Text="찾을 내용을 입력하세요." AutomationProperties.LiveSetting="Polite" />
             </DockPanel>
             <DockPanel x:Name="ReplacePanel" Visibility="Collapsed" Margin="0,8,0,0">
-              <Button Content="모두 바꾸기" DockPanel.Dock="Right" Click="OnReplaceAll" Margin="8,0,0,0" />
-              <Button Content="바꾸기" DockPanel.Dock="Right" Click="OnReplaceOne" Margin="8,0,0,0" />
+              <Button x:Name="ReplaceAllButton" Content="모두 바꾸기" DockPanel.Dock="Right" Click="OnReplaceAll" Margin="8,0,0,0" />
+              <Button x:Name="ReplaceOneButton" Content="바꾸기" DockPanel.Dock="Right" Click="OnReplaceOne" Margin="8,0,0,0" />
               <TextBox x:Name="ReplaceBox" AutomationProperties.Name="바꿀 내용" ToolTip="바꿀 내용" />
             </DockPanel>
           </StackPanel>

@@ -18,6 +18,22 @@ public static class TextAnalysis
         return crlf ? "CRLF" : lf ? "LF" : cr ? "CR" : "줄바꿈 없음";
     }
 
+    public static List<int> FindAll(string text, string query, bool matchCase)
+    {
+        List<int> offsets = [];
+        if (string.IsNullOrEmpty(query)) return offsets;
+        StringComparison comparison = matchCase ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase;
+        int start = 0;
+        while (start <= text.Length)
+        {
+            int found = text.IndexOf(query, start, comparison);
+            if (found < 0) break;
+            offsets.Add(found);
+            start = found + query.Length;
+        }
+        return offsets;
+    }
+
     public static int FindNext(string text, string query, int start, bool matchCase)
     {
         if (string.IsNullOrEmpty(query)) return -1;
