@@ -9,12 +9,12 @@
 | 현재 소스·패키지 | **1.3.0**, 검색 결과 강조·이전 찾기·바꾸기 전환 |
 | 공개 다운로드 | **1.2.4**, README의 공개 링크 유지 |
 | 1.3.0 패키지 | 설치 EXE, 런타임 포함 무설치 ZIP, SHA-256 생성·업로드 완료 |
-| GitHub 게시 상태 | [1.3.0 릴리스 초안](https://github.com/parkhw328/wook-text/releases/tag/untagged-aef3d8c9001e32e41c5b); 저장소 쓰기 권한이 있는 로그인 사용자만 접근 가능 |
+| GitHub 게시 상태 | [Releases 목록](https://github.com/parkhw328/wook-text/releases)의 **wText 1.3.0** 초안; 저장소 쓰기 권한이 있는 로그인 사용자만 접근 가능 |
 | Windows 화면 | `docs/images/search-focus.png`에 1.3.0 실제 검색 결과 화면 반영 |
 | 추가 CI | 사용자 요청으로 중단; 재개 지시 전에는 실행하지 않음 |
 | 남은 검증 | 최종 설치 파일의 Windows 설치·재설치·제거 및 업그레이드 |
 
-초안의 첨부 파일은 다음과 같다. 공개 전에는 `releases/download/v1.3.0/...`을 일반 사용자 다운로드로 안내하지 않는다.
+초안의 임시 URL은 변경될 수 있으므로 문서에서는 Releases 목록으로 연결한다. 초안의 첨부 파일은 다음과 같다. 공개 전에는 `releases/download/v1.3.0/...`을 일반 사용자 다운로드로 안내하지 않는다.
 
 - `wText-1.3.0-win-x64-setup.exe`
 - `wText-1.3.0-win-x64-portable.zip`
