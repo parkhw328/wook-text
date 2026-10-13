@@ -1,6 +1,8 @@
 # wText
 
-Windows x64용 무료 텍스트 편집기입니다. **1.2.4**은 찾기·바꾸기를 열 때 검색 입력란으로 포커스가 이동하도록 수정했습니다. 문서 자동 정렬, 소스별 들여쓰기 설정과 기존 들여쓰기 감지, 비교 화면 개선을 제공합니다. 설정 콤보박스 전체 클릭과 탭·목록의 안정적인 다크 테마도 적용했습니다. 작업 폴더를 최대 10개까지 함께 관리하며, 열린 탭과 미저장 내용 복원, 다국어 구문 강조, 글꼴 설정과 집중 모드를 제공합니다. 제작자는 **Hyunwook Park**이며 [GitHub 프로젝트](https://github.com/parkhw328/wook-text)에서 소스와 의견을 확인할 수 있습니다.
+Windows x64용 무료 텍스트 편집기입니다. 탭 편집, 파일·텍스트 비교, 문서 자동 정렬, 최대 10개 작업 폴더, 열린 탭과 미저장 내용 복원, 다국어 구문 강조를 제공합니다. 제작자는 **Hyunwook Park**이며 [GitHub 프로젝트](https://github.com/parkhw328/wook-text)에서 소스와 의견을 확인할 수 있습니다.
+
+**현재 소스·패키지 버전은 1.3.0**입니다. 검색 결과 전체 강조, 일치 개수·현재 위치, 이전 찾기와 바꾸기 전환을 추가했습니다. 설치 EXE·무설치 ZIP·체크섬을 릴리스 초안에 첨부했으며 **공개 다운로드 버전은 1.2.4**입니다. [1.3.0 준비 상태와 검증 결과](docs/RELEASING.md#현재-배포-상태)를 확인하세요.
 
 ## 최신 배포 버전 다운로드
 
@@ -21,7 +23,7 @@ Windows x64용 무료 텍스트 편집기입니다. **1.2.4**은 찾기·바꾸�
 
 ### 찾기·바꾸기 입력하기
 
-**1.3.0 준비 중:** 검색어를 입력하면 현재 문서의 모든 일치 항목을 블록 배경으로 강조하고 개수를 표시합니다. **이전 찾기 / 다음 찾기** 또는 `Shift+F3` / `F3`로 이동하며, 입력란에서는 `Shift+Enter` / `Enter`를 사용합니다. 끝에 도달하면 반대쪽에서 계속 찾습니다. 대소문자 옵션과 본문 변경도 바로 반영합니다.
+**1.3.0부터 지원:** 검색어를 입력하면 현재 문서의 모든 일치 항목을 블록 배경으로 강조하고 개수를 표시합니다. **이전 찾기 / 다음 찾기** 또는 `Shift+F3` / `F3`로 이동하며, 입력란에서는 `Shift+Enter` / `Enter`를 사용합니다. 끝에 도달하면 반대쪽에서 계속 찾습니다. 대소문자 옵션과 본문 변경도 바로 반영합니다.
 
 **바꾸기 표시/숨기기** 또는 `Ctrl+H`로 바꿀 내용을 입력하세요. **바꾸기**는 현재 선택한 일치 항목을 바꾸고, **모두 바꾸기**는 현재 문서 전체에 적용합니다. `Ctrl+Z` 한 번으로 모두 바꾸기를 취소할 수 있습니다. 빈 검색어는 변경하지 않으며 정규식이 아닌 일반 문자열 검색입니다. `Esc`로 닫으면 강조가 사라집니다.
 
@@ -121,7 +123,7 @@ Windows x64용 무료 텍스트 편집기입니다. **1.2.4**은 찾기·바꾸�
 - 영문·숫자 JetBrains Mono + 한글 Noto Sans KR 기본 글꼴 동봉; 설치된 글꼴 선택과 크기 미리보기
 - 줄 번호, 자동 줄바꿈, 공백 표시, 글자 크기 조절, 실행 취소·다시 실행
 - YAML, HTML, JavaScript, TypeScript, JSP, Java, JSON, XML, CSS, C#, C/C++, Python, SQL, PowerShell, Shell, INI/TOML/Properties, Markdown, PHP 및 일반 텍스트 모드
-- 일반 텍스트 검색, 대소문자 구분, 바꾸기·모두 바꾸기
+- 일반 텍스트 검색, 대소문자 구분, 바꾸기·모두 바꾸기; 1.3.0에서는 전체 결과 강조·개수·현재 위치·이전/다음 순환 이동 제공
 - UTF-8, BOM이 있는 UTF-16/32, 사용자 확인 후 CP949 열기와 원본 인코딩·줄바꿈 보존
 - 창 종료 후 탭·미저장 내용 복원, 주기적인 로컬 복구본, 개별 탭을 버릴 때 저장 확인
 - 테마에 맞춘 저장·인코딩 확인과 오류 알림, 문서 경로 표시와 선택 가능한 오류 상세 내용
@@ -186,10 +188,10 @@ Windows x64의 PowerShell에서 저장소 루트를 기준으로 실행합니다
 .\scripts\package.ps1 -SmokeInstaller   # 격리된 설치 검증용 패키지 생성
 .\scripts\test-installer.ps1            # 설치·재설치·제거 및 사용자 파일 보존 검증
 .\scripts\make-icon.ps1                 # 벡터 원본에서 PNG와 다중 크기 ICO 재생성
-.\scripts\update-screenshots.ps1        # WPF 검증 결과에서 README 화면 10개 갱신
+.\scripts\update-screenshots.ps1        # WPF 검증 결과에서 README 화면 갱신
 ```
 
-`gh workflow run package.yml`로 GitHub Actions의 **Windows distribution**을 수동 실행할 수도 있습니다. Windows에서 단위·WPF 검사, 설치·제거 검사 후 설치 파일·ZIP·체크섬을 `windows-distribution` 아티팩트로, 화면을 `windows-verification`으로 30일간 보관합니다. 공개 릴리스는 자동 생성하지 않습니다.
+**현재는 사용자 요청으로 추가 CI 실행을 중단한 상태입니다.** CI 사용 재개 지시가 있을 때 `gh workflow run package.yml`로 GitHub Actions의 **Windows distribution**을 수동 실행할 수도 있습니다. Windows에서 단위·WPF 검사, 설치·제거 검사 후 설치 파일·ZIP·체크섬을 `windows-distribution` 아티팩트로, 화면을 `windows-verification`으로 30일간 보관합니다. 공개 릴리스는 자동 생성하지 않습니다.
 
 패키징 결과는 `artifacts/installer/`의 설치 파일과 `artifacts/`의 무설치 ZIP에 생성됩니다. 게시 전 실행 파일은 `artifacts/publish/win-x64/wText.exe`입니다. 새 버전 배포 시 설치 파일·ZIP·`SHA256SUMS.txt`를 해당 GitHub 릴리스에 첨부하고 위 다운로드 버전과 링크를 함께 갱신하세요.
 
@@ -206,6 +208,8 @@ PowerShell 실행 정책 때문에 스크립트가 차단되면 명령별로 `po
 
 설치 검증은 설치된 바이너리·글꼴에서도 WPF 검증을 실행하며 실제 사용자 설정을 건드리지 않습니다. 이전 검증용 설치 파일이 있다면 `test-installer.ps1 -PreviousSmokeInstaller artifacts/installer/wText-1.0.0-win-x64-setup-smoke.exe`로 업그레이드도 확인할 수 있습니다.
 
+Linux에서도 README·변경 이력·화면·릴리스 설명을 같은 기준으로 갱신합니다. 환경별 검증 범위와 배포 마무리 절차는 [배포 가이드](docs/RELEASING.md)를 따르세요.
+
 ## 프로젝트 구조
 
 | 경로 | 역할 |
@@ -220,6 +224,7 @@ PowerShell 실행 정책 때문에 스크립트가 차단되면 명령별로 `po
 | `installer/`, `scripts/` | NSIS 설치 정의 및 개발·배포 자동화 |
 | `rules/rules.md` | 제품 결정과 개발 규칙 |
 | `docs/REQUIREMENTS.md` | 요구사항 분석, 수용 기준, 후속 범위 |
+| `docs/RELEASING.md` | 현재 배포 상태, 환경별 검증 범위, 문서·패키지 마무리 절차 |
 | `docs/images/` | README의 실제 앱 화면 |
 | `licenses/` | 의존성 라이선스 원문 |
 | `artifacts/` | 실행 파일, 설치 패키지, 화면 검증 결과; Git 제외 |
@@ -231,6 +236,7 @@ PowerShell 실행 정책 때문에 스크립트가 차단되면 명령별로 `po
 | `Ctrl+N`, `Ctrl+O`, `Ctrl+S` | 새 문서, 열기, 저장 |
 | `Ctrl+Shift+S`, `Ctrl+W` | 다른 이름으로 저장, 탭 닫기 |
 | `Ctrl+F`, `Ctrl+H`, `F3`, `Shift+F3` | 찾기, 바꾸기, 다음·이전 찾기 |
+| `Enter`, `Shift+Enter` (찾을 내용 입력란) | 다음·이전 찾기 |
 | `Ctrl+Z`, `Ctrl+Y` | 실행 취소, 다시 실행 |
 | `Ctrl+Tab`, `Ctrl+Shift+Tab` | 다음·이전 탭 |
 | `Ctrl+Shift+F` | 현재 문서 자동 정렬 |
