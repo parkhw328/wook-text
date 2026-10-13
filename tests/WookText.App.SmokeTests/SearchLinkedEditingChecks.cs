@@ -76,6 +76,8 @@ internal static class SearchLinkedEditingChecks
         Check(editor.Text == "value = name;\r\nprint(name);", "Disabling linked editing must restore ordinary single-location edits.");
         editor.Text = original;
         matchCase.IsChecked = false;
+        ((Border)window.FindName("SearchPanel")).Visibility = Visibility.Collapsed;
+        find.Clear();
         Console.WriteLine("PASS: linked search editing, sequential typing, clipboard, Unicode deletion, adjacent targets, undo/redo and mode lifecycle.");
     }
 
