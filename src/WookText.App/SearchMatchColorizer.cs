@@ -1,15 +1,26 @@
+using System.Windows;
 using System.Windows.Media;
 using ICSharpCode.AvalonEdit.Document;
 using ICSharpCode.AvalonEdit.Rendering;
 
 namespace WookText.App;
 
-public sealed class SearchMatchColorizer : DocumentColorizingTransformer
+public sealed class SearchMatchColorizer : DocumentColorizingTransformer, IBackgroundRenderer
 {
     private static readonly SolidColorBrush _background = EditorFactory.Brush("#74501D");
     private static readonly SolidColorBrush _foreground = EditorFactory.Brush("#FFF4CF");
     public List<int> Offsets { get; set; } = [];
     public int MatchLength { get; set; }
+
+    public KnownLayer Layer => KnownLayer.Selection;
+
+    public void Draw(TextView textView, DrawingContext drawingContext)
+    {
+        if (MatchLength != 0 || !textView.VisualLinesValid) return;
+        foreach (int offset in Offsets)
+            foreach (Rect rectangle in BackgroundGeometryBuilder.GetRectsForSegment(textView, new TextSegment { StartOffset = offset, Length = 0 }))
+                drawingContext.DrawRectangle(_foreground, null, new Rect(rectangle.Left, rectangle.Top, 2, rectangle.Height));
+    }
 
     protected override void ColorizeLine(DocumentLine line)
     {

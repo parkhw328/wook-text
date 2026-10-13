@@ -18,6 +18,7 @@ public partial class MainWindow : Window
     private readonly TextFileService _files = new();
     private readonly SearchMatchColorizer _searchHighlight = new();
     private TextEditor? _searchEditor;
+    private SearchLinkedEditor? _linkedEditor;
     private int _untitledCount;
     private bool _busy;
     private bool _allowClose;
@@ -79,7 +80,7 @@ public partial class MainWindow : Window
         Bind(ApplicationCommands.Replace, () => { ShowSearch(true); return Task.CompletedTask; });
         PreviewKeyDown += OnWindowKeyDown;
         _preferences.Changed += OnPreferencesChanged;
-        Closed += (_, _) => { WorkspaceExplorer.Dispose(); _session.Dispose(); _preferences.Changed -= OnPreferencesChanged; foreach (EditorDocument document in Documents) document.Dispose(); };
+        Closed += (_, _) => { _linkedEditor?.Dispose(); WorkspaceExplorer.Dispose(); _session.Dispose(); _preferences.Changed -= OnPreferencesChanged; foreach (EditorDocument document in Documents) document.Dispose(); };
         Loaded += async (_, _) => await InitializeSessionAsync();
         _session.Warning += warning => Status.Text = warning;
         _layoutReady = true;
@@ -402,6 +403,7 @@ public partial class MainWindow : Window
 
     private void ShowSearch(bool replace)
     {
+        EndLinkedEditing();
         SearchPanel.Visibility = Visibility.Visible;
         ReplacePanel.Visibility = replace ? Visibility.Visible : Visibility.Collapsed;
         RefreshSearch();
@@ -416,10 +418,39 @@ public partial class MainWindow : Window
         });
     }
 
-    private void OnSearchTextChanged(object sender, TextChangedEventArgs e) => RefreshSearch();
-    private void OnSearchOptionsChanged(object sender, RoutedEventArgs e) => RefreshSearch();
+    private void OnSearchTextChanged(object sender, TextChangedEventArgs e) { EndLinkedEditing(); RefreshSearch(); }
+    private void OnSearchOptionsChanged(object sender, RoutedEventArgs e) { EndLinkedEditing(); RefreshSearch(); }
     private void OnToggleReplace(object sender, RoutedEventArgs e) =>
         ReplacePanel.Visibility = ReplacePanel.Visibility == Visibility.Visible ? Visibility.Collapsed : Visibility.Visible;
+
+    private void OnEditAllMatchesChecked(object sender, RoutedEventArgs e)
+    {
+        if (ActiveDocument?.Editor is not { } editor) { EndLinkedEditing(); return; }
+        SearchEditSession session = SearchEditSession.Create(editor.Text, FindBox.Text, MatchCase.IsChecked == true);
+        if (session.Offsets.Count == 0)
+        {
+            EndLinkedEditing();
+            Status.Text = "먼저 찾을 내용을 입력해 검색 결과를 만드세요.";
+            return;
+        }
+        _linkedEditor = new SearchLinkedEditor(editor, session);
+        _linkedEditor.Updated += RefreshSearch;
+        _linkedEditor.Ended += () => { EndLinkedEditing(); Status.Text = "검색 결과 동시 편집을 종료했습니다."; };
+        _linkedEditor.Warning += message => Status.Text = message;
+        RefreshSearch();
+        Status.Text = $"{session.Offsets.Count:N0}개 항목 동시 편집 · 본문에 입력하세요. Esc로 해제합니다.";
+    }
+
+    private void OnEditAllMatchesUnchecked(object sender, RoutedEventArgs e) => EndLinkedEditing();
+
+    private void EndLinkedEditing()
+    {
+        bool wasEditing = _linkedEditor is not null;
+        _linkedEditor?.Dispose();
+        _linkedEditor = null;
+        if (EditAllMatches?.IsChecked == true) EditAllMatches.IsChecked = false;
+        if (wasEditing) RefreshSearch();
+    }
 
     private void RefreshSearch()
     {
@@ -430,13 +461,16 @@ public partial class MainWindow : Window
             if (_searchEditor is not null)
             {
                 _searchEditor.TextArea.TextView.LineTransformers.Remove(_searchHighlight);
+                _searchEditor.TextArea.TextView.BackgroundRenderers.Remove(_searchHighlight);
                 _searchEditor.TextArea.TextView.Redraw();
             }
             _searchEditor = editor;
             editor?.TextArea.TextView.LineTransformers.Add(_searchHighlight);
+            editor?.TextArea.TextView.BackgroundRenderers.Add(_searchHighlight);
         }
-        _searchHighlight.MatchLength = FindBox.Text.Length;
-        _searchHighlight.Offsets = editor is null ? [] : TextAnalysis.FindAll(editor.Text, FindBox.Text, MatchCase.IsChecked == true);
+        _searchHighlight.MatchLength = _linkedEditor?.Session.MatchLength ?? FindBox.Text.Length;
+        _searchHighlight.Offsets = _linkedEditor?.Session.Offsets.ToList()
+            ?? (editor is null ? [] : TextAnalysis.FindAll(editor.Text, FindBox.Text, MatchCase.IsChecked == true));
         editor?.TextArea.TextView.Redraw();
         UpdateSearchSummary();
     }
@@ -444,6 +478,11 @@ public partial class MainWindow : Window
     private void UpdateSearchSummary()
     {
         if (SearchSummary is null) return;
+        if (_linkedEditor is not null)
+        {
+            SearchSummary.Text = $"{_linkedEditor.Session.Offsets.Count:N0}개 동시 편집 · Esc로 해제";
+            return;
+        }
         int count = _searchHighlight.Offsets.Count;
         int current = ActiveDocument?.Editor is { } editor && editor.SelectionLength == FindBox.Text.Length
             ? _searchHighlight.Offsets.BinarySearch(editor.SelectionStart) : -1;
@@ -455,13 +494,14 @@ public partial class MainWindow : Window
     private void FindNext(bool previous = false)
     {
         if (ActiveDocument?.Editor is not { } editor || FindBox.Text.Length == 0) return;
-        List<int> offsets = TextAnalysis.FindAll(editor.Text, FindBox.Text, MatchCase.IsChecked == true);
+        List<int> offsets = _linkedEditor?.Session.Offsets.ToList() ?? TextAnalysis.FindAll(editor.Text, FindBox.Text, MatchCase.IsChecked == true);
+        int length = _linkedEditor?.Session.MatchLength ?? FindBox.Text.Length;
         if (offsets.Count == 0) { Status.Text = "일치하는 내용이 없습니다."; return; }
         int index = previous
             ? offsets.FindLastIndex(offset => offset < editor.SelectionStart)
             : offsets.FindIndex(offset => offset >= editor.SelectionStart + editor.SelectionLength);
         if (index < 0) index = previous ? offsets.Count - 1 : 0;
-        editor.Select(offsets[index], FindBox.Text.Length);
+        editor.Select(offsets[index], length);
         editor.ScrollToLine(editor.Document.GetLineByOffset(offsets[index]).LineNumber);
         UpdateSearchSummary();
         Status.Text = $"{index + 1:N0} / {offsets.Count:N0}개 일치";
@@ -471,6 +511,7 @@ public partial class MainWindow : Window
     private void OnFindPrevious(object sender, RoutedEventArgs e) => FindNext(true);
     private void OnReplaceOne(object sender, RoutedEventArgs e)
     {
+        EndLinkedEditing();
         if (ActiveDocument?.Editor is not { } editor || FindBox.Text.Length == 0) return;
         StringComparison comparison = MatchCase.IsChecked == true ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase;
         if (string.Equals(editor.SelectedText, FindBox.Text, comparison)) editor.SelectedText = ReplaceBox.Text;
@@ -479,6 +520,7 @@ public partial class MainWindow : Window
 
     private void OnReplaceAll(object sender, RoutedEventArgs e)
     {
+        EndLinkedEditing();
         if (ActiveDocument?.Editor is not { } editor || FindBox.Text.Length == 0) return;
         List<int> offsets = TextAnalysis.FindAll(editor.Text, FindBox.Text, MatchCase.IsChecked == true);
         using (editor.Document.RunUpdate())
@@ -495,6 +537,7 @@ public partial class MainWindow : Window
     {
         if (e.Key == Key.Escape)
         {
+            if (_linkedEditor is not null) { EndLinkedEditing(); e.Handled = true; return; }
             if (WorkspaceExplorer.IsKeyboardFocusWithin && WorkspaceExplorer.Workspace.HasQuery) return;
             if (SearchPanel.Visibility == Visibility.Visible) { OnHideSearch(sender, e); e.Handled = true; }
             else if (_focusMode) { ToggleFocus(); e.Handled = true; }
@@ -508,10 +551,11 @@ public partial class MainWindow : Window
         }
     }
 
-    private void OnHideSearch(object sender, RoutedEventArgs e) { SearchPanel.Visibility = Visibility.Collapsed; RefreshSearch(); ActiveDocument?.Editor.Focus(); }
+    private void OnHideSearch(object sender, RoutedEventArgs e) { EndLinkedEditing(); SearchPanel.Visibility = Visibility.Collapsed; RefreshSearch(); ActiveDocument?.Editor.Focus(); }
     private void OnTabChanged(object sender, SelectionChangedEventArgs e)
     {
         if (e.Source != DocumentTabs) return;
+        EndLinkedEditing();
         RefreshSearch();
         if (ActiveDocument is { } document && WrapMenu is not null) WrapMenu.IsChecked = document.Editor.WordWrap;
         WorkspaceExplorer?.Workspace?.MarkActive(ActiveDocument?.FilePath);

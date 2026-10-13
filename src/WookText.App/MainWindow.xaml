@@ -135,6 +135,7 @@
             </DockPanel>
             <DockPanel Margin="0,8,0,0">
               <Button Content="바꾸기 표시/숨기기" DockPanel.Dock="Right" Click="OnToggleReplace" Padding="8,4" />
+              <CheckBox x:Name="EditAllMatches" Content="검색 결과 동시 편집" DockPanel.Dock="Right" Margin="12,0" VerticalAlignment="Center" Checked="OnEditAllMatchesChecked" Unchecked="OnEditAllMatchesUnchecked" ToolTip="체크한 시점의 모든 검색 결과에 입력·붙여넣기·삭제를 함께 적용합니다. Esc로 해제합니다." />
               <TextBlock x:Name="SearchSummary" VerticalAlignment="Center" Text="찾을 내용을 입력하세요." AutomationProperties.LiveSetting="Polite" />
             </DockPanel>
             <DockPanel x:Name="ReplacePanel" Visibility="Collapsed" Margin="0,8,0,0">

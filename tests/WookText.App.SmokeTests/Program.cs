@@ -72,6 +72,7 @@ internal static class Program
         document.Editor.Undo();
 
         await SearchFocusChecks.RunAsync(window, output);
+        await SearchLinkedEditingChecks.RunAsync(window, output);
         ApplicationCommands.Find.Execute(null, window);
         TextBox find = (TextBox)window.FindName("FindBox");
         find.Text = "한국어";
