@@ -25,11 +25,11 @@ Windows x64용 무료 텍스트 편집기입니다. **1.2.4**은 찾기·바꾸�
 
 **바꾸기 표시/숨기기** 또는 `Ctrl+H`로 바꿀 내용을 입력하세요. **바꾸기**는 현재 선택한 일치 항목을 바꾸고, **모두 바꾸기**는 현재 문서 전체에 적용합니다. `Ctrl+Z` 한 번으로 모두 바꾸기를 취소할 수 있습니다. 빈 검색어는 변경하지 않으며 정규식이 아닌 일반 문자열 검색입니다. `Esc`로 닫으면 강조가 사라집니다.
 
-아래 화면은 공개 버전 1.2.4 기준이며, 새 화면과 설치 패키지는 Windows 검증 후 갱신 예정입니다.
+아래 화면은 1.3.0의 실제 Windows WPF 검증 결과입니다. 공개 다운로드는 배포 전까지 1.2.4를 유지합니다.
 
 **편집 → 찾기 / 바꾸기**를 클릭하거나 `Ctrl+F` / `Ctrl+H`를 누르면 두 경우 모두 **찾을 내용** 입력란으로 포커스가 이동합니다. 이미 열려 있어도 다시 이동하며, 기존 검색어를 전체 선택하여 바로 새 검색어를 입력할 수 있습니다. 본문에서 한 줄의 텍스트를 선택했다면 검색어로 채워집니다.
 
-![바꾸기를 열고 찾을 내용 입력란에 바로 입력한 화면](docs/images/search-focus.png)
+![검색 결과 전체 강조와 이전·다음 찾기, 모두 바꾸기 화면](docs/images/search-focus.png)
 
 ### 파일을 찾아 편집하기
 
@@ -188,6 +188,8 @@ Windows x64의 PowerShell에서 저장소 루트를 기준으로 실행합니다
 .\scripts\make-icon.ps1                 # 벡터 원본에서 PNG와 다중 크기 ICO 재생성
 .\scripts\update-screenshots.ps1        # WPF 검증 결과에서 README 화면 10개 갱신
 ```
+
+`gh workflow run package.yml`로 GitHub Actions의 **Windows distribution**을 수동 실행할 수도 있습니다. Windows에서 단위·WPF 검사, 설치·제거 검사 후 설치 파일·ZIP·체크섬을 `windows-distribution` 아티팩트로, 화면을 `windows-verification`으로 30일간 보관합니다. 공개 릴리스는 자동 생성하지 않습니다.
 
 패키징 결과는 `artifacts/installer/`의 설치 파일과 `artifacts/`의 무설치 ZIP에 생성됩니다. 게시 전 실행 파일은 `artifacts/publish/win-x64/wText.exe`입니다. 새 버전 배포 시 설치 파일·ZIP·`SHA256SUMS.txt`를 해당 GitHub 릴리스에 첨부하고 위 다운로드 버전과 링크를 함께 갱신하세요.
 

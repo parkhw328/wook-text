@@ -20,7 +20,7 @@ try {
     foreach ($directory in @($publish, $installerDirectory, $generated)) {
         New-Item -ItemType Directory -Path $directory -Force | Out-Null
     }
-    Invoke-Dotnet publish src/WookText.App/WookText.App.csproj -c Release --self-contained true -o $publish -p:PublishTrimmed=false -p:DebugType=None -p:DebugSymbols=false -p:RestoreLockedMode=true
+    Invoke-Dotnet publish src/WookText.App/WookText.App.csproj -c Release --self-contained true -o $publish '-p:PublishTrimmed=false' '-p:DebugType=None' '-p:DebugSymbols=false' '-p:RestoreLockedMode=true'
 
     # Preserve the notices shipped by the exact runtime packages in this build.
     $nugetRoot = Join-Path $env:USERPROFILE '.nuget\packages'
