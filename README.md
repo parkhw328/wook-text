@@ -1,8 +1,12 @@
+<img src="src/WookText.App/Assets/wText.png" alt="wText 로고" width="80" height="80">
+
 # wText
 
 Windows x64용 무료 텍스트 편집기입니다. 여러 문서를 탭으로 편집하고, 작업 폴더를 탐색하며, 두 파일이나 붙여넣은 텍스트의 차이를 나란히 확인할 수 있습니다.
 
 구문 강조, 문서 자동 정렬, 찾기·바꾸기와 미저장 작업 복원을 지원합니다. C#과 WPF로 개발하며 MIT 라이선스로 공개합니다.
+
+![wText의 프로젝트 탐색기와 탭 편집 화면](docs/images/explorer.png)
 
 ## 다운로드
 
