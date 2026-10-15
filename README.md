@@ -1,4 +1,6 @@
-<img src="src/WookText.App/Assets/wText.png" alt="wText 로고" width="80" height="80">
+<p align="center">
+  <img src="src/WookText.App/Assets/wText.png" alt="wText 로고" width="80" height="80">
+</p>
 
 # wText
 
