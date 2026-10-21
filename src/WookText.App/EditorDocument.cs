@@ -61,6 +61,12 @@ public sealed class EditorDocument : INotifyPropertyChanged, IDisposable
         Notify();
     }
 
+    public void Reload(LoadedTextFile file)
+    {
+        SessionDocumentState view = CaptureSession()();
+        RestoreSession(view, file);
+    }
+
     public void MarkSaved(string path, string fingerprint)
     {
         FilePath = path;

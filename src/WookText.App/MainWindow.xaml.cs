@@ -52,6 +52,7 @@ public partial class MainWindow : Window
         Bind(ApplicationCommands.New, () => { NewDocument(); return Task.CompletedTask; });
         Bind(ApplicationCommands.Open, OpenDialogAsync);
         Bind(ApplicationCommands.Save, async () => { if (ActiveDocument is { } doc) await SaveDocumentAsync(doc); });
+        Bind(EditorCommands.Reload, ReloadActiveDocumentAsync);
         Bind(EditorCommands.SaveAs, async () => { if (ActiveDocument is { } doc) await SaveDocumentAsync(doc, true); });
         Bind(EditorCommands.CloseTab, async () => { if (ActiveDocument is { } doc) await CloseDocumentAsync(doc); });
         BindExplorer(EditorCommands.OpenFolder, OpenFolderAsync);
@@ -80,8 +81,13 @@ public partial class MainWindow : Window
         Bind(ApplicationCommands.Replace, () => { ShowSearch(true); return Task.CompletedTask; });
         PreviewKeyDown += OnWindowKeyDown;
         _preferences.Changed += OnPreferencesChanged;
-        Closed += (_, _) => { _linkedEditor?.Dispose(); WorkspaceExplorer.Dispose(); _session.Dispose(); _preferences.Changed -= OnPreferencesChanged; foreach (EditorDocument document in Documents) document.Dispose(); };
-        Loaded += async (_, _) => await InitializeSessionAsync();
+        Closed += (_, _) => { _closed = true; _fileCheckTimer.Stop(); _linkedEditor?.Dispose(); WorkspaceExplorer.Dispose(); _session.Dispose(); _preferences.Changed -= OnPreferencesChanged; foreach (EditorDocument document in Documents) document.Dispose(); };
+        Loaded += async (_, _) => { await InitializeSessionAsync(); _fileCheckTimer.Start(); };
+        _fileCheckTimer.Tick += async (_, _) =>
+        {
+            if (IsActive) await CheckExternalChangesAsync();
+        };
+        Activated += async (_, _) => await CheckExternalChangesAsync();
         _session.Warning += warning => Status.Text = warning;
         _layoutReady = true;
         ApplyLayoutPreferences();

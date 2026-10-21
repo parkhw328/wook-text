@@ -57,6 +57,7 @@
             <MenuItem Header="작업 폴더에서 파일 찾기…" Command="{x:Static local:EditorCommands.FindFile}" InputGestureText="Ctrl+P" />
             <Separator />
             <MenuItem Header="저장" Command="ApplicationCommands.Save" InputGestureText="Ctrl+S" />
+            <MenuItem Header="파일 다시 불러오기" Command="{x:Static local:EditorCommands.Reload}" />
             <MenuItem Header="다른 이름으로 저장…" Command="{x:Static local:EditorCommands.SaveAs}" InputGestureText="Ctrl+Shift+S" />
             <MenuItem Header="UTF-8로 변환" Click="OnConvertEncoding" />
             <Separator />
