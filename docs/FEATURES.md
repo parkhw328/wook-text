@@ -209,7 +209,7 @@
 
 자체 코드는 [MIT](../LICENSE)입니다. AvalonEdit(MIT), DiffPlex(Apache-2.0), JetBrains Mono·Noto Sans KR(OFL-1.1), Flexoki(MIT), Prettier·Node.js(MIT 및 포함 구성요소 고지), .NET/WPF, NSIS의 고지는 [THIRD-PARTY-NOTICES.md](../THIRD-PARTY-NOTICES.md)를 확인하세요. 글꼴은 앱 폴더에서 직접 불러오며 Windows에 별도로 설치하지 않습니다. Sublime Text와 Notepad++는 사용성 참고 대상이며 해당 제품의 코드나 이미지를 포함하지 않습니다.
 
-## 열린 파일의 외부 변경 (1.5.0 준비 버전)
+## 열린 파일의 외부 변경 (1.5.0)
 
 다른 프로그램에서 열린 파일을 수정하면 창으로 돌아올 때, 또는 활성 창에서 약 2초마다 변경을 확인합니다. 작업 폴더 밖의 파일과 비활성 탭도 확인합니다. 저장 시각만 바뀌거나 wText에서 직접 저장한 경우에는 알리지 않습니다.
 
