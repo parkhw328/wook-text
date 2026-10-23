@@ -14,18 +14,18 @@ Windows x64용 무료 텍스트 편집기입니다. 여러 문서를 탭으로 �
 
 ![wText의 프로젝트 탐색기와 탭 편집 화면](docs/images/explorer.png)
 
-**1.6.1 준비:** `Ctrl+Alt+B`로 일반 선택을 직사각형 블록으로 바꾸는 단축키를 추가했습니다. 공개 전 다운로드는 1.6.0을 유지합니다.
+**1.6.1:** `Shift+방향키 → Ctrl+Alt+B → Ctrl+C`로 마우스 없이 블록을 선택·복사할 수 있습니다. 기존 Alt+드래그도 유지합니다.
 
 ## 다운로드
 
-**wText 1.6.0 · Windows x64**
+**wText 1.6.1 · Windows x64**
 
-- [설치 파일 (.exe)](https://github.com/parkhw328/wook-text/releases/download/v1.6.0/wText-1.6.0-win-x64-setup.exe)
-- [무설치 ZIP](https://github.com/parkhw328/wook-text/releases/download/v1.6.0/wText-1.6.0-win-x64-portable.zip) — 전체 압축을 해제한 뒤 `wText.exe` 실행
+- [설치 파일 (.exe)](https://github.com/parkhw328/wook-text/releases/download/v1.6.1/wText-1.6.1-win-x64-setup.exe)
+- [무설치 ZIP](https://github.com/parkhw328/wook-text/releases/download/v1.6.1/wText-1.6.1-win-x64-portable.zip) — 전체 압축을 해제한 뒤 `wText.exe` 실행
 
 .NET 런타임이 포함되어 있어 별도 설치 없이 실행할 수 있습니다.
 
-[릴리스 목록](https://github.com/parkhw328/wook-text/releases) · [SHA-256 체크섬](https://github.com/parkhw328/wook-text/releases/download/v1.6.0/SHA256SUMS.txt)
+[릴리스 목록](https://github.com/parkhw328/wook-text/releases) · [SHA-256 체크섬](https://github.com/parkhw328/wook-text/releases/download/v1.6.1/SHA256SUMS.txt)
 
 ## 문서
 
