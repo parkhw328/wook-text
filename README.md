@@ -8,7 +8,7 @@ Windows x64용 무료 텍스트 편집기입니다. 여러 문서를 탭으로 �
 
 구문 강조, 문서 자동 정렬, 찾기·바꾸기와 미저장 작업 복원을 지원합니다.
 
-**1.6.0 준비 버전:** F1 내장 기능 설명서, 우측 미니맵과 표시 설정, 직사각형 블록 복사·붙여넣기, 줄/선택 복제·줄 이동·삭제를 추가했습니다. 소스·로컬 패키지는 1.6.0이며 공개 다운로드는 1.5.0을 유지합니다. 새 Windows 화면·설치 실행은 아직 검증하지 않았습니다. [사용법과 단축키](docs/FEATURES.md#미니맵과-블록줄-편집-160)를 참고하세요.
+**1.6.0:** F1 내장 기능 설명서, 우측 미니맵과 표시 설정, 직사각형 블록 복사·붙여넣기, 줄/선택 복제·줄 이동·삭제를 제공합니다. [설명서](docs/USER-GUIDE.md)와 [사용법·단축키](docs/FEATURES.md)를 참고하세요. Linux 교차 빌드로 배포했으며 새 Windows 화면·설치 실행은 아직 검증하지 않았습니다.
 
 열린 파일의 외부 변경을 감지해 알림과 함께 다시 불러오며, 미저장 수정이 있으면 선택을 확인해 작업을 보호합니다. C#과 WPF로 개발하며 MIT 라이선스로 공개합니다.
 
@@ -16,14 +16,14 @@ Windows x64용 무료 텍스트 편집기입니다. 여러 문서를 탭으로 �
 
 ## 다운로드
 
-**wText 1.5.0 · Windows x64**
+**wText 1.6.0 · Windows x64**
 
-- [설치 파일 (.exe)](https://github.com/parkhw328/wook-text/releases/download/v1.5.0/wText-1.5.0-win-x64-setup.exe)
-- [무설치 ZIP](https://github.com/parkhw328/wook-text/releases/download/v1.5.0/wText-1.5.0-win-x64-portable.zip) — 전체 압축을 해제한 뒤 `wText.exe` 실행
+- [설치 파일 (.exe)](https://github.com/parkhw328/wook-text/releases/download/v1.6.0/wText-1.6.0-win-x64-setup.exe)
+- [무설치 ZIP](https://github.com/parkhw328/wook-text/releases/download/v1.6.0/wText-1.6.0-win-x64-portable.zip) — 전체 압축을 해제한 뒤 `wText.exe` 실행
 
 .NET 런타임이 포함되어 있어 별도 설치 없이 실행할 수 있습니다.
 
-[릴리스 목록](https://github.com/parkhw328/wook-text/releases) · [SHA-256 체크섬](https://github.com/parkhw328/wook-text/releases/download/v1.5.0/SHA256SUMS.txt)
+[릴리스 목록](https://github.com/parkhw328/wook-text/releases) · [SHA-256 체크섬](https://github.com/parkhw328/wook-text/releases/download/v1.6.0/SHA256SUMS.txt)
 
 ## 문서
 
