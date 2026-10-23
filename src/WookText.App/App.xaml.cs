@@ -7,6 +7,7 @@ public partial class App : Application
     protected override async void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
+        HelpWindow.RegisterCommands();
         MainWindow window = new();
         MainWindow = window;
         window.Show();

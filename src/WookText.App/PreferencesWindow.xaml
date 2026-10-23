@@ -38,6 +38,7 @@
         <TextBlock Text="9–48 px" Foreground="{StaticResource Muted}" FontSize="11" Margin="0,7,0,0" />
       </StackPanel>
       <StackPanel Grid.Column="2" Margin="0,22,0,0">
+        <CheckBox x:Name="MinimapBox" Content="우측 미니맵 표시" Checked="OnPreviewChanged" Unchecked="OnPreviewChanged" Margin="0,0,0,9" />
         <CheckBox x:Name="LineNumbersBox" Content="줄 번호 표시" Checked="OnPreviewChanged" Unchecked="OnPreviewChanged" Margin="0,0,0,9" />
         <CheckBox x:Name="WordWrapBox" Content="긴 줄 자동 줄바꿈" Checked="OnPreviewChanged" Unchecked="OnPreviewChanged" Margin="0,0,0,9" />
         <CheckBox x:Name="WhitespaceBox" Content="공백 · 탭 표시" Checked="OnPreviewChanged" Unchecked="OnPreviewChanged" />

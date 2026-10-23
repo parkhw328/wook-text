@@ -39,6 +39,7 @@ public partial class MainWindow : Window
 
     public MainWindow(EditorPreferencesService? preferences = null, Func<EditorDocument, MessageBoxResult>? confirmClose = null)
     {
+        HelpWindow.RegisterCommands();
         _preferences = preferences ?? new EditorPreferencesService();
         _confirmClose = confirmClose;
         string settingsName = Path.GetFileNameWithoutExtension(_preferences.StoragePath);
@@ -49,6 +50,7 @@ public partial class MainWindow : Window
         DataContext = this;
         WorkspaceExplorer.Initialize(new WorkspaceStateStore(Path.ChangeExtension(_preferences.StoragePath, ".workspace.json")),
             path => RunAsync(() => OpenFileAsync(path)), OpenFolderAsync, () => ActiveDocument?.FilePath, OnExplorerPathRenamed);
+        BindEditingCommands();
         Bind(ApplicationCommands.New, () => { NewDocument(); return Task.CompletedTask; });
         Bind(ApplicationCommands.Open, OpenDialogAsync);
         Bind(ApplicationCommands.Save, async () => { if (ActiveDocument is { } doc) await SaveDocumentAsync(doc); });
@@ -121,6 +123,7 @@ public partial class MainWindow : Window
     private EditorDocument AddDocument(string name)
     {
         EditorDocument document = new(name, _preferences);
+        InstallEditingShortcuts(document.Editor);
         document.Editor.TextArea.Caret.PositionChanged += (_, _) => { UpdateStatus(); SessionChanged(); };
         document.Editor.TextChanged += (_, _) => { UpdateStatus(); SessionChanged(); if (ActiveDocument == document) RefreshSearch(); };
         document.Editor.TextArea.SelectionChanged += (_, _) => { if (ActiveDocument == document) UpdateSearchSummary(); };
@@ -592,6 +595,7 @@ public partial class MainWindow : Window
     private void OnRedo(object sender, RoutedEventArgs e) => ActiveDocument?.Editor.Redo();
     private void OnWordWrap(object sender, RoutedEventArgs e) => _preferences.Update(_preferences.Current with { WordWrap = WrapMenu.IsChecked });
     private void OnLineNumbers(object sender, RoutedEventArgs e) => _preferences.Update(_preferences.Current with { ShowLineNumbers = LineNumbersMenu.IsChecked });
+    private void OnMinimap(object sender, RoutedEventArgs e) => _preferences.Update(_preferences.Current with { ShowMinimap = MinimapMenu.IsChecked });
     private void OnWhitespace(object sender, RoutedEventArgs e) => _preferences.Update(_preferences.Current with { ShowWhitespace = WhitespaceMenu.IsChecked });
     private void OnConvertEncoding(object sender, RoutedEventArgs e) { ActiveDocument?.ConvertToUtf8(); UpdateStatus(); }
     private void OnExit(object sender, RoutedEventArgs e) => Close();
@@ -646,6 +650,7 @@ public partial class MainWindow : Window
             WrapMenu.IsChecked = preferences.WordWrap;
             LineNumbersMenu.IsChecked = preferences.ShowLineNumbers;
             WhitespaceMenu.IsChecked = preferences.ShowWhitespace;
+            MinimapMenu.IsChecked = preferences.ShowMinimap;
             OpenDocumentsSection.IsExpanded = preferences.OpenDocumentsExpanded;
             ExplorerSection.IsExpanded = preferences.ExplorerExpanded;
             MainHeader.Visibility = MainMenu.Visibility = _focusMode ? Visibility.Collapsed : Visibility.Visible;

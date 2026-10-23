@@ -26,6 +26,7 @@ public sealed class PreferencesStoreTests : IDisposable
             OpenDocumentsExpanded = false,
             ExplorerExpanded = false,
             ShowLineNumbers = false,
+            ShowMinimap = false,
             WordWrap = true,
             ShowWhitespace = true,
             RememberSession = false,

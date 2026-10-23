@@ -113,6 +113,8 @@ internal static class Program
         await RenderAsync(window, Path.Combine(output, "editor-small.png"), 960, 600);
         await ThemeChecks.RunAsync(window, output);
         await FormattingChecks.RunAsync(window, output);
+        await NavigationEditingChecks.RunAsync(window, output);
+        await HelpChecks.RunAsync(window, output);
         await ExperienceChecks.RunAsync(window, comparison, preferences, settingsPath, output);
         comparison.Close();
         await ComparisonChecks.RunAsync(preferences, output);

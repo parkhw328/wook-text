@@ -24,6 +24,7 @@ public static class EditorFactory
             HorizontalScrollBarVisibility = System.Windows.Controls.ScrollBarVisibility.Auto,
             VerticalScrollBarVisibility = System.Windows.Controls.ScrollBarVisibility.Auto
         };
+        editor.Options.EnableRectangularSelection = true;
         editor.Options.ConvertTabsToSpaces = true;
         editor.Options.IndentationSize = 4;
         editor.Options.HighlightCurrentLine = !readOnly;

@@ -13,6 +13,8 @@ public sealed class EditorDocument : INotifyPropertyChanged, IDisposable
     public Guid SessionId { get; private set; } = Guid.NewGuid();
     public string LineEndingDescription { get; private set; } = "줄바꿈 없음";
     public TextEditor Editor { get; }
+    public System.Windows.Controls.Grid View { get; }
+    public EditorMinimap Minimap { get; }
     public string? LanguageOverride { get; private set; }
     public string LanguageName => SyntaxCatalog.Resolve(FilePath, LanguageOverride).Label;
     public string? FilePath { get; private set; }
@@ -30,6 +32,14 @@ public sealed class EditorDocument : INotifyPropertyChanged, IDisposable
         _preferences = preferences;
         Editor = EditorFactory.Create(preferences: preferences.Current);
         EditorFactory.BindZoom(Editor, preferences);
+        Minimap = new EditorMinimap(Editor);
+        View = new System.Windows.Controls.Grid();
+        View.ColumnDefinitions.Add(new() { Width = new System.Windows.GridLength(1, System.Windows.GridUnitType.Star) });
+        View.ColumnDefinitions.Add(new() { Width = System.Windows.GridLength.Auto });
+        System.Windows.Controls.Grid.SetColumn(Minimap, 1);
+        View.Children.Add(Editor);
+        View.Children.Add(Minimap);
+        Minimap.Visibility = preferences.Current.ShowMinimap ? System.Windows.Visibility.Visible : System.Windows.Visibility.Collapsed;
         preferences.Changed += OnPreferencesChanged;
         UntitledName = name;
         Editor.Loaded += (_, _) => RestoreView();
@@ -167,6 +177,7 @@ public sealed class EditorDocument : INotifyPropertyChanged, IDisposable
     private void OnPreferencesChanged(object? sender, EventArgs e)
     {
         EditorFactory.ApplyPreferences(Editor, _preferences.Current);
+        Minimap.Visibility = _preferences.Current.ShowMinimap ? System.Windows.Visibility.Visible : System.Windows.Visibility.Collapsed;
         ApplyIndentation();
     }
 

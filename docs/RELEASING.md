@@ -1,5 +1,28 @@
 # 배포와 문서 마무리
 
+## 1.6.0 공개 준비 (2026-10-23)
+
+사용자가 F1 기능 설명서 추가와 전체 점검, 커밋·푸시·공개 릴리스를 요청했다. 소스는 **1.6.0**이며 공개 전 다운로드는 **1.5.0**을 유지한다. 기존 CI 중단은 유지한다.
+
+- 기능: 미니맵·표시 설정, 직사각형 블록 클립보드, 줄 복제·이동·삭제, 도움말 메뉴와 F1의 내장 설명서. 설명서는 16개 주제와 제목·본문 검색, Ctrl+F·Esc, 창 재사용을 제공한다. 새 외부 의존성 없음.
+- Linux Core 테스트: 151개 중 145개 통과. 새 설명서 리소스·기능별 검색·복수 검색어 검사 13개 전부 통과. 6개 실패는 기존 Windows 자연 정렬 DLL·경로·숨김 속성·파일 잠금 항목이며 변경 전 기준과 대조한다.
+- 앱 및 WPF 검사 프로젝트: .NET SDK 10.0.401, Windows x64 Release 빌드 경고·오류 0개. 새 C# 파일 whitespace formatter 확인. 블록/줄 편집·미니맵·도움말 WPF 회귀 검사는 작성·컴파일했으나 Linux에서 실행하지 않았다.
+- 문서: README, CHANGELOG, 기능 안내, 요구사항, 개발 안내, 내장 `USER-GUIDE.md`와 규칙을 동기화. 이전의 미니맵 미지원 문구를 수정했다.
+- 화면: 실제 1.6.0 화면은 미촬영. `minimap.png`·`user-guide.png` 생성 검사와 `update-screenshots.ps1` 목록을 준비했다. 기존 Windows 화면을 새 버전 검증으로 사용하지 않는다.
+- 패키지: 소스 커밋 확정 후 Linux 교차 게시와 NSIS로 다시 생성한다. 설치 EXE·무설치 ZIP·SHA256SUMS.txt는 `artifacts/distribution/wText-1.6.0/`에 두고 ZIP CRC·publish 일치와 로컬/업로드 SHA-256을 확인한다. 최종 소스 커밋·검증 결과는 공개 시 기록한다.
+- 남은 Windows 검증: 실제 F1·설정/비교 대화상자의 도움말·검색·닫기·키보드 포커스, Alt+드래그/열 선택·외부 클립보드·한글/IME·DPI·자동 줄바꿈·실제 미니맵/설명서 화면, `scripts/build.ps1` 및 설치·업그레이드·제거. 이 한계를 릴리스에 명시한다.
+
+로컬 검증 명령(.NET SDK 경로는 환경에 맞게 지정):
+
+```bash
+dotnet test tests/WookText.Core.Tests -c Release --no-restore
+dotnet build tests/WookText.App.SmokeTests -c Release -p:EnableWindowsTargeting=true --no-restore
+dotnet publish src/WookText.App -c Release -r win-x64 --self-contained true -p:EnableWindowsTargeting=true -o artifacts/publish/1.6.0-win-x64
+git diff --check
+```
+
+Windows 실행 검증·화면 캡처 전에는 새 기능을 자동 실사용 검증 완료로 표시하지 않는다.
+
 ## 1.5.0 공개 배포 상태 (2026-10-22)
 
 사용자가 1.5.0을 확인한 뒤 커밋·푸시·공개 릴리스를 요청했다. 소스와 공개 다운로드는 **1.5.0**이며 [wText 1.5.0](https://github.com/parkhw328/wook-text/releases/tag/v1.5.0)에 설치 EXE·무설치 ZIP·SHA-256을 제공한다. 추가 CI 중단을 유지한다.

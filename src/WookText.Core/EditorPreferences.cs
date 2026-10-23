@@ -13,6 +13,7 @@ public sealed record EditorPreferences
     public bool OpenDocumentsExpanded { get; init; } = true;
     public bool ExplorerExpanded { get; init; } = true;
     public bool ShowLineNumbers { get; init; } = true;
+    public bool ShowMinimap { get; init; } = true;
     public bool WordWrap { get; init; }
     public bool ShowWhitespace { get; init; }
     public bool RememberSession { get; init; } = true;

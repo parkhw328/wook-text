@@ -60,3 +60,11 @@ Linux에서도 README·변경 이력·화면·릴리스 설명을 같은 기준�
 개발 지침은 `AGENTS.md`와 `rules/rules.md`, 버전 기록은 `CHANGELOG.md`를 확인하세요. C#은 공백 4칸과 `.editorconfig`를 따르며 `dotnet format`을 사용합니다. 테스트명은 `Method_Condition_ExpectedResult` 형식입니다. 수치 기반 커버리지 기준은 아직 없으며 파일 손상 방지와 기능별 회귀 검증을 우선합니다.
 
 커밋은 `Add encoding preservation tests`처럼 변경 의도가 드러나는 짧은 명령형으로 작성합니다. PR에는 관련 요구사항, 검증 결과, UI 변경 화면을 포함하세요.
+
+## 미니맵·블록 편집 검증 (1.6.0)
+
+`EditorDocument.View`는 본문과 `EditorMinimap`을 함께 배치한다. 미니맵은 문서·크기 변경 때만 표본 그림을 다시 만들고 스크롤·커서는 덧그린다. 탭 언로드 시 이벤트 구독을 해제한다. `EditorEditing`은 블록 클립보드와 줄 편집, `MainWindow.Editing.cs`는 명령·메뉴·본문 전용 단축키 연결을 담당한다.
+
+`NavigationEditingChecks`는 WPF 실행에서 블록 끝 확장, 빈 행, 행 수 불일치, Ctrl+V 명령 경로, CR/LF/CRLF, 줄 이동과 단일 실행 취소, 미니맵 표시·숨김·탐색을 검사하고 `artifacts/smoke/minimap.png`를 만든다. Windows에서 `scripts/build.ps1` 성공 후 `scripts/update-screenshots.ps1`로 실제 화면을 복사하고 검토한다. Linux 교차 컴파일만으로 이 검사가 실행된 것으로 간주하지 않는다.
+
+`docs/USER-GUIDE.md`는 `WookText.Core`의 내장 리소스다. `UserGuide`가 주제와 검색을 제공하고 `HelpWindow`가 본문을 표시한다. 설명서 수정 시 Core를 다시 빌드·패키징한다. `UserGuideTests`는 오프라인 리소스·주제·검색을 검증하며 `HelpChecks`는 WPF 명령 경로·검색·창 재사용·소유 창 종료·원문 보호와 `user-guide.png` 생성을 담당한다.

@@ -45,6 +45,7 @@ public partial class PreferencesWindow : Window
         EnglishFontBox.SelectedItem = EditorFonts.AvailableFamilies.Contains(preferences.EnglishFont) ? preferences.EnglishFont : "JetBrains Mono";
         KoreanFontBox.SelectedItem = EditorFonts.AvailableFamilies.Contains(preferences.KoreanFont) ? preferences.KoreanFont : "Noto Sans KR";
         SizeBox.Text = preferences.FontSize.ToString(CultureInfo.CurrentCulture);
+        MinimapBox.IsChecked = preferences.ShowMinimap;
         LineNumbersBox.IsChecked = preferences.ShowLineNumbers;
         WordWrapBox.IsChecked = preferences.WordWrap;
         WhitespaceBox.IsChecked = preferences.ShowWhitespace;
@@ -66,6 +67,7 @@ public partial class PreferencesWindow : Window
             EnglishFont = EnglishFontBox.Text,
             KoreanFont = KoreanFontBox.Text,
             FontSize = size,
+            ShowMinimap = MinimapBox.IsChecked == true,
             ShowLineNumbers = LineNumbersBox.IsChecked == true,
             WordWrap = WordWrapBox.IsChecked == true,
             ShowWhitespace = WhitespaceBox.IsChecked == true,

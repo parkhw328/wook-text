@@ -68,6 +68,19 @@
             <MenuItem Header="실행 취소" Click="OnUndo" InputGestureText="Ctrl+Z" />
             <MenuItem Header="다시 실행" Click="OnRedo" InputGestureText="Ctrl+Y" />
             <Separator />
+            <MenuItem Header="잘라내기" Click="OnCut" InputGestureText="Ctrl+X" />
+            <MenuItem Header="복사" Click="OnCopy" InputGestureText="Ctrl+C" />
+            <MenuItem Header="붙여넣기" Click="OnPaste" InputGestureText="Ctrl+V" />
+            <Separator />
+            <MenuItem Header="선택 영역을 직사각형 블록으로" Command="{x:Static local:EditorCommands.SelectBlock}" InputGestureText="Alt+Shift+방향키 / Alt+드래그" />
+            <MenuItem Header="블록 복사" Command="{x:Static local:EditorCommands.CopyBlock}" InputGestureText="Ctrl+Shift+C" />
+            <MenuItem Header="블록 붙여넣기" Command="{x:Static local:EditorCommands.PasteBlock}" InputGestureText="Ctrl+Shift+V" />
+            <MenuItem Header="줄 / 선택 복제" Command="{x:Static local:EditorCommands.Duplicate}" InputGestureText="Ctrl+Alt+D" />
+            <MenuItem Header="줄 위로 이동" Command="{x:Static local:EditorCommands.MoveLinesUp}" InputGestureText="Ctrl+Shift+↑" />
+            <MenuItem Header="줄 아래로 이동" Command="{x:Static local:EditorCommands.MoveLinesDown}" InputGestureText="Ctrl+Shift+↓" />
+            <MenuItem Header="줄 삭제" Command="{x:Static local:EditorCommands.DeleteLines}" InputGestureText="Ctrl+Shift+K" />
+            <MenuItem Header="줄 선택" Command="{x:Static local:EditorCommands.SelectLines}" InputGestureText="Ctrl+L" />
+            <Separator />
             <MenuItem Header="찾기" Command="ApplicationCommands.Find" InputGestureText="Ctrl+F" />
             <MenuItem Header="바꾸기" Command="ApplicationCommands.Replace" InputGestureText="Ctrl+H" />
           </MenuItem>
@@ -81,6 +94,7 @@
             <Separator />
             <MenuItem Header="자동 줄바꿈" IsCheckable="True" Click="OnWordWrap" x:Name="WrapMenu" />
             <MenuItem Header="줄 번호 표시" IsCheckable="True" Click="OnLineNumbers" x:Name="LineNumbersMenu" />
+            <MenuItem Header="미니맵 표시" IsCheckable="True" Click="OnMinimap" x:Name="MinimapMenu" />
             <MenuItem Header="공백 · 탭 표시" IsCheckable="True" Click="OnWhitespace" x:Name="WhitespaceMenu" />
             <Separator />
             <MenuItem Header="글자 크게" Command="{x:Static local:EditorCommands.ZoomIn}" InputGestureText="Ctrl++" />
@@ -89,7 +103,7 @@
             <MenuItem Header="글꼴 및 편집 설정…" Command="{x:Static local:EditorCommands.Preferences}" InputGestureText="Ctrl+," />
           </MenuItem>
           <MenuItem x:Name="LanguageMenu" Header="언어(_L)" SubmenuOpened="OnLanguageMenuOpened" />
-          <MenuItem Header="도움말(_H)"><MenuItem Header="GitHub 프로젝트 열기" Click="OnOpenRepository" /><MenuItem x:Name="LicensesMenu" Header="라이선스 및 오픈소스 고지" Click="OnLicenses" /><MenuItem Header="wText 정보" Click="OnAbout" /></MenuItem>
+          <MenuItem Header="도움말(_H)"><MenuItem x:Name="UserGuideMenu" Header="기능 설명서" Command="ApplicationCommands.Help" InputGestureText="F1" /><Separator /><MenuItem Header="GitHub 프로젝트 열기" Click="OnOpenRepository" /><MenuItem x:Name="LicensesMenu" Header="라이선스 및 오픈소스 고지" Click="OnLicenses" /><MenuItem Header="wText 정보" Click="OnAbout" /></MenuItem>
         </Menu>
       </DockPanel>
     </Border>
@@ -155,7 +169,7 @@
               </StackPanel>
             </DataTemplate>
           </TabControl.ItemTemplate>
-          <TabControl.ContentTemplate><DataTemplate><ContentControl Content="{Binding Editor}" /></DataTemplate></TabControl.ContentTemplate>
+          <TabControl.ContentTemplate><DataTemplate><ContentControl Content="{Binding View}" /></DataTemplate></TabControl.ContentTemplate>
         </TabControl>
       </Grid>
     </Grid>
