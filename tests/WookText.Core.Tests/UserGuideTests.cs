@@ -18,6 +18,7 @@ public sealed class UserGuideTests
     [Theory]
     [InlineData("F1", "도움말")]
     [InlineData("Ctrl+Shift+V", "블록")]
+    [InlineData("Ctrl+Alt+B", "블록")]
     [InlineData("미니맵", "미니맵")]
     [InlineData("CP949", "인코딩")]
     [InlineData("Ctrl+Alt+D", "줄 편집")]

@@ -41,6 +41,7 @@ public partial class MainWindow
     {
         (Key Key, ModifierKeys Modifiers, ICommand Command)[] shortcuts =
         [
+            (Key.B, ModifierKeys.Control | ModifierKeys.Alt, EditorCommands.SelectBlock),
             (Key.C, ModifierKeys.Control | ModifierKeys.Shift, EditorCommands.CopyBlock),
             (Key.V, ModifierKeys.Control | ModifierKeys.Shift, EditorCommands.PasteBlock),
             (Key.D, ModifierKeys.Control | ModifierKeys.Alt, EditorCommands.Duplicate),

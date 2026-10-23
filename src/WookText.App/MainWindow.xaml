@@ -72,7 +72,7 @@
             <MenuItem Header="복사" Click="OnCopy" InputGestureText="Ctrl+C" />
             <MenuItem Header="붙여넣기" Click="OnPaste" InputGestureText="Ctrl+V" />
             <Separator />
-            <MenuItem Header="선택 영역을 직사각형 블록으로" Command="{x:Static local:EditorCommands.SelectBlock}" InputGestureText="Alt+Shift+방향키 / Alt+드래그" />
+            <MenuItem Header="선택 영역을 직사각형 블록으로" Command="{x:Static local:EditorCommands.SelectBlock}" InputGestureText="Ctrl+Alt+B" ToolTip="일반 선택을 블록으로 변환 · Alt+드래그 / Alt+Shift+방향키로도 선택" />
             <MenuItem Header="블록 복사" Command="{x:Static local:EditorCommands.CopyBlock}" InputGestureText="Ctrl+Shift+C" />
             <MenuItem Header="블록 붙여넣기" Command="{x:Static local:EditorCommands.PasteBlock}" InputGestureText="Ctrl+Shift+V" />
             <MenuItem Header="줄 / 선택 복제" Command="{x:Static local:EditorCommands.Duplicate}" InputGestureText="Ctrl+Alt+D" />

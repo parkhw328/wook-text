@@ -60,7 +60,13 @@ internal static class NavigationEditingChecks
         editor.Redo();
         Check(editor.Text.Contains("   라"), "Block paste must redo as a single edit.");
         Reset("aa11\nbb22\ncc33");
-        editor.TextArea.Selection = new RectangleSelection(editor.TextArea, new TextViewPosition(1, 3), new TextViewPosition(3, 5));
+        editor.Select(2, 12);
+        KeyBinding blockShortcut = editor.TextArea.InputBindings.OfType<KeyBinding>().Single(binding =>
+            binding.Key == Key.B && binding.Modifiers == (ModifierKeys.Control | ModifierKeys.Alt));
+        Check(blockShortcut.Command == EditorCommands.SelectBlock, "Ctrl+Alt+B must convert the selection into a block.");
+        ((RoutedCommand)blockShortcut.Command).Execute(null, editor.TextArea);
+        Check(editor.TextArea.Selection is RectangleSelection && editor.Text == "aa11\nbb22\ncc33" && !editor.CanUndo,
+            "Block conversion must preserve text and undo history.");
         EditorEditing.CopyBlock(editor);
         Check(Clipboard.GetText().Replace("\r\n", "\n") == "11\n22\n33" && Clipboard.ContainsData(RectangleSelection.RectangularSelectionDataType), "Copy must preserve rectangle metadata.");
         Reset("----\n----\n----");
