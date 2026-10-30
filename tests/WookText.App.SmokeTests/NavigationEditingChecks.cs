@@ -89,6 +89,11 @@ internal static class NavigationEditingChecks
         EditorEditing.CopyBlock(editor);
         Check(Clipboard.GetText().Replace("\r\n", "\n") == "\nxx", "Empty leading rows must survive block copy.");
 
+        Reset("first\nsecond\nthird");
+        await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
+        Check(new MinimapLayout(editor.Document.LineCount, document.Minimap.ActualHeight).ContentHeight == 6,
+            "Three lines must occupy six minimap pixels, not the entire editor height.");
+        await Program.RenderAsync(window, Path.Combine(output, "minimap-short.png"), 1200, 800);
         Reset(string.Join("\n", Enumerable.Range(1, 1200).Select(i => $"// {i:0000}   문서 탐색 · minimap sample")));
         await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
         Check(document.Minimap.IsVisible && document.Minimap.ActualWidth > 0, "Minimap must be visible by default.");

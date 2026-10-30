@@ -1,5 +1,5 @@
 . "$PSScriptRoot\common.ps1"
-$screenshots = @('user-guide.png', 'minimap.png', 'search-focus.png', 'search-linked-editing.png', 'explorer.png', 'workspaces.png', 'save-confirmation.png', 'comparison.png', 'comparison-input.png', 'session-restored.png', 'preferences.png', 'licenses.png', 'formatting.png', 'indentation.png')
+$screenshots = @('minimap-short.png', 'user-guide.png', 'minimap.png', 'search-focus.png', 'search-linked-editing.png', 'explorer.png', 'workspaces.png', 'save-confirmation.png', 'comparison.png', 'comparison-input.png', 'session-restored.png', 'preferences.png', 'licenses.png', 'formatting.png', 'indentation.png')
 $destination = Join-Path $RepoRoot 'docs\images'
 foreach ($name in $screenshots) {
     if (-not (Test-Path -LiteralPath (Join-Path $RepoRoot ('artifacts\smoke\' + $name)))) {

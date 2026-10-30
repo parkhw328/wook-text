@@ -2,6 +2,7 @@ using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
 using ICSharpCode.AvalonEdit;
+using WookText.Core;
 
 namespace WookText.App;
 
@@ -52,14 +53,16 @@ public sealed class EditorMinimap : FrameworkElement
         if (ActualHeight <= 0 || ActualWidth <= 0) return;
         dc.DrawRectangle(_background, null, new Rect(RenderSize));
         int count = _editor.Document.LineCount;
-        double scale = ActualHeight / count;
+        if (_editor.Document.TextLength == 0) return;
+        MinimapLayout layout = new(count, ActualHeight);
         var view = _editor.TextArea.TextView;
         if (view.VisualLinesValid && view.VisualLines.Count > 0)
         {
             int first = view.VisualLines[0].FirstDocumentLine.LineNumber;
             int last = view.VisualLines[^1].LastDocumentLine.LineNumber;
+            var viewport = layout.GetViewport(first, last);
             dc.DrawRectangle(_viewport, new Pen(_ink, 1),
-                new Rect(0.5, (first - 1) * scale, ActualWidth - 1, Math.Max(2, (last - first + 1) * scale)));
+                new Rect(0.5, viewport.Top, ActualWidth - 1, viewport.Height));
         }
         if (_overview is null)
         {
@@ -77,7 +80,7 @@ public sealed class EditorMinimap : FrameworkElement
                     foreach (char c in text)
                     {
                         if (x >= ActualWidth - 4) break;
-                        if (!char.IsWhiteSpace(c)) drawing.DrawRectangle(_ink, null, new Rect(x, (number - 1) * scale, 1, 1));
+                        if (!char.IsWhiteSpace(c)) drawing.DrawRectangle(_ink, null, new Rect(x, layout.GetLineTop(number), 1, 1));
                         x += c == '\t' ? 4 : 1;
                     }
                 }
@@ -85,13 +88,15 @@ public sealed class EditorMinimap : FrameworkElement
             _overview.Freeze();
         }
         dc.DrawDrawing(_overview);
-        double caretY = Math.Min(ActualHeight - 2, (_editor.TextArea.Caret.Line - 1) * scale);
-        dc.DrawRectangle(_accent, null, new Rect(0, caretY, ActualWidth, 2));
+        double caretHeight = Math.Min(2, layout.ContentHeight);
+        double caretY = Math.Min(layout.ContentHeight - caretHeight, layout.GetLineTop(_editor.TextArea.Caret.Line));
+        dc.DrawRectangle(_accent, null, new Rect(0, caretY, ActualWidth, caretHeight));
     }
 
     public void NavigateTo(double fraction)
     {
-        int line = 1 + (int)Math.Round(Math.Clamp(fraction, 0, 1) * (_editor.Document.LineCount - 1));
+        MinimapLayout layout = new(_editor.Document.LineCount, ActualHeight);
+        int line = layout.GetLineAtY(fraction * ActualHeight);
         _editor.ScrollToLine(line);
     }
 

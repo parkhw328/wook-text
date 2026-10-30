@@ -68,3 +68,5 @@ Linux에서도 README·변경 이력·화면·릴리스 설명을 같은 기준�
 `NavigationEditingChecks`는 WPF 실행에서 블록 끝 확장, 빈 행, 행 수 불일치, Ctrl+V 명령 경로, CR/LF/CRLF, 줄 이동과 단일 실행 취소, 미니맵 표시·숨김·탐색을 검사하고 `artifacts/smoke/minimap.png`를 만든다. Windows에서 `scripts/build.ps1` 성공 후 `scripts/update-screenshots.ps1`로 실제 화면을 복사하고 검토한다. Linux 교차 컴파일만으로 이 검사가 실행된 것으로 간주하지 않는다.
 
 `docs/USER-GUIDE.md`는 `WookText.Core`의 내장 리소스다. `UserGuide`가 주제와 검색을 제공하고 `HelpWindow`가 본문을 표시한다. 설명서 수정 시 Core를 다시 빌드·패키징한다. `UserGuideTests`는 오프라인 리소스·주제·검색을 검증하며 `HelpChecks`는 WPF 명령 경로·검색·창 재사용·소유 창 종료·원문 보호와 `user-guide.png` 생성을 담당한다.
+
+`MinimapLayout`은 미니맵 행 간격·현재 화면 범위·포인터 역변환의 공통 좌표 계산을 담당한다. `MinimapLayoutTests`는 짧은/긴 문서·작은 창·리사이즈·여백 좌표를 Linux에서도 검증한다. WPF 검사의 `minimap-short.png`는 짧은 문서 화면을 생성하며 Windows에서 실제 결과를 확인해야 한다.
