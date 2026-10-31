@@ -36,7 +36,7 @@ Windows x64용 무료 텍스트 편집기입니다. 여러 문서를 탭으로 �
 - [개발 안내](docs/DEVELOPMENT.md) — 개발 환경, 빌드·검증·배포, 프로젝트 구조
 - [배포 안내](docs/RELEASING.md) — 현재 배포 상태와 검증 결과
 - [변경 이력](CHANGELOG.md)
-- [요구사항](docs/REQUIREMENTS.md) · [프로젝트 규칙](rules/rules.md)
+- [요구사항](rules/requirements.md) · [프로젝트 규칙](rules/rules.md)
 
 ## 개발
 

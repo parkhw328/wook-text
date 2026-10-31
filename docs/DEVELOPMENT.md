@@ -2,6 +2,8 @@
 
 [프로젝트 소개](../README.md) · [기능 및 사용법](FEATURES.md)
 
+새 작업지시를 받으면 [프로젝트 규칙](../rules/rules.md)을 먼저 읽고, 이어서 [누적 요구사항](../rules/requirements.md)을 읽으세요. 새 규칙과 요구사항은 같은 작업에서 각 문서에 반영합니다. 에이전트 진입 지침은 [AGENTS.md](../AGENTS.md)에 있습니다.
+
 ## 개발 명령
 
 Windows x64의 PowerShell에서 저장소 루트를 기준으로 실행합니다. 개발 SDK는 `global.json`에 고정되어 있습니다. 인터넷 연결은 도구·패키지 최초 다운로드에 필요합니다.
@@ -49,7 +51,8 @@ Linux에서도 README·변경 이력·화면·릴리스 설명을 같은 기준�
 | `tests/WookText.App.SmokeTests/` | 실제 WPF 컨트롤 동작 검증과 화면 렌더링 |
 | `installer/`, `scripts/` | NSIS 설치 정의 및 개발·배포 자동화 |
 | `rules/rules.md` | 제품 결정과 개발 규칙 |
-| `docs/REQUIREMENTS.md` | 요구사항 분석, 수용 기준, 후속 범위 |
+| `rules/requirements.md` | 누적 사용자 요구사항, 수용 기준, 변경 결정과 후속 범위 |
+| `docs/REQUIREMENTS.md` | 요구사항 기준 문서의 새 위치 안내 |
 | `docs/RELEASING.md` | 현재 배포 상태, 환경별 검증 범위, 문서·패키지 마무리 절차 |
 | `docs/images/` | 기능 안내의 실제 앱 화면 |
 | `licenses/` | 의존성 라이선스 원문 |
@@ -57,7 +60,7 @@ Linux에서도 README·변경 이력·화면·릴리스 설명을 같은 기준�
 
 ## 기여 및 버전 관리
 
-개발 지침은 `AGENTS.md`와 `rules/rules.md`, 버전 기록은 `CHANGELOG.md`를 확인하세요. C#은 공백 4칸과 `.editorconfig`를 따르며 `dotnet format`을 사용합니다. 테스트명은 `Method_Condition_ExpectedResult` 형식입니다. 수치 기반 커버리지 기준은 아직 없으며 파일 손상 방지와 기능별 회귀 검증을 우선합니다.
+개발 지침은 `AGENTS.md`와 `rules/rules.md`, 요구사항과 수용 기준은 `rules/requirements.md`, 버전 기록은 `CHANGELOG.md`를 확인하세요. C#은 공백 4칸과 `.editorconfig`를 따르며 `dotnet format`을 사용합니다. 테스트명은 `Method_Condition_ExpectedResult` 형식입니다. 수치 기반 커버리지 기준은 아직 없으며 파일 손상 방지와 기능별 회귀 검증을 우선합니다.
 
 커밋은 `Add encoding preservation tests`처럼 변경 의도가 드러나는 짧은 명령형으로 작성합니다. PR에는 관련 요구사항, 검증 결과, UI 변경 화면을 포함하세요.
 
