@@ -4,32 +4,26 @@
 
 # wText
 
-Windows x64용 무료 텍스트 편집기입니다. 여러 문서를 탭으로 편집하고, 작업 폴더를 탐색하며, 두 파일이나 붙여넣은 텍스트의 차이를 나란히 확인할 수 있습니다.
+Windows x64용 무료 텍스트·PDF 편집기입니다. 여러 문서를 탭으로 편집하고 작업 폴더를 탐색하며, 두 파일이나 붙여넣은 텍스트의 차이를 나란히 확인할 수 있습니다.
 
-구문 강조, 문서 자동 정렬, 찾기·바꾸기와 미저장 작업 복원을 지원합니다.
+구문 강조, 문서 자동 정렬, 찾기·바꾸기, 미니맵, 직사각형 블록 편집과 미저장 작업 복원을 지원합니다. 자세한 조작은 앱의 F1 [설명서](docs/USER-GUIDE.md)와 [기능 안내](docs/FEATURES.md)에서 확인하세요.
 
-**1.6.0:** F1 내장 기능 설명서, 우측 미니맵과 표시 설정, 직사각형 블록 복사·붙여넣기, 줄/선택 복제·줄 이동·삭제를 제공합니다. [설명서](docs/USER-GUIDE.md)와 [사용법·단축키](docs/FEATURES.md)를 참고하세요. Linux 교차 빌드로 배포했으며 새 Windows 화면·설치 실행은 아직 검증하지 않았습니다.
-
-열린 파일의 외부 변경을 감지해 알림과 함께 다시 불러오며, 미저장 수정이 있으면 선택을 확인해 작업을 보호합니다. C#과 WPF로 개발하며 MIT 라이선스로 공개합니다.
+**1.7.2:** PDF 읽기·검색·주석·페이지 조작·최상위 글자/이미지 개체 편집과 Markdown/HTML/SVG/CSV·TSV/JSON/XML 미리보기를 제공합니다. PDF 복원·미리보기 종료 대응과 제거 잔여물·재설치 처리도 수정했습니다. [지원 범위](docs/FEATURES.md#pdf와-문서-미리보기-172)와 [검증 기록](docs/RELEASING.md)을 참고하세요. 사용자 확인 후 공개했으며 자동 Windows WPF·설치/제거와 새 화면 검증은 아직 남아 있습니다.
 
 ![wText의 프로젝트 탐색기와 탭 편집 화면](docs/images/explorer.png)
 
-**1.6.1:** `Shift+방향키 → Ctrl+Alt+B → Ctrl+C`로 마우스 없이 블록을 선택·복사할 수 있습니다. 기존 Alt+드래그도 유지합니다.
-
-**1.6.2:** 짧은 문서의 미니맵을 위쪽에 자연스러운 간격으로 표시하며, 현재 화면·커서 표시와 클릭 이동 좌표도 함께 보정했습니다.
-
-**1.7.2 공개 준비:** PDF 기본 글꼴 편집·도구 메뉴 정리와 다양한 문서 미리보기에 더해, PDF 로딩·미리보기 종료 대응과 제거 잔여물·재설치 처리를 수정했습니다. 사용자가 현재 동작을 확인하고 공개를 요청했습니다. 자동 Windows 조작·화면·설치 검증은 아직 남아 있습니다. [지원 범위](docs/FEATURES.md#pdf와-문서-미리보기-172-준비)와 [검증 상태](docs/RELEASING.md)를 확인하세요. 공개 다운로드는 아래 1.6.2를 유지합니다.
+위 이미지는 이전 버전의 실제 Windows 검증 화면입니다. C#과 WPF로 개발하며 프로젝트 코드는 MIT 라이선스로 공개합니다.
 
 ## 다운로드
 
-**wText 1.6.2 · Windows x64**
+**wText 1.7.2 · Windows x64**
 
-- [설치 파일 (.exe)](https://github.com/parkhw328/wook-text/releases/download/v1.6.2/wText-1.6.2-win-x64-setup.exe)
-- [무설치 ZIP](https://github.com/parkhw328/wook-text/releases/download/v1.6.2/wText-1.6.2-win-x64-portable.zip) — 전체 압축을 해제한 뒤 `wText.exe` 실행
+- [설치 파일 (.exe)](https://github.com/parkhw328/wook-text/releases/download/v1.7.2/wText-1.7.2-win-x64-setup.exe)
+- [무설치 ZIP](https://github.com/parkhw328/wook-text/releases/download/v1.7.2/wText-1.7.2-win-x64-portable.zip) — 전체 압축을 해제한 뒤 `wText.exe` 실행
 
-.NET 런타임이 포함되어 있어 별도 설치 없이 실행할 수 있습니다.
+.NET·PDFium·WebView2 런타임이 포함되어 별도 런타임 설치 없이 실행할 수 있습니다. 설치 EXE와 ZIP은 각각 약 417~419 MiB이며, 최초 미리보기에서 WebView2 사용 조건을 확인합니다.
 
-[릴리스 목록](https://github.com/parkhw328/wook-text/releases) · [SHA-256 체크섬](https://github.com/parkhw328/wook-text/releases/download/v1.6.2/SHA256SUMS.txt)
+[릴리스 목록](https://github.com/parkhw328/wook-text/releases) · [SHA-256 체크섬](https://github.com/parkhw328/wook-text/releases/download/v1.7.2/SHA256SUMS.txt)
 
 ## 문서
 
