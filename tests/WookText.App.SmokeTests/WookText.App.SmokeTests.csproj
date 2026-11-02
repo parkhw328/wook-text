@@ -8,6 +8,7 @@
     <IsPackable>false</IsPackable>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="../PdfFixture.cs" Link="PdfFixture.cs" />
     <ProjectReference Include="../../src/WookText.App/WookText.App.csproj" />
   </ItemGroup>
 </Project>

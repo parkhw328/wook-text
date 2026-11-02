@@ -10,6 +10,7 @@ using System.Windows.Threading;
 using ICSharpCode.AvalonEdit;
 using Microsoft.Win32;
 using WookText.Core;
+using WookText.Core.Pdf;
 
 namespace WookText.App;
 
@@ -34,7 +35,8 @@ public partial class MainWindow : Window
     private bool _applyingPreferences;
     private bool _focusMode;
     public ObservableCollection<EditorDocument> Documents { get; } = [];
-    public EditorDocument? ActiveDocument => DocumentTabs.SelectedItem as EditorDocument;
+    public EditorDocument? ActiveTab => DocumentTabs.SelectedItem as EditorDocument;
+    public EditorDocument? ActiveDocument => ActiveTab is { IsPdf: false } document ? document : null;
     public Explorer.ExplorerView Explorer => WorkspaceExplorer;
 
     public MainWindow(EditorPreferencesService? preferences = null, Func<EditorDocument, MessageBoxResult>? confirmClose = null)
@@ -49,14 +51,14 @@ public partial class MainWindow : Window
         NativeWindowTheme.Attach(this);
         DataContext = this;
         WorkspaceExplorer.Initialize(new WorkspaceStateStore(Path.ChangeExtension(_preferences.StoragePath, ".workspace.json")),
-            path => RunAsync(() => OpenFileAsync(path)), OpenFolderAsync, () => ActiveDocument?.FilePath, OnExplorerPathRenamed);
+            path => RunAsync(() => OpenFileAsync(path)), OpenFolderAsync, () => ActiveTab?.FilePath, OnExplorerPathRenamed);
         BindEditingCommands();
         Bind(ApplicationCommands.New, () => { NewDocument(); return Task.CompletedTask; });
         Bind(ApplicationCommands.Open, OpenDialogAsync);
-        Bind(ApplicationCommands.Save, async () => { if (ActiveDocument is { } doc) await SaveDocumentAsync(doc); });
+        Bind(ApplicationCommands.Save, async () => { if (ActiveTab is { } doc) await SaveDocumentAsync(doc); });
         Bind(EditorCommands.Reload, ReloadActiveDocumentAsync);
-        Bind(EditorCommands.SaveAs, async () => { if (ActiveDocument is { } doc) await SaveDocumentAsync(doc, true); });
-        Bind(EditorCommands.CloseTab, async () => { if (ActiveDocument is { } doc) await CloseDocumentAsync(doc); });
+        Bind(EditorCommands.SaveAs, async () => { if (ActiveTab is { } doc) await SaveDocumentAsync(doc, true); });
+        Bind(EditorCommands.CloseTab, async () => { if (ActiveTab is { } doc) await CloseDocumentAsync(doc); });
         BindExplorer(EditorCommands.OpenFolder, OpenFolderAsync);
         BindExplorer(EditorCommands.FindFile, async () =>
         {
@@ -72,15 +74,16 @@ public partial class MainWindow : Window
             WorkspaceExplorer.FocusTree();
         });
         Bind(EditorCommands.FormatDocument, FormatDocumentAsync);
+        Bind(EditorCommands.DocumentPreview, () => { ActiveDocument?.TogglePreview(); return Task.CompletedTask; });
         Bind(EditorCommands.Compare, () => { new CompareWindow(_preferences) { Owner = this }.Show(); return Task.CompletedTask; });
         Bind(EditorCommands.ToggleSidebar, () => { ToggleSidebar(); return Task.CompletedTask; });
         Bind(EditorCommands.ToggleFocus, () => { ToggleFocus(); return Task.CompletedTask; });
         Bind(EditorCommands.Preferences, () => { ShowPreferences(); return Task.CompletedTask; });
         Bind(EditorCommands.ZoomIn, () => { ChangeFontSize(1); return Task.CompletedTask; });
         Bind(EditorCommands.ZoomOut, () => { ChangeFontSize(-1); return Task.CompletedTask; });
-        Bind(EditorCommands.ResetZoom, () => { _preferences.Update(_preferences.Current with { FontSize = EditorPreferences.DefaultFontSize }); return Task.CompletedTask; });
-        Bind(ApplicationCommands.Find, () => { ShowSearch(false); return Task.CompletedTask; });
-        Bind(ApplicationCommands.Replace, () => { ShowSearch(true); return Task.CompletedTask; });
+        Bind(EditorCommands.ResetZoom, async () => { if (ActiveTab?.PdfView is { } pdf) { await pdf.GuardAsync(() => pdf.SetZoomAsync(1)); return; } _preferences.Update(_preferences.Current with { FontSize = EditorPreferences.DefaultFontSize }); });
+        Bind(ApplicationCommands.Find, () => { if (ActiveTab?.PdfView is { } pdf) Dispatcher.BeginInvoke(DispatcherPriority.Input, pdf.FocusSearch); else ShowSearch(false); return Task.CompletedTask; });
+        Bind(ApplicationCommands.Replace, () => { if (ActiveDocument is not null) ShowSearch(true); return Task.CompletedTask; });
         PreviewKeyDown += OnWindowKeyDown;
         _preferences.Changed += OnPreferencesChanged;
         Closed += (_, _) => { _closed = true; _fileCheckTimer.Stop(); _linkedEditor?.Dispose(); WorkspaceExplorer.Dispose(); _session.Dispose(); _preferences.Changed -= OnPreferencesChanged; foreach (EditorDocument document in Documents) document.Dispose(); };
@@ -100,11 +103,11 @@ public partial class MainWindow : Window
 
     private void Bind(ICommand command, Func<Task> action) => CommandBindings.Add(new CommandBinding(command,
         async (_, e) => { e.Handled = true; await RunAsync(action); },
-        (_, e) => { e.CanExecute = !_busy; e.Handled = true; }));
+        (_, e) => { e.CanExecute = !_busy && !Documents.Any(d => d.PdfView?.IsBusy == true); e.Handled = true; }));
 
     private void BindExplorer(ICommand command, Func<Task> action) => CommandBindings.Add(new CommandBinding(command,
         async (_, e) => { e.Handled = true; await action(); },
-        (_, e) => { e.CanExecute = !_busy; e.Handled = true; }));
+        (_, e) => { e.CanExecute = !_busy && !Documents.Any(d => d.PdfView?.IsBusy == true); e.Handled = true; }));
 
     public EditorDocument NewDocument()
     {
@@ -127,7 +130,7 @@ public partial class MainWindow : Window
         document.Editor.TextArea.Caret.PositionChanged += (_, _) => { UpdateStatus(); SessionChanged(); };
         document.Editor.TextChanged += (_, _) => { UpdateStatus(); SessionChanged(); if (ActiveDocument == document) RefreshSearch(); };
         document.Editor.TextArea.SelectionChanged += (_, _) => { if (ActiveDocument == document) UpdateSearchSummary(); };
-        document.PropertyChanged += (_, _) => { UpdateStatus(); WorkspaceExplorer.Workspace.MarkActive(ActiveDocument?.FilePath); SessionChanged(); };
+        document.PropertyChanged += (_, _) => { UpdateStatus(); WorkspaceExplorer.Workspace.MarkActive(ActiveTab?.FilePath); SessionChanged(); };
         Documents.Add(document);
         DocumentTabs.SelectedItem = document;
         document.Editor.Focus();
@@ -139,7 +142,7 @@ public partial class MainWindow : Window
 
     private Func<SessionState> CaptureSession()
     {
-        Guid? active = ActiveDocument?.SessionId;
+        Guid? active = ActiveTab?.SessionId;
         Func<SessionDocumentState>[] documents = Documents.Select(d => d.CaptureSession()).ToArray();
         return () => new SessionState { ActiveDocumentId = active, Documents = documents.Select(capture => capture()).ToArray() };
     }
@@ -159,6 +162,15 @@ public partial class MainWindow : Window
                 int recovered = 0;
                 foreach (SessionDocumentState saved in state.Documents)
                 {
+                    if (saved.Kind == "pdf")
+                    {
+                        // Restored PDF tabs retain their exact buffer; native work starts only when the tab is shown.
+                        // A malformed PDF must never prevent the rest of the workspace from opening.
+                        byte[] bytes = saved.PdfBytes!;
+                        string fingerprint = saved.Fingerprint ?? PdfFileService.Fingerprint(bytes);
+                        AddDocument(saved.Name).LoadPdf(new(saved.FilePath!, bytes, fingerprint), null, saved.IsModified, saved.PdfPage, saved.PdfZoom, saved.Id);
+                        continue;
+                    }
                     LoadedTextFile? current = null;
                     if (!saved.IsModified && saved.FilePath is { } path)
                     {
@@ -195,9 +207,20 @@ public partial class MainWindow : Window
             if (existing is not null)
             {
                 DocumentTabs.SelectedItem = existing;
-                existing.Editor.Focus();
+                if (existing.PdfView is { } pdf) pdf.Focus(); else existing.Editor.Focus();
                 Status.Text = $"열림 · {existing.Name}";
                 UpdateStatus();
+                return;
+            }
+            if (string.Equals(Path.GetExtension(fullPath), ".pdf", StringComparison.OrdinalIgnoreCase))
+            {
+                LoadedPdfFile loaded = await PdfFileService.ReadAsync(fullPath);
+                PdfInfo info = await Pdf.PdfBackend.InspectAsync(loaded.Bytes);
+                EditorDocument pdfDocument = Documents.FirstOrDefault(d => !d.IsPdf && d.FilePath is null && !d.IsModified && d.Editor.Text.Length == 0) ?? AddDocument(Path.GetFileName(fullPath));
+                pdfDocument.LoadPdf(loaded, info);
+                DocumentTabs.SelectedItem = pdfDocument;
+                SearchPanel.Visibility = Visibility.Collapsed; RefreshSearch(); UpdateStatus();
+                Status.Text = $"PDF 열림 · {pdfDocument.Name}";
                 return;
             }
             LoadedTextFile file;
@@ -231,6 +254,7 @@ public partial class MainWindow : Window
 
     private async Task<bool> SaveDocumentAsync(EditorDocument document, bool saveAs = false)
     {
+        if (document.PdfView?.IsBusy == true) return false;
         string? path = document.FilePath;
         string? fingerprint = document.Fingerprint;
         if (saveAs || path is null)
@@ -239,8 +263,8 @@ public partial class MainWindow : Window
             {
                 Title = "wText · 다른 이름으로 저장",
                 FileName = document.Name,
-                Filter = "텍스트 파일 (*.txt)|*.txt|모든 파일 (*.*)|*.*",
-                DefaultExt = ".txt",
+                Filter = document.IsPdf ? "PDF (*.pdf)|*.pdf" : "텍스트 파일 (*.txt)|*.txt|Markdown (*.md)|*.md|모든 파일 (*.*)|*.*",
+                DefaultExt = document.IsPdf ? ".pdf" : ".txt",
                 OverwritePrompt = true
             };
             if (path is not null) dialog.InitialDirectory = Path.GetDirectoryName(path);
@@ -263,7 +287,9 @@ public partial class MainWindow : Window
 
         try
         {
-            string newFingerprint = await _files.SaveAsync(path, document.Editor.Text, document.Encoding, fingerprint);
+            string newFingerprint = document.PdfView is { } pdf
+                ? await PdfFileService.SaveAsync(path, pdf.Bytes, fingerprint, Pdf.PdfBackend.InspectAsync)
+                : await _files.SaveAsync(path, document.Editor.Text, document.Encoding, fingerprint);
             document.MarkSaved(path, newFingerprint);
             Status.Text = $"저장됨 · {document.Name}";
             UpdateStatus();
@@ -280,7 +306,8 @@ public partial class MainWindow : Window
 
     private async Task<bool> ConfirmCloseAsync(EditorDocument document)
     {
-        if (!document.Editor.IsModified) return true;
+        if (document.PdfView?.IsBusy == true) return false;
+        if (!document.IsModified) return true;
         MessageBoxResult choice = _confirmClose?.Invoke(document) ?? AppDialogs.ConfirmSave(this, document.Name, document.FilePath);
         return choice == MessageBoxResult.No || choice == MessageBoxResult.Yes && await SaveDocumentAsync(document);
     }
@@ -289,7 +316,7 @@ public partial class MainWindow : Window
     {
         if (!await ConfirmCloseAsync(document)) return;
         int index = Documents.IndexOf(document);
-        EditorDocument? previous = ActiveDocument;
+        EditorDocument? previous = ActiveTab;
         Documents.Remove(document);
         document.Dispose();
         if (Documents.Count == 0) NewDocument();
@@ -309,7 +336,7 @@ public partial class MainWindow : Window
     {
         if (_allowClose) return;
         e.Cancel = true;
-        if (_busy || _closing) return;
+        if (_busy || _closing || Documents.Any(d => d.PdfView?.IsBusy == true)) return;
         _closing = true;
         ClosingCompletion = FinishClosingAsync();
     }
@@ -368,7 +395,7 @@ public partial class MainWindow : Window
 
     private async Task RunAsync(Func<Task> action)
     {
-        if (_busy) return;
+        if (_busy || Documents.Any(d => d.PdfView?.IsBusy == true)) return;
         _busy = true;
         Root.IsEnabled = false;
         try { await action(); }
@@ -414,7 +441,7 @@ public partial class MainWindow : Window
             if (string.Equals(path, before, StringComparison.OrdinalIgnoreCase)) document.RetargetPath(after);
             else if (directory && WorkspaceFiles.IsWithin(before, path)) document.RetargetPath(Path.Combine(after, Path.GetRelativePath(before, path)));
         }
-        WorkspaceExplorer.Workspace.MarkActive(ActiveDocument?.FilePath);
+        WorkspaceExplorer.Workspace.MarkActive(ActiveTab?.FilePath);
     }
 
     private void ShowSearch(bool replace)
@@ -549,8 +576,22 @@ public partial class MainWindow : Window
         if (e.Key == Key.Enter) { FindNext(Keyboard.Modifiers.HasFlag(ModifierKeys.Shift)); e.Handled = true; }
     }
 
-    private void OnWindowKeyDown(object sender, KeyEventArgs e)
+    private async void OnWindowKeyDown(object sender, KeyEventArgs e)
     {
+        if (ActiveTab?.PdfView is { } pdf)
+        {
+            if (e.Key == Key.Escape && pdf.ExitTool()) { e.Handled = true; return; }
+            bool textInput = Keyboard.FocusedElement is TextBox;
+            if (!textInput && Keyboard.Modifiers == ModifierKeys.Control && e.Key is Key.C or Key.Z or Key.Y)
+            {
+                e.Handled = true;
+                if (e.Key == Key.C) await pdf.GuardAsync(() => { pdf.Copy(); return Task.CompletedTask; });
+                else await pdf.GuardAsync(e.Key == Key.Z ? pdf.UndoAsync : pdf.RedoAsync);
+                return;
+            }
+            if (e.Key == Key.F3) { e.Handled = true; await pdf.GuardAsync(() => pdf.FindNextAsync(Keyboard.Modifiers.HasFlag(ModifierKeys.Shift))); return; }
+            if (!textInput && e.Key is Key.PageDown or Key.PageUp) { e.Handled = true; await pdf.GuardAsync(() => pdf.NavigateAsync(pdf.PageIndex + (e.Key == Key.PageDown ? 1 : -1))); return; }
+        }
         if (e.Key == Key.Escape)
         {
             if (_linkedEditor is not null) { EndLinkedEditing(); e.Handled = true; return; }
@@ -574,14 +615,23 @@ public partial class MainWindow : Window
         EndLinkedEditing();
         RefreshSearch();
         if (ActiveDocument is { } document && WrapMenu is not null) WrapMenu.IsChecked = document.Editor.WordWrap;
-        WorkspaceExplorer?.Workspace?.MarkActive(ActiveDocument?.FilePath);
+        WorkspaceExplorer?.Workspace?.MarkActive(ActiveTab?.FilePath);
+        if (ActiveTab?.IsPdf == true) SearchPanel.Visibility = Visibility.Collapsed;
         UpdateStatus();
         SessionChanged();
     }
 
     private void UpdateStatus()
     {
-        if (ActiveDocument is not { } document || FormatStatus is null || CaretStatus is null) return;
+        if (FormatStatus is null || CaretStatus is null) return;
+        if (ActiveTab is { PdfView: { } pdf } pdfTab)
+        {
+            Title = $"{pdfTab.Header} — wText";
+            CaretStatus.Text = $"{pdf.PageIndex + 1} / {pdf.Info.PageCount} 페이지";
+            FormatStatus.Text = pdf.Info.CanEdit ? "PDF" : "PDF · 읽기 전용";
+            LanguageButton.Content = "PDF"; FontSizeButton.Content = $"{pdf.Zoom:P0}"; return;
+        }
+        if (ActiveDocument is not { } document) return;
         Title = $"{document.Header} — wText";
         CaretStatus.Text = $"Ln {document.Editor.TextArea.Caret.Line}, Col {document.Editor.TextArea.Caret.Column}";
         FormatStatus.Text = $"{document.Encoding.DisplayName()}  ·  {document.LineEndingDescription}";
@@ -591,8 +641,8 @@ public partial class MainWindow : Window
 
     private async void OnCloseTabButton(object sender, RoutedEventArgs e)
     { if (sender is Button { DataContext: EditorDocument document }) await RunAsync(() => CloseDocumentAsync(document)); }
-    private void OnUndo(object sender, RoutedEventArgs e) => ActiveDocument?.Editor.Undo();
-    private void OnRedo(object sender, RoutedEventArgs e) => ActiveDocument?.Editor.Redo();
+    private async void OnUndo(object sender, RoutedEventArgs e) { if (ActiveTab?.PdfView is { } pdf) await pdf.GuardAsync(pdf.UndoAsync); else ActiveDocument?.Editor.Undo(); }
+    private async void OnRedo(object sender, RoutedEventArgs e) { if (ActiveTab?.PdfView is { } pdf) await pdf.GuardAsync(pdf.RedoAsync); else ActiveDocument?.Editor.Redo(); }
     private void OnWordWrap(object sender, RoutedEventArgs e) => _preferences.Update(_preferences.Current with { WordWrap = WrapMenu.IsChecked });
     private void OnLineNumbers(object sender, RoutedEventArgs e) => _preferences.Update(_preferences.Current with { ShowLineNumbers = LineNumbersMenu.IsChecked });
     private void OnMinimap(object sender, RoutedEventArgs e) => _preferences.Update(_preferences.Current with { ShowMinimap = MinimapMenu.IsChecked });
@@ -609,7 +659,11 @@ public partial class MainWindow : Window
         if (dialog.ShowDialog() == true && dialog.Result is { } preferences) _preferences.Update(preferences);
     }
 
-    private void ChangeFontSize(int delta) => _preferences.Update(_preferences.Current with { FontSize = _preferences.Current.FontSize + delta });
+    private async void ChangeFontSize(int delta)
+    {
+        if (ActiveTab?.PdfView is { } pdf) await pdf.GuardAsync(() => pdf.SetZoomAsync(pdf.Zoom * (delta > 0 ? 1.25 : .8)));
+        else _preferences.Update(_preferences.Current with { FontSize = _preferences.Current.FontSize + delta });
+    }
 
     private void ToggleSidebar()
     {

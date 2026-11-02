@@ -124,6 +124,7 @@ internal static class Program
         await DialogChecks.RunAsync(output);
         await SessionChecks.RunAsync(output);
         await ExternalChangeChecks.RunAsync(output);
+        await PdfPreviewChecks.RunAsync(output);
     }
 
     private static void VerifyFonts()

@@ -73,6 +73,10 @@ public partial class MainWindow
     }
 
     private void OnCut(object sender, RoutedEventArgs e) => ApplicationCommands.Cut.Execute(null, ActiveDocument?.Editor.TextArea);
-    private void OnCopy(object sender, RoutedEventArgs e) => ApplicationCommands.Copy.Execute(null, ActiveDocument?.Editor.TextArea);
+    private async void OnCopy(object sender, RoutedEventArgs e)
+    {
+        if (ActiveTab?.PdfView is { } pdf) await pdf.GuardAsync(() => { pdf.Copy(); return Task.CompletedTask; });
+        else ApplicationCommands.Copy.Execute(null, ActiveDocument?.Editor.TextArea);
+    }
     private void OnPaste(object sender, RoutedEventArgs e) => ApplicationCommands.Paste.Execute(null, ActiveDocument?.Editor.TextArea);
 }

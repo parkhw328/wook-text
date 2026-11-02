@@ -16,6 +16,8 @@ public sealed record EditorPreferences
     public bool ShowMinimap { get; init; } = true;
     public bool WordWrap { get; init; }
     public bool ShowWhitespace { get; init; }
+    public bool PreviewRuntimeLicenseAccepted { get; init; }
+    public bool PdfIgnoreOriginalFont { get; init; } = true;
     public bool RememberSession { get; init; } = true;
     public IndentationOptions Indentation { get; init; } = new();
     public IndentationProfiles IndentationByLanguage { get; init; } = new();

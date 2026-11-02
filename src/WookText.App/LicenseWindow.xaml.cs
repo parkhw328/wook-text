@@ -1,4 +1,5 @@
 using System.IO;
+using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
 using ICSharpCode.AvalonEdit;
@@ -14,6 +15,10 @@ public partial class LicenseWindow : Window
         new("wText", "MIT", ["LICENSE"]),
         new("구성요소 전체 고지", "배포 구성요소와 저작권", ["THIRD-PARTY-NOTICES.md"]),
         new("AvalonEdit", "MIT", ["licenses/AvalonEdit.txt"]),
+        new("Markdig", "BSD-2-Clause", ["licenses/Markdig.txt"]),
+        new("WebView2 SDK", "BSD-3-Clause", ["licenses/WebView2-SDK.txt"]),
+        new("Microsoft Edge WebView2 Runtime", "Microsoft Software License Terms", ["licenses/WebView2-Runtime.txt"]),
+        new("PDFium", "BSD · Apache-2.0 · 포함 구성요소", ["licenses/PDFium-NOTICES.txt"]),
         new("DiffPlex", "Apache-2.0", ["licenses/DiffPlex.txt"]),
         new("Prettier", "MIT · 타사 구성요소 고지", ["licenses/Prettier.txt", "licenses/Prettier-THIRD-PARTY-NOTICES.md"]),
         new("Node.js", "MIT · 타사 구성요소 고지", ["licenses/Nodejs.txt"]),
@@ -39,10 +44,28 @@ public partial class LicenseWindow : Window
         ComponentList.SelectedIndex = 0;
     }
 
+    public void SelectComponent(string name) => ComponentList.SelectedItem = Components.FirstOrDefault(c => c.Name == name);
+
     private void OnComponentChanged(object sender, SelectionChangedEventArgs e)
     {
         if (ComponentList.SelectedItem is LicenseComponent component)
+        {
+            RuntimeNotices.Visibility = component.Name == "Microsoft Edge WebView2 Runtime" ? Visibility.Visible : Visibility.Collapsed;
             Loading = ShowNoticeAsync(component, ++_selection);
+        }
+    }
+
+    private void OnRuntimeNotices(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            string executable = Path.Combine(AppContext.BaseDirectory, "WebView2Runtime", "msedgewebview2.exe");
+            ProcessStartInfo start = new(executable) { UseShellExecute = false };
+            start.ArgumentList.Add("--embedded-browser-webview=show-credits");
+            Process.Start(start)?.Dispose();
+        }
+        catch (Exception ex) when (ex is IOException or System.ComponentModel.Win32Exception or InvalidOperationException)
+        { AppDialogs.Alert(this, "구성요소 고지를 열지 못했습니다", ex.Message); }
     }
 
     private async Task ShowNoticeAsync(LicenseComponent component, int selection)

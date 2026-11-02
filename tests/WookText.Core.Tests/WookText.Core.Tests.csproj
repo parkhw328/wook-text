@@ -5,10 +5,12 @@
     <IsTestProject>true</IsTestProject>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="../PdfFixture.cs" Link="PdfFixture.cs" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
     <PackageReference Include="xunit" Version="2.9.3" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2" PrivateAssets="all" />
     <ProjectReference Include="../../src/WookText.Core/WookText.Core.csproj" />
+    <ProjectReference Include="../WookText.PdfWorker.TestHost/WookText.PdfWorker.TestHost.csproj" ReferenceOutputAssembly="false" />
     <Using Include="Xunit" />
   </ItemGroup>
 </Project>

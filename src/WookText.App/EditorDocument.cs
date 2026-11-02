@@ -2,6 +2,7 @@ using System.ComponentModel;
 using System.Windows.Threading;
 using ICSharpCode.AvalonEdit;
 using WookText.Core;
+using WookText.Core.Pdf;
 
 namespace WookText.App;
 
@@ -9,9 +10,15 @@ public sealed class EditorDocument : INotifyPropertyChanged, IDisposable
 {
     private readonly DispatcherTimer _analysisTimer = new() { Interval = TimeSpan.FromMilliseconds(300) };
     private readonly EditorPreferencesService _preferences;
+    private PreviewKind _previewKind;
     private SessionDocumentState? _restoredView;
     public Guid SessionId { get; private set; } = Guid.NewGuid();
     public string LineEndingDescription { get; private set; } = "줄바꿈 없음";
+    public Pdf.PdfDocumentView? PdfView { get; private set; }
+    public bool IsPdf => PdfView is not null;
+    public bool IsModified => PdfView?.IsModified ?? Editor.IsModified;
+    public Preview.DocumentPreviewView? PreviewView { get; private set; }
+    public bool PreviewVisible => PreviewView is not null;
     public TextEditor Editor { get; }
     public System.Windows.Controls.Grid View { get; }
     public EditorMinimap Minimap { get; }
@@ -22,7 +29,7 @@ public sealed class EditorDocument : INotifyPropertyChanged, IDisposable
     public TextFileEncoding Encoding { get; private set; } = TextFileEncoding.Utf8;
     public string UntitledName { get; }
     public string Name => FilePath is null ? UntitledName : System.IO.Path.GetFileName(FilePath);
-    public string Header => Name + (Editor.IsModified ? "  ●" : "");
+    public string Header => Name + (IsModified ? "  ●" : "");
     public System.Windows.Media.ImageSource FileIcon => Explorer.ExplorerIcons.Get(new WorkspaceEntry(FilePath ?? "", Name, false), false);
     public string Location => FilePath ?? "아직 저장하지 않은 문서";
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -44,7 +51,7 @@ public sealed class EditorDocument : INotifyPropertyChanged, IDisposable
         UntitledName = name;
         Editor.Loaded += (_, _) => RestoreView();
         Editor.Document.UndoStack.PropertyChanged += (_, _) => Notify();
-        Editor.TextChanged += (_, _) => { _analysisTimer.Stop(); _analysisTimer.Start(); };
+        Editor.TextChanged += (_, _) => { _analysisTimer.Stop(); _analysisTimer.Start(); PreviewView?.Update(Editor.Text, FilePath, LanguageOverride); };
         _analysisTimer.Tick += (_, _) =>
         {
             _analysisTimer.Stop();
@@ -81,7 +88,9 @@ public sealed class EditorDocument : INotifyPropertyChanged, IDisposable
     {
         FilePath = path;
         Fingerprint = fingerprint;
+        if (PdfView is { } pdf) { pdf.MarkSaved(); Notify(); return; }
         Editor.IsModified = false;
+        PreviewView?.Update(Editor.Text, FilePath, LanguageOverride);
         EditorFactory.ApplySyntax(Editor, FilePath, LanguageOverride);
         ApplyIndentation();
         Notify();
@@ -99,6 +108,7 @@ public sealed class EditorDocument : INotifyPropertyChanged, IDisposable
     {
         LanguageOverride = id;
         EditorFactory.ApplySyntax(Editor, FilePath, id);
+        PreviewView?.Update(Editor.Text, FilePath, LanguageOverride);
         ApplyIndentation();
         Notify();
     }
@@ -106,6 +116,7 @@ public sealed class EditorDocument : INotifyPropertyChanged, IDisposable
     public void RetargetPath(string path)
     {
         FilePath = System.IO.Path.GetFullPath(path);
+        PreviewView?.Update(Editor.Text, FilePath, LanguageOverride);
         EditorFactory.ApplySyntax(Editor, FilePath, LanguageOverride);
         ApplyIndentation();
         Notify();
@@ -113,9 +124,27 @@ public sealed class EditorDocument : INotifyPropertyChanged, IDisposable
 
     public Func<SessionDocumentState> CaptureSession()
     {
+        if (PdfView is { } pdf)
+        {
+            SessionDocumentState state = new()
+            {
+                Id = SessionId,
+                Name = UntitledName,
+                FilePath = FilePath,
+                Fingerprint = Fingerprint,
+                Kind = "pdf",
+                PdfBytes = pdf.Bytes,
+                PdfPage = pdf.PageIndex,
+                PdfZoom = pdf.Zoom,
+                IsModified = pdf.IsModified
+            };
+            return () => state;
+        }
         var snapshot = Editor.Document.CreateSnapshot();
         SessionDocumentState metadata = new()
         {
+            PreviewVisible = PreviewVisible,
+            PreviewKind = PreviewView?.Kind ?? _previewKind,
             Id = SessionId,
             Name = UntitledName,
             FilePath = FilePath,
@@ -152,6 +181,45 @@ public sealed class EditorDocument : INotifyPropertyChanged, IDisposable
         _restoredView = state;
         if (Editor.IsLoaded) RestoreView();
         ApplyIndentation();
+        _previewKind = Enum.IsDefined(state.PreviewKind) ? state.PreviewKind : PreviewKind.Auto;
+        bool showPreview = state.PreviewVisible || state.MarkdownPreview;
+        if (showPreview != PreviewVisible) TogglePreview();
+        if (PreviewView is { } preview) { preview.Kind = _previewKind; preview.Update(Editor.Text, FilePath, LanguageOverride); }
+        Notify();
+    }
+
+    public void LoadPdf(LoadedPdfFile file, PdfInfo? info, bool modified = false, int page = 0, double zoom = 1, Guid? sessionId = null)
+    {
+        PdfView?.Dispose(); PreviewView?.Dispose(); PreviewView = null;
+        FilePath = file.Path; Fingerprint = file.Fingerprint;
+        if (sessionId is { } id) SessionId = id;
+        PdfView = new(file.Bytes, info, _preferences, modified, page, zoom);
+        PdfView.Changed += (_, _) => Notify();
+        Editor.IsReadOnly = true;
+        View.Children.Clear(); View.ColumnDefinitions.Clear(); View.Children.Add(PdfView);
+        Notify();
+    }
+
+    public void TogglePreview()
+    {
+        if (IsPdf) return;
+        if (PreviewView is { } existing)
+        {
+            _previewKind = existing.Kind; existing.Dispose(); PreviewView = null;
+            while (View.Children.Count > 2) View.Children.RemoveAt(2);
+            while (View.ColumnDefinitions.Count > 2) View.ColumnDefinitions.RemoveAt(2);
+        }
+        else
+        {
+            PreviewView = new(_preferences) { Kind = _previewKind };
+            PreviewView.Changed += (_, _) => Notify();
+            View.ColumnDefinitions.Add(new() { Width = new System.Windows.GridLength(5) });
+            View.ColumnDefinitions.Add(new() { Width = new System.Windows.GridLength(1, System.Windows.GridUnitType.Star), MinWidth = 160 });
+            System.Windows.Controls.GridSplitter splitter = new() { Width = 5, HorizontalAlignment = System.Windows.HorizontalAlignment.Stretch };
+            System.Windows.Controls.Grid.SetColumn(splitter, 2); View.Children.Add(splitter);
+            System.Windows.Controls.Grid.SetColumn(PreviewView, 3); View.Children.Add(PreviewView);
+            PreviewView.Update(Editor.Text, FilePath, LanguageOverride);
+        }
         Notify();
     }
 
@@ -186,6 +254,7 @@ public sealed class EditorDocument : INotifyPropertyChanged, IDisposable
     public void Dispose()
     {
         _analysisTimer.Stop();
+        PdfView?.Dispose(); PreviewView?.Dispose();
         _preferences.Changed -= OnPreferencesChanged;
     }
 }

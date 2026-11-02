@@ -2,6 +2,7 @@ using System.IO;
 using System.Text;
 using System.Windows.Threading;
 using WookText.Core;
+using WookText.Core.Pdf;
 
 namespace WookText.App;
 
@@ -26,6 +27,7 @@ public partial class MainWindow
             foreach (EditorDocument document in Documents.ToArray())
             {
                 if (_busy || _closing || _closed) return;
+                if (document.PdfView is not null) { await CheckPdfExternalChangeAsync(document); continue; }
                 if (document.FilePath is not { } path) continue;
                 string? baseline = document.Fingerprint;
                 bool IsCurrent() => !_busy && !_closing && !_closed && IsEnabled && Documents.Contains(document)
@@ -95,6 +97,14 @@ public partial class MainWindow
 
     private async Task ReloadActiveDocumentAsync()
     {
+        if (ActiveTab is { PdfView: { }, FilePath: { } pdfPath } pdfDocument)
+        {
+            if (pdfDocument.IsModified && ShowExternalChange(new("PDF를 다시 불러올까요?", "현재 수정 내용을 버리고 디스크의 PDF를 불러옵니다.", "계속 편집", "수정 버리고 다시 불러오기", "취소", pdfDocument.Name, pdfPath, Kind: AppDialogKind.Warning)) != AppDialogResult.Secondary) return;
+            LoadedPdfFile loaded = await PdfFileService.ReadAsync(pdfPath);
+            PdfInfo info = await Pdf.PdfBackend.InspectAsync(loaded.Bytes);
+            pdfDocument.LoadPdf(loaded, info, page: pdfDocument.PdfView.PageIndex, zoom: pdfDocument.PdfView.Zoom);
+            _fileNotices.Remove(pdfDocument.SessionId); return;
+        }
         if (ActiveDocument is not { FilePath: { } path } document) return;
         if (document.Editor.IsModified && ShowExternalChange(new(
             "파일을 다시 불러올까요?", "현재 수정 내용을 버리고 디스크의 파일을 다시 불러옵니다.",
@@ -111,6 +121,43 @@ public partial class MainWindow
         document.Reload(file);
         _fileNotices.Remove(document.SessionId);
         Status.Text = $"파일 다시 불러옴 · {document.Name}";
+    }
+
+    private async Task CheckPdfExternalChangeAsync(EditorDocument document)
+    {
+        if (document.PdfView is not { IsBusy: false, IsLoading: false } view || document.FilePath is not { } path) return;
+        string? baseline = document.Fingerprint;
+        byte[] snapshot = view.Bytes;
+        bool IsCurrent() => !_busy && !_closing && !_closed && IsEnabled && Documents.Contains(document) &&
+            document.PdfView == view && !view.IsBusy && view.Bytes == snapshot && document.FilePath == path && document.Fingerprint == baseline;
+        try
+        {
+            string fingerprint = await TextFileService.GetFingerprintAsync(path);
+            if (!IsCurrent()) return;
+            if (fingerprint == baseline) { _fileNotices.Remove(document.SessionId); return; }
+            string notice = path + "|" + fingerprint;
+            if (_fileNotices.GetValueOrDefault(document.SessionId) == notice) return;
+            LoadedPdfFile loaded = await PdfFileService.ReadAsync(path);
+            PdfInfo info = await Pdf.PdfBackend.InspectAsync(loaded.Bytes);
+            if (!IsCurrent() || loaded.Fingerprint == baseline) return;
+            await RunAsync(() =>
+            {
+                _fileNotices[document.SessionId] = path + "|" + loaded.Fingerprint;
+                if (view.IsModified && ShowExternalChange(new("외부에서 PDF가 변경되었습니다", "현재 수정 내용을 유지하거나 버리고 다시 불러올 수 있습니다.", "계속 편집", "수정 버리고 다시 불러오기", "취소", document.Name, path, Kind: AppDialogKind.Warning)) != AppDialogResult.Secondary) return Task.CompletedTask;
+                document.LoadPdf(loaded, info, page: view.PageIndex, zoom: view.Zoom);
+                ShowExternalChange(new("PDF를 다시 불러왔습니다", "외부 변경을 반영했습니다.", DocumentName: document.Name, DocumentPath: path));
+                return Task.CompletedTask;
+            });
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ArgumentException)
+        {
+            if (!IsCurrent()) return;
+            string notice = path + "|error|" + ex.GetType().Name;
+            if (_fileNotices.GetValueOrDefault(document.SessionId) == notice) return;
+            _fileNotices[document.SessionId] = notice;
+            view.MarkModified();
+            ShowExternalChange(new("PDF 원본을 읽을 수 없습니다", "현재 PDF 내용은 유지했습니다. 다른 이름으로 저장할 수 있습니다.", DocumentName: document.Name, DocumentPath: path, Details: ex.Message, Kind: AppDialogKind.Warning));
+        }
     }
 
     private AppDialogResult ShowExternalChange(AppDialogRequest request) =>

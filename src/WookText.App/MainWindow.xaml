@@ -29,6 +29,7 @@
     <KeyBinding Key="Subtract" Modifiers="Control" Command="{x:Static local:EditorCommands.ZoomOut}" />
     <KeyBinding Key="D0" Modifiers="Control" Command="{x:Static local:EditorCommands.ResetZoom}" />
     <KeyBinding Key="NumPad0" Modifiers="Control" Command="{x:Static local:EditorCommands.ResetZoom}" />
+    <KeyBinding Key="M" Modifiers="Control+Shift" Command="{x:Static local:EditorCommands.DocumentPreview}" />
   </Window.InputBindings>
   <Grid x:Name="Root" Background="{StaticResource Canvas}">
     <Grid.RowDefinitions>
@@ -85,6 +86,7 @@
             <MenuItem Header="바꾸기" Command="ApplicationCommands.Replace" InputGestureText="Ctrl+H" />
           </MenuItem>
           <MenuItem x:Name="ViewMenu" Header="보기(_V)">
+            <MenuItem Header="문서 미리보기 켜기/끄기" Command="{x:Static local:EditorCommands.DocumentPreview}" InputGestureText="Ctrl+Shift+M" />
             <MenuItem Header="문서 자동 정렬" Command="{x:Static local:EditorCommands.FormatDocument}" InputGestureText="Ctrl+Shift+F" />
             <MenuItem Header="파일 · 텍스트 비교…" Command="{x:Static local:EditorCommands.Compare}" InputGestureText="Ctrl+Shift+D" />
             <Separator />

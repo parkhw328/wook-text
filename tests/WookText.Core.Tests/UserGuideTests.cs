@@ -16,6 +16,10 @@ public sealed class UserGuideTests
     }
 
     [Theory]
+    [InlineData("PDF", "PDF")]
+    [InlineData("Ctrl+Shift+M", "미리보기")]
+    [InlineData("HTML", "미리보기")]
+    [InlineData("원본 글꼴 무시", "PDF")]
     [InlineData("F1", "도움말")]
     [InlineData("Ctrl+Shift+V", "블록")]
     [InlineData("Ctrl+Alt+B", "블록")]

@@ -29,10 +29,25 @@
         "resolved": "2.8.2",
         "contentHash": "vm1tbfXhFmjFMUmS4M0J0ASXz3/U5XvXBa6DOQUL3fEz4Vt6YPhv+ESCarx6M6D+9kJkJYZKCNvJMas1+nVfmQ=="
       },
+      "bblanchon.PDFium.Linux": {
+        "type": "Transitive",
+        "resolved": "157.0.8100",
+        "contentHash": "+VKTzJDX1aMJ2AX33qxtyLQY2d5IA1o1FwDbQeaJQnYevSFbYAFjVeQeinaPcjiEA4qUSicjhh7uGCQD4qqFyw=="
+      },
+      "bblanchon.PDFium.Win32": {
+        "type": "Transitive",
+        "resolved": "157.0.8100",
+        "contentHash": "OeimMc5Zn7XFuiczK1/C88Xfe3Ney4fxIxnhKfO44TVIvMhNqEbkbrRYaFGS5SMveaw3uDG0lewgV9qICZjpAQ=="
+      },
       "DiffPlex": {
         "type": "Transitive",
         "resolved": "1.9.0",
         "contentHash": "Z4IDEH6iOb6d+Y2QUjsbq1Fp5I/kwZzNdr/evBTbCGq+ShAjE4baLm7lX1tfjV2p34QI3V9kctCQziFuuKqeCA=="
+      },
+      "Markdig": {
+        "type": "Transitive",
+        "resolved": "1.5.1",
+        "contentHash": "NtHwU5t5yKr6Gnylhs8/hlR0mOAftTFQURDz2ID8bkunxps1neOzKw0dYKKlwNuwiYIGLHjJTXK91f809Ko1ww=="
       },
       "Microsoft.CodeCoverage": {
         "type": "Transitive",
@@ -101,7 +116,10 @@
       "wooktext.core": {
         "type": "Project",
         "dependencies": {
-          "DiffPlex": "[1.9.0, )"
+          "DiffPlex": "[1.9.0, )",
+          "Markdig": "[1.5.1, )",
+          "bblanchon.PDFium.Linux": "[157.0.8100, )",
+          "bblanchon.PDFium.Win32": "[157.0.8100, )"
         }
       }
     }

@@ -5,6 +5,14 @@ public sealed record SessionDocumentState
     public Guid Id { get; init; } = Guid.NewGuid();
     public string Name { get; init; } = "새 문서";
     public string? FilePath { get; init; }
+    public string Kind { get; init; } = "text";
+    public byte[]? PdfBytes { get; init; }
+    public int PdfPage { get; init; }
+    public double PdfZoom { get; init; } = 1;
+    public bool PreviewVisible { get; init; }
+    public PreviewKind PreviewKind { get; init; }
+    // Read 1.7.0 sessions; new sessions use PreviewVisible.
+    public bool MarkdownPreview { get; init; }
     public string Text { get; init; } = "";
     public bool IsModified { get; init; }
     public TextFileEncoding Encoding { get; init; } = TextFileEncoding.Utf8;

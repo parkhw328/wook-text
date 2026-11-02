@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
+    <StartupObject>WookText.App.Program</StartupObject>
     <TargetFramework>net10.0-windows</TargetFramework>
     <UseWPF>true</UseWPF>
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
@@ -13,9 +14,11 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="../WookText.Core/WookText.Core.csproj" />
+    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.4314.35" />
     <PackageReference Include="AvalonEdit" Version="6.3.1.120" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="../../.tools/webview2/runtime/**/*" Link="WebView2Runtime/%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="Formatting/format.cjs" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="../../.tools/formatter/node.exe" Link="Formatting/node.exe" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="../../.tools/formatter/package/standalone.js" Link="Formatting/prettier/standalone.js" CopyToOutputDirectory="PreserveNewest" />
@@ -29,6 +32,9 @@
     <Content Include="../../CHANGELOG.md" Link="CHANGELOG.md" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="../../licenses/**/*" Link="licenses/%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
+  <Target Name="CheckPreviewRuntime" BeforeTargets="PrepareForBuild" Condition="!Exists('../../.tools/webview2/runtime/msedgewebview2.exe')">
+    <Error Text="Run scripts/prepare-webview.ps1 before building wText." />
+  </Target>
   <Target Name="CheckFormatter" BeforeTargets="PrepareForBuild" Condition="!Exists('../../.tools/formatter/node.exe') Or !Exists('../../.tools/formatter/package/standalone.js')">
     <Error Text="Run scripts/prepare-formatter.ps1 before building wText." />
   </Target>

@@ -1,6 +1,7 @@
 param([switch]$SmokeInstaller)
 . "$PSScriptRoot\common.ps1"
 & "$PSScriptRoot\prepare-formatter.ps1"
+& "$PSScriptRoot\prepare-webview.ps1"
 Push-Location $RepoRoot
 try {
     [xml]$properties = Get-Content -LiteralPath 'Directory.Build.props'
@@ -41,20 +42,11 @@ try {
     }
     if (@($runtimeFolders).Count -ne 2) { throw 'Expected both .NET and Windows Desktop runtime notices.' }
 
-    $files = @(Get-ChildItem -LiteralPath $publish -Recurse -File | Sort-Object FullName)
-    $uninstallLines = [System.Collections.Generic.List[string]]::new()
-    foreach ($file in $files) {
-        $relative = $file.FullName.Substring($publish.Length + 1)
-        $uninstallLines.Add('Delete "$INSTDIR\' + $relative + '"')
-    }
-    Get-ChildItem -LiteralPath $publish -Recurse -Directory | Sort-Object { $_.FullName.Length } -Descending | ForEach-Object {
-        $relative = $_.FullName.Substring($publish.Length + 1)
-        $uninstallLines.Add('RMDir "$INSTDIR\' + $relative + '"')
-    }
-    $uninstallInclude = Join-Path $generated 'uninstall-files.nsh'
-    [System.IO.File]::WriteAllLines($uninstallInclude, $uninstallLines, [System.Text.UTF8Encoding]::new($true))
+    $payloadInclude = Join-Path $generated 'payload-files.nsh'
+    & (Join-Path $RepoRoot '.tools\formatter\node.exe') (Join-Path $PSScriptRoot 'generate-installer.cjs') $publish $payloadInclude
+    if ($LASTEXITCODE -ne 0) { throw 'Could not generate the installer ownership catalog.' }
     $output = Join-Path $installerDirectory "wText-$version-win-x64-setup$suffix.exe"
-    $compilerArguments = @('/V2', '/INPUTCHARSET', 'UTF8', "/DAPP_VERSION=$version", "/DPAYLOAD=$publish", "/DOUTPUT=$output", "/DUNINSTALL_FILES=$uninstallInclude")
+    $compilerArguments = @('/V2', '/INPUTCHARSET', 'UTF8', "/DAPP_VERSION=$version", "/DPAYLOAD=$publish", "/DOUTPUT=$output", "/DPAYLOAD_FILES=$payloadInclude")
     if ($SmokeInstaller) { $compilerArguments += '/DSMOKE_INSTALLER' }
     & $compiler @compilerArguments (Join-Path $RepoRoot 'installer\wText.nsi')
     if ($LASTEXITCODE -ne 0) { throw 'NSIS failed to create the installer.' }

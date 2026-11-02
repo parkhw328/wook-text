@@ -14,7 +14,7 @@
         <Grid.ColumnDefinitions><ColumnDefinition Width="194" /><ColumnDefinition Width="18" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
         <ListBox x:Name="ComponentList" SelectionChanged="OnComponentChanged" AutomationProperties.Name="라이선스 구성요소">
           <ListBox.ItemTemplate><DataTemplate>
-            <StackPanel Margin="0,3"><TextBlock Text="{Binding Name}" /><TextBlock Text="{Binding License}" Foreground="{StaticResource Muted}" FontSize="11" Margin="0,5,0,0" TextWrapping="Wrap" /></StackPanel>
+            <StackPanel Margin="0,3"><TextBlock Text="{Binding Name}" TextWrapping="Wrap" /><TextBlock Text="{Binding License}" Foreground="{StaticResource Muted}" FontSize="11" Margin="0,5,0,0" TextWrapping="Wrap" /></StackPanel>
           </DataTemplate></ListBox.ItemTemplate>
         </ListBox>
         <Border Grid.Column="2" BorderBrush="{StaticResource Stroke}" BorderThickness="1" CornerRadius="6" Padding="14">
@@ -27,6 +27,7 @@
       </Grid>
       <DockPanel Grid.Row="2" Margin="0,18,0,0">
         <Button Content="닫기" MinWidth="82" DockPanel.Dock="Right" IsCancel="True" IsDefault="True" Style="{StaticResource AccentButton}" />
+        <Button x:Name="RuntimeNotices" Content="브라우저 구성요소 고지 열기" Visibility="Collapsed" DockPanel.Dock="Right" Margin="8,0" Click="OnRuntimeNotices" />
         <TextBlock Text="배포 시 각 구성요소의 라이선스와 저작권 고지를 함께 유지하세요." Foreground="{StaticResource Muted}" FontSize="11" VerticalAlignment="Center" TextWrapping="Wrap" Margin="0,0,20,0" />
       </DockPanel>
     </Grid>

@@ -13,6 +13,7 @@ public static class EditorCommands
     public static RoutedUICommand DeleteLines { get; } = new("줄 삭제", nameof(DeleteLines), typeof(EditorCommands));
     public static RoutedUICommand SelectLines { get; } = new("줄 선택", nameof(SelectLines), typeof(EditorCommands));
 
+    public static RoutedUICommand DocumentPreview { get; } = new("문서 미리보기", nameof(DocumentPreview), typeof(EditorCommands));
     public static RoutedUICommand FormatDocument { get; } = new("문서 자동 정렬", nameof(FormatDocument), typeof(EditorCommands));
     public static RoutedUICommand Reload { get; } = new("파일 다시 불러오기", nameof(Reload), typeof(EditorCommands));
     public static RoutedUICommand SaveAs { get; } = new("다른 이름으로 저장", nameof(SaveAs), typeof(EditorCommands));

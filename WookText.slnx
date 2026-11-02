@@ -4,6 +4,7 @@
     <Project Path="src/WookText.App/WookText.App.csproj" />
   </Folder>
   <Folder Name="/tests/">
+    <Project Path="tests/WookText.PdfWorker.TestHost/WookText.PdfWorker.TestHost.csproj" />
     <Project Path="tests/WookText.Core.Tests/WookText.Core.Tests.csproj" />
     <Project Path="tests/WookText.App.SmokeTests/WookText.App.SmokeTests.csproj" />
   </Folder>
