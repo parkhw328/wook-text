@@ -8,9 +8,9 @@ Windows x64용 무료 텍스트·PDF 편집기입니다. 여러 문서를 탭으
 
 구문 강조, 문서 자동 정렬, 찾기·바꾸기, 미니맵, 직사각형 블록 편집과 미저장 작업 복원을 지원합니다. 자세한 조작은 앱의 F1 [설명서](docs/USER-GUIDE.md)와 [기능 안내](docs/FEATURES.md)에서 확인하세요.
 
-**1.8.2 배포 준비:** Ctrl+G의 [줄·열 이동](docs/FEATURES.md#줄로-이동-182)과 100MB 안팎 로그의 청크 로딩·저장, 대용량 모드·스크롤 보정을 함께 제공합니다. 사용자가 스크롤 개선을 확인하고 새 공개 릴리스를 요청했습니다. 큰 문서는 일부 표시 기능과 본문 자동 복구를 제한하므로 [대용량 사용법](docs/FEATURES.md#대용량-텍스트와-로그-182)과 [검증·패키지 상태](docs/RELEASING.md)를 확인하세요. 게시 전 공개 다운로드는 **1.7.2**를 유지합니다.
+**공개 1.8.2:** Ctrl+G의 [줄·열 이동](docs/FEATURES.md#줄로-이동-182)과 100MB 안팎 로그의 청크 로딩·저장, 대용량 모드·스크롤 보정을 함께 제공합니다. 큰 문서는 일부 표시 기능과 본문 자동 복구를 제한하므로 [대용량 사용법](docs/FEATURES.md#대용량-텍스트와-로그-182)을 확인하세요. 사용자가 스크롤 개선을 확인하고 공개를 요청했으며, 새 기능의 자동 Windows WPF·화면·설치 검증은 미실행입니다. [검증·배포 기록](docs/RELEASING.md)에 범위를 구분했습니다.
 
-**공개 1.7.2:** PDF 읽기·검색·주석·페이지 조작·최상위 글자/이미지 개체 편집과 Markdown/HTML/SVG/CSV·TSV/JSON/XML 미리보기를 제공합니다. PDF 복원·미리보기 종료 대응과 제거 잔여물·재설치 처리도 수정했습니다. [지원 범위](docs/FEATURES.md#pdf와-문서-미리보기-172)와 [검증 기록](docs/RELEASING.md)을 참고하세요. 사용자 확인 후 공개했으며 자동 Windows WPF·설치/제거와 새 화면 검증은 아직 남아 있습니다.
+PDF 읽기·검색·주석·페이지 조작·최상위 글자/이미지 개체 편집과 Markdown/HTML/SVG/CSV·TSV/JSON/XML 미리보기도 제공합니다. [PDF·미리보기 지원 범위](docs/FEATURES.md#pdf와-문서-미리보기-172)를 참고하세요.
 
 ![wText의 프로젝트 탐색기와 탭 편집 화면](docs/images/explorer.png)
 
@@ -18,14 +18,14 @@ Windows x64용 무료 텍스트·PDF 편집기입니다. 여러 문서를 탭으
 
 ## 다운로드
 
-**wText 1.7.2 · Windows x64**
+**wText 1.8.2 · Windows x64**
 
-- [설치 파일 (.exe)](https://github.com/parkhw328/wook-text/releases/download/v1.7.2/wText-1.7.2-win-x64-setup.exe)
-- [무설치 ZIP](https://github.com/parkhw328/wook-text/releases/download/v1.7.2/wText-1.7.2-win-x64-portable.zip) — 전체 압축을 해제한 뒤 `wText.exe` 실행
+- [설치 파일 (.exe)](https://github.com/parkhw328/wook-text/releases/download/v1.8.2/wText-1.8.2-win-x64-setup.exe)
+- [무설치 ZIP](https://github.com/parkhw328/wook-text/releases/download/v1.8.2/wText-1.8.2-win-x64-portable.zip) — 전체 압축을 해제한 뒤 `wText.exe` 실행
 
 .NET·PDFium·WebView2 런타임이 포함되어 별도 런타임 설치 없이 실행할 수 있습니다. 설치 EXE와 ZIP은 각각 약 417~419 MiB이며, 최초 미리보기에서 WebView2 사용 조건을 확인합니다.
 
-[릴리스 목록](https://github.com/parkhw328/wook-text/releases) · [SHA-256 체크섬](https://github.com/parkhw328/wook-text/releases/download/v1.7.2/SHA256SUMS.txt)
+[릴리스 목록](https://github.com/parkhw328/wook-text/releases) · [SHA-256 체크섬](https://github.com/parkhw328/wook-text/releases/download/v1.8.2/SHA256SUMS.txt)
 
 ## 문서
 

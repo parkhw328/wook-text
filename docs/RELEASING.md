@@ -1,15 +1,17 @@
 # 배포와 문서 마무리
 
-## 1.8.2 공개 배포 준비 (2026-11-03)
+## 1.8.2 공개 배포 상태 (2026-11-03)
 
-사용자가 대용량 스크롤 문제가 어느 정도 해소됐다고 확인하고 Ctrl+G 등의 편의 기능 추가와 커밋·푸시·새 릴리스를 요청했다. **1.8.2**는 줄·열 이동과 미공개 1.8.0~1.8.1의 대용량 로딩·메모리/스크롤 보정을 함께 배포한다. 사용자 확인은 자동 Windows 검증 완료로 확대하지 않으며 CI 중단은 계속 유지한다.
+사용자가 대용량 스크롤 문제가 어느 정도 해소됐다고 확인하고 Ctrl+G 등의 편의 기능 추가와 커밋·푸시·새 릴리스를 요청했다. [wText 1.8.2](https://github.com/parkhw328/wook-text/releases/tag/v1.8.2)를 최신 정식 릴리스로 공개했으며 소스·공개 다운로드는 **1.8.2**다. 줄·열 이동과 미공개 1.8.0~1.8.1의 대용량 로딩·메모리/스크롤 보정을 함께 배포했다. 사용자 확인은 자동 Windows 검증 완료로 확대하지 않으며 CI 중단은 계속 유지한다.
 
 - 줄 이동: Ctrl+G/편집 메뉴에서 줄 또는 줄:열 입력, 현재 위치/전체 줄 수, 형식·범위 안내, Enter 이동과 Esc·취소·X의 위치 보존을 제공한다. 대상 줄만 조회하고 본문·실행 취소·미저장 상태를 보존한다. 검색/대기 휠 작업을 취소하며 PDF에서는 비활성화한다.
 - Linux Core: **280개 중 274개 통과, 기존 환경 의존 실패 6개 동일**. 줄 이동 형식·경계·빈 문서·끝 위치·정수 범위·과대 붙여넣기·200만 줄 단일 조회와 F1 검색 **26개 신규 검사 전부 통과**. 이전 대용량 읽기/저장·검색·세션·스크롤 검사도 포함한다.
 - Windows 대상: 앱과 WPF 회귀 프로젝트 Release 컴파일 **경고·오류 0개**. Ctrl+G 바인딩·실제 메뉴 명령·찾기 입력 중 호출·오류/취소·개행/자동 줄바꿈·실행 취소 보존·100 MiB 끝 이동·PDF 비활성화를 검사하도록 작성했다. Linux에서 실제 WPF·IME·DPI·입력·화면·설치 실행은 수행하지 않았다.
 - 문서/화면: README·FEATURES·내장 USER-GUIDE·DEVELOPMENT·규칙/요구사항·CHANGELOG를 갱신했다. `go-to-line.png`와 기존 `large-file.png`의 Windows 생성 검사를 준비했으며 새 실제 화면은 미촬영이다.
-- 배포 절차: 확정된 소스 커밋에서 자체 런타임 포함 EXE·ZIP·SHA256SUMS를 생성하고 ZIP/publish·내장 설명서/변경 이력·버전/빌드 커밋·라이선스를 확인한다. 원격 태그/릴리스와 첨부 파일을 게시하고 다시 내려받아 체크섬을 검증한 뒤 이 기록과 README 공개 링크를 갱신한다.
-- 근거: `artifacts/verification/1.8.2/`의 Core TRX·test-summary.json·failure-comparison.json, Windows 빌드/게시/패키징 로그와 소스/패키지/업로드 manifest. 이전 실패 비교는 1.8.1의 TRX를 사용한다. 미공개 검토본의 이력은 아래에 보존한다.
+- 소스·바이너리 빌드 커밋과 태그 대상: `3d802cf89dbc44c622657e5218a6a3599ba17c80` (`Add large-file support and Ctrl+G navigation`). 앱·Core assembly의 정보 버전에도 같은 커밋을 확인했다. 공개 확인 후 README·배포/요구사항 기록만 별도 문서 커밋으로 갱신한다.
+- 패키지: `artifacts/distribution/wText-1.8.2/` 및 공개 릴리스에 설치 EXE **436,924,501 bytes**, 무설치 ZIP **438,427,766 bytes**, `SHA256SUMS.txt`를 제공한다. ZIP CRC·802개 파일의 publish 일치·고정 WebView2 257개 파일/PDFium·WebView2Loader 원본·내장 설명서/CHANGELOG·라이선스·EXE/설치 버전 **1.8.2.0**·SHA-256을 확인했다. Linux 교차 게시·NSIS 생성이며 Windows 설치 성공을 뜻하지 않는다.
+- 업로드 검증: 공개 첨부 3개를 다시 내려받아 크기·SHA-256과 체크섬 파일 원문을 로컬 배포본과 대조했다. GitHub 제공 asset digest도 전부 일치했다. 최신 정식 공개 상태를 확인하고 README의 EXE·ZIP·체크섬 링크를 1.8.2로 갱신했다.
+- 근거: `artifacts/verification/1.8.2/`의 Core TRX·test-summary.json·failure-comparison.json, Windows 빌드/게시/패키징 로그, metadata-check.log·source-manifest.json·package-verification.json·published-release.json·upload-verification.json. 이전 실패 비교는 1.8.1 TRX를 사용한다. 새 C# 파일 whitespace formatter, 상대 링크 53개·신규 제목 링크와 diff 공백 검사도 통과했다. 미공개 검토본의 이력은 아래에 보존한다.
 
 ## 1.8.1 로컬 검토용 준비 (2026-11-03, 미공개)
 
