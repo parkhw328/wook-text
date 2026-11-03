@@ -60,7 +60,8 @@ public sealed class SessionStore : IDisposable
 
     public async Task SaveAsync(SessionState state, CancellationToken cancellationToken = default)
     {
-        if (state.Documents?.Any(d => d?.Kind == "pdf") == true) state = state with { FormatVersion = 2 };
+        if (state.Documents?.Any(d => d?.ReopenFromDisk == true) == true) state = state with { FormatVersion = 3 };
+        else if (state.Documents?.Any(d => d?.Kind == "pdf") == true) state = state with { FormatVersion = 2 };
         Validate(state);
         await _writes.WaitAsync(cancellationToken);
         string temporary = FilePath + "." + Guid.NewGuid().ToString("N") + ".tmp";
@@ -103,17 +104,20 @@ public sealed class SessionStore : IDisposable
 
     private static void Validate(SessionState state)
     {
-        if (state.FormatVersion is not (1 or 2)) throw new IOException("이 버전에서 읽을 수 없는 작업 보관 형식입니다.");
+        if (state.FormatVersion is not (1 or 2 or 3)) throw new IOException("이 버전에서 읽을 수 없는 작업 보관 형식입니다.");
         if (state.Documents is null || state.Documents.Length > MaximumDocuments) throw new IOException("작업 보관은 최대 256개 문서를 지원합니다.");
         HashSet<Guid> ids = [];
         long characters = 0;
         foreach (SessionDocumentState document in state.Documents)
         {
             if (document is null || document.Id == Guid.Empty || !ids.Add(document.Id) || document.Text is null || string.IsNullOrWhiteSpace(document.Name) ||
-                !Enum.IsDefined(document.Encoding) || document.FilePath is { } path && (!Path.IsPathFullyQualified(path) || path.Contains('\0')))
+                !Enum.IsDefined(document.Encoding) || document.DiskEncoding is { } diskEncoding && !Enum.IsDefined(diskEncoding) ||
+                document.FilePath is { } path && (!Path.IsPathFullyQualified(path) || path.Contains('\0')))
                 throw new IOException("작업 보관 파일의 문서 정보가 올바르지 않습니다.");
             if (document.Kind is not ("text" or "pdf") || document.Kind == "pdf" && (document.FilePath is null || document.PdfBytes is not { Length: > 0 } || document.PdfBytes.Length > Pdf.PdfFileService.MaximumBytes))
                 throw new IOException("PDF 작업 보관 정보가 올바르지 않습니다.");
+            if (document.ReopenFromDisk && (state.FormatVersion != 3 || document.Kind != "text" || document.FilePath is null || document.IsModified || document.Text.Length != 0))
+                throw new IOException("대용량 파일의 다시 열기 정보가 올바르지 않습니다.");
             characters += document.Text.Length + (document.PdfBytes?.Length ?? 0);
             if (characters > MaximumBytes / 2) throw new IOException("보관할 문서가 너무 큽니다. 큰 문서를 저장하고 탭을 닫아 주세요.");
             // JSON writers replace invalid UTF-16; reject it instead of silently changing a buffer.

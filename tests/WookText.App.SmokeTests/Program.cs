@@ -114,6 +114,7 @@ internal static class Program
         await ThemeChecks.RunAsync(window, output);
         await FormattingChecks.RunAsync(window, output);
         await NavigationEditingChecks.RunAsync(window, output);
+        await GoToLineChecks.RunAsync(window, output);
         await HelpChecks.RunAsync(window, output);
         await ExperienceChecks.RunAsync(window, comparison, preferences, settingsPath, output);
         comparison.Close();
@@ -124,6 +125,7 @@ internal static class Program
         await DialogChecks.RunAsync(output);
         await SessionChecks.RunAsync(output);
         await ExternalChangeChecks.RunAsync(output);
+        await LargeFileChecks.RunAsync(output);
         await PdfPreviewChecks.RunAsync(output);
     }
 

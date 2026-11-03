@@ -12,6 +12,7 @@ public sealed class SessionStoreTests : IDisposable
             Text = text,
             IsModified = true,
             Encoding = TextFileEncoding.Korean949,
+            DiskEncoding = TextFileEncoding.Utf16LittleEndian,
             Language = "java",
             CaretOffset = 4,
             SelectionStart = 1,
@@ -134,4 +135,26 @@ public sealed class SessionStoreTests : IDisposable
     }
 
     public void Dispose() { if (Directory.Exists(_directory)) Directory.Delete(_directory, recursive: true); }
+
+    [Fact]
+    public async Task Save_DiskOnlyLargeFile_UsesNewFormatAndKeepsSmallUnsavedBuffer()
+    {
+        SessionDocumentState large = new() { FilePath = Path.Combine(_directory, "large.log"), ReopenFromDisk = true };
+        await Store.SaveAsync(new() { Documents = [large, Sample("unsaved notes").Documents[0]] });
+        SessionLoadResult loaded = await Store.LoadAsync();
+        Assert.Equal(3, loaded.State.FormatVersion);
+        Assert.True(loaded.State.Documents[0].ReopenFromDisk);
+        Assert.Empty(loaded.State.Documents[0].Text);
+        Assert.Equal("unsaved notes", loaded.State.Documents[1].Text);
+        Assert.True(new FileInfo(Store.FilePath).Length < 4096);
+    }
+
+    [Fact]
+    public async Task Save_DiskOnlyMarkerWithUnsavedText_RejectsInsteadOfDiscardingBuffer()
+    {
+        await Store.SaveAsync(Sample("previous"));
+        SessionDocumentState invalid = new() { FilePath = Path.Combine(_directory, "large.log"), ReopenFromDisk = true, Text = "unsaved", IsModified = true };
+        await Assert.ThrowsAsync<IOException>(() => Store.SaveAsync(new() { Documents = [invalid] }));
+        Assert.Equal("previous", (await Store.LoadAsync()).State.Documents[0].Text);
+    }
 }

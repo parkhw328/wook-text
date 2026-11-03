@@ -30,6 +30,7 @@ internal static class PdfPreviewChecks
         await window.OpenFileAsync(pdfPath);
         EditorDocument tab = window.ActiveTab!;
         Check(tab.IsPdf && window.ActiveDocument is null && tab.Editor.IsReadOnly, "PDF must bypass text decoding and text editing commands.");
+        Check(!EditorCommands.GoToLine.CanExecute(null, window), "Text line navigation must be disabled for PDF tabs.");
         await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
         var pdf = tab.PdfView!;
         await pdf.Rendering;

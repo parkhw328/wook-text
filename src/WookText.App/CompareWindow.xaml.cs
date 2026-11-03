@@ -109,13 +109,16 @@ public partial class CompareWindow : Window
         finally { SetBusy(false); }
     }
 
+    private static readonly TextReadLimits ComparisonReadLimits = new(
+        Bytes: TextDiffService.MaximumCharacters * 4 + 4, Characters: TextDiffService.MaximumCharacters, Lines: TextDiffService.MaximumLines);
+
     private async Task<LoadedTextFile?> ReadFileAsync(string path)
     {
-        try { return await _files.ReadAsync(path); }
+        try { return await _files.ReadAsync(path, limits: ComparisonReadLimits); }
         catch (DecoderFallbackException)
         {
             if (_closed || !AppDialogs.ConfirmEncoding(this, path)) return null;
-            return await _files.ReadAsync(path, TextFileEncoding.Korean949);
+            return await _files.ReadAsync(path, TextFileEncoding.Korean949, limits: ComparisonReadLimits);
         }
     }
 
@@ -147,6 +150,12 @@ public partial class CompareWindow : Window
     {
         Summary.Text = "내용을 비교하는 중…";
         bool ignoreWhitespace = IgnoreWhitespace.IsChecked == true;
+        if (new[] { _leftInput, _rightInput }.Any(input => input.Document.TextLength > TextDiffService.MaximumCharacters || input.Document.LineCount > TextDiffService.MaximumLines))
+        {
+            InvalidateComparison();
+            Summary.Text = "비교 한도는 한쪽당 500,000자, 20,000줄입니다. 입력 내용을 줄인 뒤 다시 비교해 주세요.";
+            return;
+        }
         string leftText = _leftInput.Text;
         string rightText = _rightInput.Text;
         ComparisonResult result;

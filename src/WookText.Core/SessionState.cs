@@ -14,8 +14,11 @@ public sealed record SessionDocumentState
     // Read 1.7.0 sessions; new sessions use PreviewVisible.
     public bool MarkdownPreview { get; init; }
     public string Text { get; init; } = "";
+    // Large buffers are deliberately excluded from recovery. Reopen the original; never restore an empty editor.
+    public bool ReopenFromDisk { get; init; }
     public bool IsModified { get; init; }
     public TextFileEncoding Encoding { get; init; } = TextFileEncoding.Utf8;
+    public TextFileEncoding? DiskEncoding { get; init; }
     public string? Fingerprint { get; init; }
     public string? Language { get; init; }
     public int CaretOffset { get; init; }

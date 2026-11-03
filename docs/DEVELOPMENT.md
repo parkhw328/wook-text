@@ -125,3 +125,32 @@ PDF 세션 복원은 네이티브 검사보다 버퍼·탭 복구가 먼저다. 
 앱/작업 프로세스는 `Local\wText.Running`, 설치/제거는 `Local\wText.Maintenance` mutex를 유지한다. 설치/제거는 알려진 모든 파일에 쓰기·삭제 권한의 핸들을 열 수 있는지 확인한 뒤 변경한다. 삭제 실패 시 식별자·Uninstall.exe·등록을 남긴다. 사용자 파일만 남으면 `.wtext-retained`로 폴더 소유 정보를 유지한다. 기본 Programs 폴더의 식별자 없는 잔여물은 전체 트리가 알려진 경로이며 연결 경로가 없을 때만 복구한다. 임의 폴더나 사용자 파일은 자동 정리하지 않는다.
 
 [NSIS SetOverwrite](https://nsis.sourceforge.io/Docs/Chapter4.html#setoverwrite)의 `ifdiff`는 파일 시각 비교다. 파일별 zlib 압축을 사용해 건너뛴 파일 때문에 전체 런타임을 풀지 않도록 한다. 다운로드 용량은 거의 유지된다. `test-installer.ps1`은 180초 상한과 실제 소요 시간 기록, 변경 없는 msedge.dll의 쓰기 이벤트 부재, 잠긴 DLL의 설치/제거 거부, 등록 유지, 남긴 사용자 파일 위 재설치, 기본 Programs 잔여물 복구와 사용자 파일 거부를 검사한다. 실제 Windows 실행 없이 속도 개선을 실측 결과로 표기하지 않는다.
+
+## 대용량 문서 개발과 검증 (1.8.0 준비)
+
+`LargeFilePolicy`는 파일/문자/행 한도와 자동 보호 기준을, `TextFileService.ReadChunks`는 엄격한 디코더·청크별 검사·해시를 관리한다. 기존 문자열 API는 작은 입력/비교용으로 유지하며 앱은 `EditorFileLoader`를 사용한다. 로더는 작업 스레드에서 실행 취소를 끈 `TextDocument`에 청크를 넣고 완성 후 소유권을 UI 스레드로 옮긴다. 저장에는 `CreateSnapshot().CreateReader`를 전달하며 스냅샷의 `.Text`를 만들지 않는다. 임시 파일에 전체 인코딩을 마친 뒤에만 해시 확인·원본 교체를 수행한다.
+
+`EditorDocument`는 본문 변경 시 길이/행 개수로 대용량 모드 진입을 판단하고 미리보기·분석·표시 기능을 제한한다. 미리보기는 자체 한도를 넘기면 본문 복사 전에 닫는다. 일반 들여쓰기 감지는 처음 64 KiB 문자 표본으로 제한한다. `MainWindow.LargeFiles.cs`는 창 전체 읽기 예산과 취소 가능한 청크 검색을 담당한다. 대용량 본문은 체크포인트에서 제외하고 세션 형식 3에 `ReopenFromDisk` 경로만 기록한다. 종료 시 큰 미저장 탭을 확인하고 작은 미저장 탭의 기존 보관 동작은 유지한다.
+
+`LargeFileTests`는 약 100 MiB 로그를 직접 생성해 청크 읽기/저장 해시, 인코딩·CRLF·서로게이트 경계, 취소/한도를 검사한다. `ChunkedTextSearchTests`는 청크 경계·역방향·순환·조밀한 일치에서 단일 결과만 찾는지 확인한다. `LargeFileChecks`는 Windows WPF에서 약 100 MiB 파일 열기 중 dispatcher heartbeat, 설정 변경 후 제한 유지, 검색·저장/취소/버리기·재실행과 `large-file.png`를 검사한다. 프로세스 peak working set은 전체 검사 프로세스의 누적값이므로 단일 파일의 메모리라고 해석하지 않는다.
+
+```bash
+.tools/dotnet-linux/dotnet test tests/WookText.Core.Tests -c Release -p:RestoreLockedMode=true
+.tools/dotnet-linux/dotnet build tests/WookText.App.SmokeTests -c Release -p:EnableWindowsTargeting=true -p:RestoreLockedMode=true
+```
+
+위 SDK 경로는 이 Linux 작업 환경에서 확인한 경로다. Windows에서는 앞의 `scripts/build.ps1`을 사용한다. Linux Core 실행·비UI AvalonEdit 버퍼 측정과 실제 Windows WPF 렌더링·입력·메모리 검증을 구분하며 CI를 재개하지 않는다.
+
+### 대용량 스크롤 (1.8.1 준비)
+
+`LargeFileScrolling`은 대용량에서만 PreviewMouseWheel을 처리한다. 16ms Input 우선순위 타이머가 `ScrollWheelBatch`의 마지막 목표 위치를 `IScrollInfo`에 반영한다. 반복 입력으로 타이머를 미루지 않고 각 입력의 범위를 즉시 제한해 끝에서 반전할 때 초과 이동이 누적되지 않는다. fractional delta와 Windows 줄 수/페이지 설정을 따른다. 키보드·클릭·커서 이동·본문 변경·다른 스크롤·숨김/Unload·Dispose·설정 적용 시 타이머/목표를 지운다. Ctrl+휠은 기존 확대 경로에 남긴다.
+
+`EditorDocument.ApplyResourcePreferences`는 대용량에서 `EnableHyperlinks`/`EnableEmailHyperlinks`를 끄고 `ScrollViewer.IsDeferredScrollingEnabled`를 적용한다. 일반 문서로 다시 읽으면 원래 동작으로 복원한다. 의존성은 추가하지 않았다. 고정 [AvalonEdit 링크 생성기](https://github.com/icsharpcode/AvalonEdit/blob/862415d51eddc9eac93f462dbc522ffbf929cd52/ICSharpCode.AvalonEdit/Rendering/LinkElementGenerator.cs)와 [TextView](https://github.com/icsharpcode/AvalonEdit/blob/862415d51eddc9eac93f462dbc522ffbf929cd52/ICSharpCode.AvalonEdit/Rendering/TextView.cs)의 경로를 근거로 했으며 스크롤바는 [WPF 지연 스크롤](https://learn.microsoft.com/en-us/dotnet/desktop/wpf/advanced/optimizing-performance-controls#deferred-scrolling)을 사용한다. AvalonEdit은 이미 보이는 줄을 가상화하므로 별도의 본문 복사/페이지 뷰를 만들지 않는다.
+
+`ScrollWheelBatchTests`는 이동량·소량 delta·반전·끝 경계·줄/페이지 설정·취소·문서 축소를 확인한다. `LargeFileScrollChecks`는 `LargeFileChecks`의 100 MiB URL/이메일 로그에서 80개 휠 입력의 단일 위치 반영, 키보드/다른 이동/숨김 시 취소, 실제 ScrollViewer의 지연 명령과 놓은 위치, 본문·선택·커서·실행 취소 보존을 검사한다. 일반 문서·편집 중 전환·작은 파일 재로딩도 확인한다. 출력의 elapsed는 테스트 대기 시간을 포함하므로 프레임 시간/개선률로 사용하지 않는다. 실제 Windows 실행 후 고해상도 휠·터치패드·Ctrl+휠·드래그 선택·긴 줄·DPI별 동작을 추가 확인한다.
+
+### 줄 이동 (1.8.2)
+
+`LineNavigation.TryResolve`는 최대 64자 입력에서 줄 또는 줄:열을 검사하며 대상 줄 길이만 콜백으로 조회한다. 전체 본문/행 배열을 요구하지 않는다. `GoToLineWindow`는 공통 테마, 현재 위치/범위, 입력 포커스·기본/취소 버튼과 같은 창의 오류를 제공한다. `MainWindow.Navigation.cs`는 Ctrl+G/편집 메뉴를 연결하고 검색·동시 편집·대기 휠을 취소한 뒤 `GetLineByNumber`로 대상 오프셋을 얻는다. 명령이 Root를 다시 활성화한 뒤 포커스를 돌려주며 활성 문서/버퍼가 바뀌면 이전 요청을 적용하지 않는다. 새 의존성/디렉터리는 없다.
+
+`LineNavigationTests`는 형식/범위·빈 문서·줄 끝·오버플로·과대 붙여넣기와 200만 줄의 단일 행 조회를 검사한다. `GoToLineChecks`는 실제 Ctrl+G 바인딩·메뉴 명령·검색란 포커스·오류/취소·개행/자동 줄바꿈·원문/실행 취소 보존과 `go-to-line.png`를 준비한다. 기존 100 MiB 검사에는 끝/처음 이동을, PDF 검사에는 명령 비활성화를 포함한다. 실제 Windows 실행·새 화면은 Linux 컴파일 결과와 별도로 기록한다.

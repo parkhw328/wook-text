@@ -32,6 +32,8 @@ public sealed class UserGuideTests
     [InlineData("다시 불러오기", "외부 변경")]
     [InlineData("100,000", "탐색기")]
     [InlineData("한도", "지원 범위")]
+    [InlineData("대용량", "대용량 텍스트")]
+    [InlineData("Ctrl+G", "줄로 이동")]
     public void Search_FeatureOrShortcut_FindsRelevantTopic(string query, string title)
     {
         Assert.Contains(UserGuide.Search(query), topic => topic.Title.Contains(title, StringComparison.Ordinal));

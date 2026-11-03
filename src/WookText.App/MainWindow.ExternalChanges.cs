@@ -28,7 +28,8 @@ public partial class MainWindow
             {
                 if (_busy || _closing || _closed) return;
                 if (document.PdfView is not null) { await CheckPdfExternalChangeAsync(document); continue; }
-                if (document.FilePath is not { } path) continue;
+                // Large log files may be constantly appended to; do not hash/rebuild them every two seconds.
+                if (document.IsLargeFile || document.FilePath is not { } path) continue;
                 string? baseline = document.Fingerprint;
                 bool IsCurrent() => !_busy && !_closing && !_closed && IsEnabled && Documents.Contains(document)
                     && document.FilePath == path && document.Fingerprint == baseline;
@@ -44,12 +45,10 @@ public partial class MainWindow
                     string notice = path + "|" + fingerprint;
                     if (_fileNotices.GetValueOrDefault(document.SessionId) == notice) continue;
                     TextFileEncoding encoding = document.Encoding;
-                    LoadedTextFile file = await Task.Run(async () =>
-                    {
-                        try { return await _files.ReadAsync(path); }
-                        catch (DecoderFallbackException) when (encoding == TextFileEncoding.Korean949)
-                        { return await _files.ReadAsync(path, TextFileEncoding.Korean949); }
-                    });
+                    LoadedEditorFile file;
+                    try { file = await ReadEditorFileAsync(path); }
+                    catch (DecoderFallbackException) when (encoding == TextFileEncoding.Korean949)
+                    { file = await ReadEditorFileAsync(path, TextFileEncoding.Korean949); }
                     if (!IsCurrent()) continue;
                     if (file.Fingerprint == baseline) continue;
                     notice = path + "|" + file.Fingerprint;
@@ -110,12 +109,12 @@ public partial class MainWindow
             "파일을 다시 불러올까요?", "현재 수정 내용을 버리고 디스크의 파일을 다시 불러옵니다.",
             "계속 편집", "수정 버리고 다시 불러오기", "취소", document.Name, path,
             Kind: AppDialogKind.Warning)) != AppDialogResult.Secondary) return;
-        LoadedTextFile file;
-        try { file = await _files.ReadAsync(path); }
+        LoadedEditorFile file;
+        try { file = await ReadEditorFileAsync(path); }
         catch (DecoderFallbackException)
         {
             if (document.Encoding != TextFileEncoding.Korean949 && !AppDialogs.ConfirmEncoding(this, path)) return;
-            file = await _files.ReadAsync(path, TextFileEncoding.Korean949);
+            file = await ReadEditorFileAsync(path, TextFileEncoding.Korean949);
         }
         EndLinkedEditing();
         document.Reload(file);

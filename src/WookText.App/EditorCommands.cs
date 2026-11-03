@@ -4,6 +4,7 @@ namespace WookText.App;
 
 public static class EditorCommands
 {
+    public static RoutedUICommand GoToLine { get; } = new("줄로 이동", nameof(GoToLine), typeof(EditorCommands));
     public static RoutedUICommand SelectBlock { get; } = new("선택 영역을 직사각형 블록으로", nameof(SelectBlock), typeof(EditorCommands));
     public static RoutedUICommand CopyBlock { get; } = new("블록 복사", nameof(CopyBlock), typeof(EditorCommands));
     public static RoutedUICommand PasteBlock { get; } = new("블록 붙여넣기", nameof(PasteBlock), typeof(EditorCommands));

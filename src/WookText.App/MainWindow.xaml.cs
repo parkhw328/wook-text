@@ -29,6 +29,7 @@ public partial class MainWindow : Window
     private bool _restoringSession = true;
     private bool _closing;
     private Task? _initialization;
+    private readonly SemaphoreSlim _openGate = new(1, 1);
     public Task ClosingCompletion { get; private set; } = Task.CompletedTask;
     public string? SessionFilePath => _session.StoragePath;
     private bool _layoutReady;
@@ -84,9 +85,10 @@ public partial class MainWindow : Window
         Bind(EditorCommands.ResetZoom, async () => { if (ActiveTab?.PdfView is { } pdf) { await pdf.GuardAsync(() => pdf.SetZoomAsync(1)); return; } _preferences.Update(_preferences.Current with { FontSize = EditorPreferences.DefaultFontSize }); });
         Bind(ApplicationCommands.Find, () => { if (ActiveTab?.PdfView is { } pdf) Dispatcher.BeginInvoke(DispatcherPriority.Input, pdf.FocusSearch); else ShowSearch(false); return Task.CompletedTask; });
         Bind(ApplicationCommands.Replace, () => { if (ActiveDocument is not null) ShowSearch(true); return Task.CompletedTask; });
+        Bind(EditorCommands.GoToLine, () => { ShowGoToLine(); return Task.CompletedTask; });
         PreviewKeyDown += OnWindowKeyDown;
         _preferences.Changed += OnPreferencesChanged;
-        Closed += (_, _) => { _closed = true; _fileCheckTimer.Stop(); _linkedEditor?.Dispose(); WorkspaceExplorer.Dispose(); _session.Dispose(); _preferences.Changed -= OnPreferencesChanged; foreach (EditorDocument document in Documents) document.Dispose(); };
+        Closed += (_, _) => { _closed = true; CancelLargeSearch(); _fileCheckTimer.Stop(); _linkedEditor?.Dispose(); WorkspaceExplorer.Dispose(); _session.Dispose(); _preferences.Changed -= OnPreferencesChanged; foreach (EditorDocument document in Documents) document.Dispose(); };
         Loaded += async (_, _) => { await InitializeSessionAsync(); _fileCheckTimer.Start(); };
         _fileCheckTimer.Tick += async (_, _) =>
         {
@@ -103,7 +105,14 @@ public partial class MainWindow : Window
 
     private void Bind(ICommand command, Func<Task> action) => CommandBindings.Add(new CommandBinding(command,
         async (_, e) => { e.Handled = true; await RunAsync(action); },
-        (_, e) => { e.CanExecute = !_busy && !Documents.Any(d => d.PdfView?.IsBusy == true); e.Handled = true; }));
+        (_, e) =>
+        {
+            e.CanExecute = !_busy && !Documents.Any(d => d.PdfView?.IsBusy == true)
+                && (command != EditorCommands.DocumentPreview || ActiveDocument?.CanPreview == true)
+                && (command != EditorCommands.GoToLine || ActiveDocument is not null)
+                && (command != EditorCommands.FormatDocument || ActiveDocument is { IsLargeFile: false } doc && doc.Editor.Document.TextLength <= TextFormattingService.MaximumCharacters);
+            e.Handled = true;
+        }));
 
     private void BindExplorer(ICommand command, Func<Task> action) => CommandBindings.Add(new CommandBinding(command,
         async (_, e) => { e.Handled = true; await action(); },
@@ -143,7 +152,7 @@ public partial class MainWindow : Window
     private Func<SessionState> CaptureSession()
     {
         Guid? active = ActiveTab?.SessionId;
-        Func<SessionDocumentState>[] documents = Documents.Select(d => d.CaptureSession()).ToArray();
+        Func<SessionDocumentState>[] documents = Documents.Where(d => !d.IsLargeFile || d.FilePath is not null).Select(d => d.CaptureSession()).ToArray();
         return () => new SessionState { ActiveDocumentId = active, Documents = documents.Select(capture => capture()).ToArray() };
     }
 
@@ -160,6 +169,7 @@ public partial class MainWindow : Window
                 foreach (EditorDocument previous in Documents) previous.Dispose();
                 Documents.Clear();
                 int recovered = 0;
+                List<string> unavailable = [];
                 foreach (SessionDocumentState saved in state.Documents)
                 {
                     if (saved.Kind == "pdf")
@@ -171,20 +181,29 @@ public partial class MainWindow : Window
                         AddDocument(saved.Name).LoadPdf(new(saved.FilePath!, bytes, fingerprint), null, saved.IsModified, saved.PdfPage, saved.PdfZoom, saved.Id);
                         continue;
                     }
-                    LoadedTextFile? current = null;
+                    LoadedEditorFile? current = null;
                     if (!saved.IsModified && saved.FilePath is { } path)
                     {
                         try
                         {
-                            try { current = await _files.ReadAsync(path); }
-                            catch (DecoderFallbackException) { current = await _files.ReadAsync(path, saved.Encoding); }
+                            try { current = await ReadEditorFileAsync(path); }
+                            catch (DecoderFallbackException) { current = await ReadEditorFileAsync(path, saved.Encoding); }
                         }
                         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ArgumentException) { recovered++; }
                     }
+                    if (saved.ReopenFromDisk && current is null)
+                    {
+                        unavailable.Add(saved.FilePath!);
+                        continue;
+                    }
                     AddDocument(saved.Name).RestoreSession(saved, current);
                 }
+                if (Documents.Count == 0) NewDocument();
                 DocumentTabs.SelectedItem = Documents.FirstOrDefault(d => d.SessionId == state.ActiveDocumentId) ?? Documents[0];
-                Status.Text = $"이전 작업 복원 · {Documents.Count}개 문서" + (recovered > 0 ? $" · 읽을 수 없는 원본 {recovered}개는 보관 내용으로 복구" : "");
+                if (unavailable.Count > 0)
+                    AppDialogs.Alert(this, "일부 대용량 파일을 다시 열 수 없습니다", "자동 복구 본문이 없는 대용량 파일입니다. 원본 위치를 확인한 뒤 다시 열어 주세요.", string.Join("\n", unavailable));
+                Status.Text = $"이전 작업 복원 · {Documents.Count}개 문서" + (recovered > unavailable.Count ? $" · 원본 {recovered - unavailable.Count}개는 보관 내용으로 복구" : "")
+                    + (unavailable.Count > 0 ? $" · 대용량 원본 {unavailable.Count}개 다시 열기 실패" : "");
             }
             if (_session.LastWarning is { } warning) Status.Text = warning;
         }
@@ -200,6 +219,22 @@ public partial class MainWindow : Window
     public async Task OpenFileAsync(string path)
     {
         await InitializeSessionAsync();
+        await _openGate.WaitAsync();
+        bool wasBusy = _busy;
+        _busy = true;
+        Root.IsEnabled = false;
+        try { if (!_closed) await OpenFileCoreAsync(path); }
+        finally
+        {
+            _busy = wasBusy;
+            Root.IsEnabled = !wasBusy;
+            _openGate.Release();
+            CommandManager.InvalidateRequerySuggested();
+        }
+    }
+
+    private async Task OpenFileCoreAsync(string path)
+    {
         try
         {
             string fullPath = Path.GetFullPath(path);
@@ -216,22 +251,23 @@ public partial class MainWindow : Window
             {
                 LoadedPdfFile loaded = await PdfFileService.ReadAsync(fullPath);
                 PdfInfo info = await Pdf.PdfBackend.InspectAsync(loaded.Bytes);
-                EditorDocument pdfDocument = Documents.FirstOrDefault(d => !d.IsPdf && d.FilePath is null && !d.IsModified && d.Editor.Text.Length == 0) ?? AddDocument(Path.GetFileName(fullPath));
+                EditorDocument pdfDocument = Documents.FirstOrDefault(d => !d.IsPdf && d.FilePath is null && !d.IsModified && d.Editor.Document.TextLength == 0) ?? AddDocument(Path.GetFileName(fullPath));
                 pdfDocument.LoadPdf(loaded, info);
                 DocumentTabs.SelectedItem = pdfDocument;
                 SearchPanel.Visibility = Visibility.Collapsed; RefreshSearch(); UpdateStatus();
                 Status.Text = $"PDF 열림 · {pdfDocument.Name}";
                 return;
             }
-            LoadedTextFile file;
-            try { file = await _files.ReadAsync(fullPath); }
+            Status.Text = "파일을 읽는 중… 대용량 문서를 준비하고 있습니다.";
+            LoadedEditorFile file;
+            try { file = await ReadEditorFileAsync(fullPath); }
             catch (DecoderFallbackException)
             {
                 if (!AppDialogs.ConfirmEncoding(this, fullPath)) return;
-                file = await _files.ReadAsync(fullPath, TextFileEncoding.Korean949);
+                file = await ReadEditorFileAsync(fullPath, TextFileEncoding.Korean949);
             }
 
-            EditorDocument? empty = Documents.FirstOrDefault(d => d.FilePath is null && !d.Editor.IsModified && d.Editor.Text.Length == 0);
+            EditorDocument? empty = Documents.FirstOrDefault(d => d.FilePath is null && !d.Editor.IsModified && d.Editor.Document.TextLength == 0);
             EditorDocument document = empty ?? NewDocument();
             document.Load(file);
             DocumentTabs.SelectedItem = document;
@@ -289,7 +325,7 @@ public partial class MainWindow : Window
         {
             string newFingerprint = document.PdfView is { } pdf
                 ? await PdfFileService.SaveAsync(path, pdf.Bytes, fingerprint, Pdf.PdfBackend.InspectAsync)
-                : await _files.SaveAsync(path, document.Editor.Text, document.Encoding, fingerprint);
+                : await _files.SaveAsync(path, document.Editor.Document.CreateSnapshot().CreateReader, document.Encoding, fingerprint);
             document.MarkSaved(path, newFingerprint);
             Status.Text = $"저장됨 · {document.Name}";
             UpdateStatus();
@@ -348,9 +384,8 @@ public partial class MainWindow : Window
         _busy = true; Root.IsEnabled = false;
         try
         {
-            if (!_preferences.Current.RememberSession)
-                foreach (EditorDocument document in Documents.ToArray())
-                    if (!await ConfirmCloseAsync(document)) return;
+            foreach (EditorDocument document in Documents.ToArray())
+                if ((!_preferences.Current.RememberSession || document.IsLargeFile) && !await ConfirmCloseAsync(document)) return;
             Status.Text = "작업을 보관하고 종료하는 중…";
             await _session.FlushAsync(_preferences.Current.RememberSession);
             await WorkspaceExplorer.Restoration;
@@ -369,6 +404,8 @@ public partial class MainWindow : Window
     public async Task FormatDocumentAsync()
     {
         if (ActiveDocument is not { } document) return;
+        if (document.IsLargeFile || document.Editor.Document.TextLength > TextFormattingService.MaximumCharacters)
+        { Status.Text = "대용량 문서에서는 자동 정렬을 사용할 수 없습니다."; return; }
         string original = document.Editor.Text;
         if (string.IsNullOrWhiteSpace(original)) { Status.Text = "정렬할 내용이 없습니다."; return; }
         Status.Text = "문서를 자동 정렬하는 중…";
@@ -450,7 +487,7 @@ public partial class MainWindow : Window
         SearchPanel.Visibility = Visibility.Visible;
         ReplacePanel.Visibility = replace ? Visibility.Visible : Visibility.Collapsed;
         RefreshSearch();
-        if (ActiveDocument?.Editor.SelectedText is { Length: > 0 } selected && !selected.Contains('\n')) FindBox.Text = selected;
+        if (ActiveDocument?.Editor is { SelectionLength: > 0 and <= 4096 } selection && selection.SelectedText is { } selected && !selected.Contains('\n')) FindBox.Text = selected;
         // RunAsync disables Root while executing the command. Wait for it to
         // re-enable the controls and for menu dismissal/layout to finish.
         Dispatcher.BeginInvoke(DispatcherPriority.Input, () =>
@@ -468,7 +505,8 @@ public partial class MainWindow : Window
 
     private void OnEditAllMatchesChecked(object sender, RoutedEventArgs e)
     {
-        if (ActiveDocument?.Editor is not { } editor) { EndLinkedEditing(); return; }
+        if (ActiveDocument is not { IsLargeFile: false } document) { EndLinkedEditing(); return; }
+        TextEditor editor = document.Editor;
         SearchEditSession session = SearchEditSession.Create(editor.Text, FindBox.Text, MatchCase.IsChecked == true);
         if (session.Offsets.Count == 0)
         {
@@ -498,6 +536,10 @@ public partial class MainWindow : Window
     private void RefreshSearch()
     {
         if (SearchSummary is null || DocumentTabs is null) return;
+        CancelLargeSearch();
+        bool large = ActiveDocument?.IsLargeFile == true;
+        if (large && _linkedEditor is not null) EndLinkedEditing();
+        EditAllMatches.IsEnabled = ReplaceAllButton.IsEnabled = !large;
         TextEditor? editor = SearchPanel.Visibility == Visibility.Visible ? ActiveDocument?.Editor : null;
         if (_searchEditor != editor)
         {
@@ -513,7 +555,7 @@ public partial class MainWindow : Window
         }
         _searchHighlight.MatchLength = _linkedEditor?.Session.MatchLength ?? FindBox.Text.Length;
         _searchHighlight.Offsets = _linkedEditor?.Session.Offsets.ToList()
-            ?? (editor is null ? [] : TextAnalysis.FindAll(editor.Text, FindBox.Text, MatchCase.IsChecked == true));
+            ?? (editor is null || large || FindBox.Text.Length == 0 ? [] : TextAnalysis.FindAll(editor.Text, FindBox.Text, MatchCase.IsChecked == true));
         editor?.TextArea.TextView.Redraw();
         UpdateSearchSummary();
     }
@@ -526,6 +568,11 @@ public partial class MainWindow : Window
             SearchSummary.Text = $"{_linkedEditor.Session.Offsets.Count:N0}개 동시 편집 · Esc로 해제";
             return;
         }
+        if (ActiveDocument?.IsLargeFile == true)
+        {
+            SearchSummary.Text = "대용량 · Enter/F3로 다음 찾기 · Shift+F3로 이전 찾기";
+            return;
+        }
         int count = _searchHighlight.Offsets.Count;
         int current = ActiveDocument?.Editor is { } editor && editor.SelectionLength == FindBox.Text.Length
             ? _searchHighlight.Offsets.BinarySearch(editor.SelectionStart) : -1;
@@ -536,6 +583,7 @@ public partial class MainWindow : Window
 
     private void FindNext(bool previous = false)
     {
+        if (ActiveDocument?.IsLargeFile == true) { _ = FindLargeAsync(previous); return; }
         if (ActiveDocument?.Editor is not { } editor || FindBox.Text.Length == 0) return;
         List<int> offsets = _linkedEditor?.Session.Offsets.ToList() ?? TextAnalysis.FindAll(editor.Text, FindBox.Text, MatchCase.IsChecked == true);
         int length = _linkedEditor?.Session.MatchLength ?? FindBox.Text.Length;
@@ -557,12 +605,13 @@ public partial class MainWindow : Window
         EndLinkedEditing();
         if (ActiveDocument?.Editor is not { } editor || FindBox.Text.Length == 0) return;
         StringComparison comparison = MatchCase.IsChecked == true ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase;
-        if (string.Equals(editor.SelectedText, FindBox.Text, comparison)) editor.SelectedText = ReplaceBox.Text;
+        if (editor.SelectionLength == FindBox.Text.Length && string.Equals(editor.SelectedText, FindBox.Text, comparison)) editor.SelectedText = ReplaceBox.Text;
         FindNext();
     }
 
     private void OnReplaceAll(object sender, RoutedEventArgs e)
     {
+        if (ActiveDocument?.IsLargeFile == true) return;
         EndLinkedEditing();
         if (ActiveDocument?.Editor is not { } editor || FindBox.Text.Length == 0) return;
         List<int> offsets = TextAnalysis.FindAll(editor.Text, FindBox.Text, MatchCase.IsChecked == true);
@@ -634,7 +683,7 @@ public partial class MainWindow : Window
         if (ActiveDocument is not { } document) return;
         Title = $"{document.Header} — wText";
         CaretStatus.Text = $"Ln {document.Editor.TextArea.Caret.Line}, Col {document.Editor.TextArea.Caret.Column}";
-        FormatStatus.Text = $"{document.Encoding.DisplayName()}  ·  {document.LineEndingDescription}";
+        FormatStatus.Text = $"{document.Encoding.DisplayName()}  ·  {document.LineEndingDescription}" + (document.IsLargeFile ? "  ·  대용량 · 자동 복구 제외" : "");
         LanguageButton.Content = document.LanguageName;
         FontSizeButton.Content = $"{_preferences.Current.FontSize:0.#} px";
     }
